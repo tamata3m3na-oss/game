@@ -1,0 +1,1734 @@
+# Unity generated files
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+
+# Visual Studio cache
+/.vs/
+
+# User preferences
+/UserSettings/
+
+# Localization
+/Localization/
+
+# Memory captures
+/MemoryCaptures/
+
+# Crashlytics
+/Crashlytics/
+
+# Logs
+/*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Unity package cache
+/Packages/**/CacheServer/
+
+# Gradle cache
+/gradle/
+
+# Local configuration
+/local.properties
+
+# Android build files
+/bin/
+/gen/
+/captures/
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+
+# Visual Studio
+*.user
+*.userprefs
+*.sln.docstates
+
+# JetBrains Rider
+*.rider
+.idea/
+
+# Sourcetree
+*.opendb
+
+# Git conflict files
+*.orig
+
+# Environment files
+.env
+
+# Dependency directories
+/node_modules/
+/jspm_packages/
+
+# IDE specific files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build output
+/Debug/
+/Release/
+/x64/
+/x86/
+/build/
+
+# Unity specific
+/[Ll]ogs/
+/[Bb]ackups/
+/[Oo]ld/
+/[Ss]aved/
+/[Uu]sed[Aa]ssets/
+
+# Crashlytics
+com_crashlytics_export_strings.xml
+crashlytics-build.properties
+fabric.properties
+
+# Editor logs
+Editor.log
+
+# Profiler data
+*.data
+*.raw
+
+# Player logs
+output_log.txt
+
+# Unity test results
+TestResults/
+
+# Unity generated project files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+# Unity generated meta files
+*.pidb.meta
+
+# Unity generated file on crash
+sysinfo.txt
+
+# Unity generated crash data
+*.stacktrace
+
+# Unity generated memory snapshots
+*.mem
+
+# Unity generated coverage data
+*.coverage
+
+# Unity generated build files
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Unity generated cache files
+*.cache
+
+# Unity generated shader cache
+ShaderCache/
+
+# Unity generated asset bundles
+AssetBundles/
+
+# Unity generated addressables
+AddressableAssetsData/
+
+# Unity generated burst cache
+BurstCache/
+
+# Unity generated input cache
+InputCache/
+
+# Unity generated localization cache
+LocalizationCache/
+
+# Unity generated test cache
+TestCache/
+
+# Unity generated version control files
+*.meta
+
+# Unity generated package manager files
+Packages/
+
+# Unity generated project version
+ProjectVersion.txt
+
+# Unity generated assembly files
+Assembly-CSharp.csproj
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp-Editor-firstpass.csproj
+
+# Unity generated vs files
+*.csproj.user
+*.csproj.userprefs
+
+# Unity generated xcode files
+*.pbxproj
+*.pbxproj.user
+*.pbxproj.project
+*.pbxproj.xcworkspace
+
+# Unity generated android files
+*.gradle
+*.properties
+
+# Unity generated ios files
+*.pbxproj
+*.xcodeproj
+
+# Unity generated windows files
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Unity generated mac files
+*.pbxproj
+*.xcodeproj
+
+# Unity generated linux files
+Makefile
+CMakeLists.txt
+
+# Unity generated webgl files
+*.js
+*.html
+*.css
+
+# Unity generated all platform files
+*.dll
+*.so
+*.a
+*.dylib
+*.framework
+*.bundle
+
+# Unity generated documentation
+Documentation~
+
+# Unity generated test assemblies
+*Test.dll
+*Test.pdb
+
+# Unity generated build reports
+BuildReport/
+
+# Unity generated collision data
+*.physics
+*.physics.meta
+
+# Unity generated navigation data
+*.nav
+*.nav.meta
+
+# Unity generated occlusion data
+*.occlusion
+*.occlusion.meta
+
+# Unity generated lightmap data
+*.lightmap
+*.lightmap.meta
+
+# Unity generated lightprobe data
+*.lightprobe
+*.lightprobe.meta
+
+# Unity generated reflection probe data
+*.reflectionprobe
+*.reflectionprobe.meta
+
+# Unity generated terrain data
+*.terrain
+*.terrain.meta
+
+# Unity generated audio data
+*.audio
+*.audio.meta
+
+# Unity generated animation data
+*.anim
+*.anim.meta
+
+# Unity generated material data
+*.mat
+*.mat.meta
+
+# Unity generated shader data
+*.shader
+*.shader.meta
+
+# Unity generated texture data
+*.texture
+*.texture.meta
+
+# Unity generated model data
+*.model
+*.model.meta
+
+# Unity generated prefab data
+*.prefab
+*.prefab.meta
+
+# Unity generated scene data
+*.unity
+*.unity.meta
+
+# Unity generated scriptable object data
+*.asset
+*.asset.meta
+
+# Unity generated font data
+*.fontsettings
+*.fontsettings.meta
+
+# Unity generated sprite data
+*.spriteatlas
+*.spriteatlas.meta
+
+# Unity generated video data
+*.video
+*.video.meta
+
+# Unity generated audio mixer data
+*.mixer
+*.mixer.meta
+
+# Unity generated render texture data
+*.rendertexture
+*.rendertexture.meta
+
+# Unity generated cubemap data
+*.cubemap
+*.cubemap.meta
+
+# Unity generated compute shader data
+*.computeshader
+*.computeshader.meta
+
+# Unity generated ray tracing shader data
+*.raytracingshader
+*.raytracingshader.meta
+
+# Unity generated shader variant collection data
+*.shadervariants
+*.shadervariants.meta
+
+# Unity generated vfx data
+*.vfx
+*.vfx.meta
+
+# Unity generated timeline data
+*.playable
+*.playable.meta
+
+# Unity generated cinemachine data
+*.cinemachine
+*.cinemachine.meta
+
+# Unity generated post processing data
+*.postprocess
+*.postprocess.meta
+
+# Unity generated 2d animation data
+*.psd
+*.psd.meta
+
+# Unity generated ui toolkit data
+*.uss
+*.uss.meta
+*.uxml
+*.uxml.meta
+
+# Unity generated xr data
+*.xr
+*.xr.meta
+
+# Unity generated ar data
+*.ar
+*.ar.meta
+
+# Unity generated vr data
+*.vr
+*.vr.meta
+
+# Unity generated ai data
+*.ai
+*.ai.meta
+
+# Unity generated ml data
+*.ml
+*.ml.meta
+
+# Unity generated dsp data
+*.dsp
+*.dsp.meta
+
+# Unity generated build data
+*.build
+*.build.meta
+
+# Unity generated package data
+*.package
+*.package.meta
+
+# Unity generated preset data
+*.preset
+*.preset.meta
+
+# Unity generated override data
+*.override
+*.override.meta
+
+# Unity generated variant data
+*.variant
+*.variant.meta
+
+# Unity generated graph data
+*.graph
+*.graph.meta
+
+# Unity generated state machine data
+*.statemachine
+*.statemachine.meta
+
+# Unity generated blend tree data
+*.blendtree
+*.blendtree.meta
+
+# Unity generated controller data
+*.controller
+*.controller.meta
+
+# Unity generated mask data
+*.mask
+*.mask.meta
+
+# Unity generated parameter data
+*.param
+*.param.meta
+
+# Unity generated layer data
+*.layer
+*.layer.meta
+
+# Unity generated tag data
+*.tag
+*.tag.meta
+
+# Unity generated sorting layer data
+*.sortinglayer
+*.sortinglayer.meta
+
+# Unity generated sorting group data
+*.sortinggroup
+*.sortinggroup.meta
+
+# Unity generated physics material data
+*.physicmaterial
+*.physicmaterial.meta
+
+# Unity generated physics material 2d data
+*.physicmaterial2d
+*.physicmaterial2d.meta
+
+# Unity generated physics shape data
+*.physicshape
+*.physicshape.meta
+
+# Unity generated physics shape 2d data
+*.physicshape2d
+*.physicshape2d.meta
+
+# Unity generated physics joint data
+*.physicsjoint
+*.physicsjoint.meta
+
+# Unity generated physics joint 2d data
+*.physicsjoint2d
+*.physicsjoint2d.meta
+
+# Unity generated physics effector data
+*.physicseffector
+*.physicseffector.meta
+
+# Unity generated physics effector 2d data
+*.physicseffector2d
+*.physicseffector2d.meta
+
+# Unity generated physics force data
+*.physicsforce
+*.physicsforce.meta
+
+# Unity generated physics force 2d data
+*.physicsforce2d
+*.physicsforce2d.meta
+
+# Unity generated physics raycast data
+*.physicsraycast
+*.physicsraycast.meta
+
+# Unity generated physics raycast 2d data
+*.physicsraycast2d
+*.physicsraycast2d.meta
+
+# Unity generated physics overlap data
+*.physicsoverlap
+*.physicsoverlap.meta
+
+# Unity generated physics overlap 2d data
+*.physicsoverlap2d
+*.physicsoverlap2d.meta
+
+# Unity generated physics collision data
+*.physicscollision
+*.physicscollision.meta
+
+# Unity generated physics collision 2d data
+*.physicscollision2d
+*.physicscollision2d.meta
+
+# Unity generated physics trigger data
+*.physicstrigger
+*.physicstrigger.meta
+
+# Unity generated physics trigger 2d data
+*.physicstrigger2d
+*.physicstrigger2d.meta
+
+# Unity generated physics contact data
+*.physicscontact
+*.physicscontact.meta
+
+# Unity generated physics contact 2d data
+*.physicscontact2d
+*.physicscontact2d.meta
+
+# Unity generated physics joint break data
+*.physicsjointbreak
+*.physicsjointbreak.meta
+
+# Unity generated physics joint break 2d data
+*.physicsjointbreak2d
+*.physicsjointbreak2d.meta
+
+# Unity generated physics sleep data
+*.physicssleep
+*.physicssleep.meta
+
+# Unity generated physics sleep 2d data
+*.physicssleep2d
+*.physicssleep2d.meta
+
+# Unity generated physics wake data
+*.physicswake
+*.physicswake.meta
+
+# Unity generated physics wake 2d data
+*.physicswake2d
+*.physicswake2d.meta
+
+# Unity generated physics destroy data
+*.physicsdestroy
+*.physicsdestroy.meta
+
+# Unity generated physics destroy 2d data
+*.physicsdestroy2d
+*.physicsdestroy2d.meta
+
+# Unity generated physics enable data
+*.physicsenable
+*.physicsenable.meta
+
+# Unity generated physics enable 2d data
+*.physicsenable2d
+*.physicsenable2d.meta
+
+# Unity generated physics disable data
+*.physicsdisable
+*.physicsdisable.meta
+
+# Unity generated physics disable 2d data
+*.physicsdisable2d
+*.physicsdisable2d.meta
+
+# Unity generated physics step data
+*.physicsstep
+*.physicsstep.meta
+
+# Unity generated physics step 2d data
+*.physicsstep2d
+*.physicsstep2d.meta
+
+# Unity generated physics fixed update data
+*.physicsfixedupdate
+*.physicsfixedupdate.meta
+
+# Unity generated physics fixed update 2d data
+*.physicsfixedupdate2d
+*.physicsfixedupdate2d.meta
+
+# Unity generated physics update data
+*.physicsupdate
+*.physicsupdate.meta
+
+# Unity generated physics update 2d data
+*.physicsupdate2d
+*.physicsupdate2d.meta
+
+# Unity generated physics late update data
+*.physicslateupdate
+*.physicslateupdate.meta
+
+# Unity generated physics late update 2d data
+*.physicslateupdate2d
+*.physicslateupdate2d.meta
+
+# Unity generated physics pre render data
+*.physicsprerender
+*.physicsprerender.meta
+
+# Unity generated physics pre render 2d data
+*.physicsprerender2d
+*.physicsprerender2d.meta
+
+# Unity generated physics post render data
+*.physicspostrender
+*.physicspostrender.meta
+
+# Unity generated physics post render 2d data
+*.physicspostrender2d
+*.physicspostrender2d.meta
+
+# Unity generated physics render data
+*.physicsrender
+*.physicsrender.meta
+
+# Unity generated physics render 2d data
+*.physicsrender2d
+*.physicsrender2d.meta
+
+# Unity generated physics render object data
+*.physicsrenderobject
+*.physicsrenderobject.meta
+
+# Unity generated physics render object 2d data
+*.physicsrenderobject2d
+*.physicsrenderobject2d.meta
+
+# Unity generated physics render mesh data
+*.physicsrendermesh
+*.physicsrendermesh.meta
+
+# Unity generated physics render mesh 2d data
+*.physicsrendermesh2d
+*.physicsrendermesh2d.meta
+
+# Unity generated physics render material data
+*.physicsrendermaterial
+*.physicsrendermaterial.meta
+
+# Unity generated physics render material 2d data
+*.physicsrendermaterial2d
+*.physicsrendermaterial2d.meta
+
+# Unity generated physics render texture data
+*.physicsrendertexture
+*.physicsrendertexture.meta
+
+# Unity generated physics render texture 2d data
+*.physicsrendertexture2d
+*.physicsrendertexture2d.meta
+
+# Unity generated physics render shader data
+*.physicsrendershader
+*.physicsrendershader.meta
+
+# Unity generated physics render shader 2d data
+*.physicsrendershader2d
+*.physicsrendershader2d.meta
+
+# Unity generated physics render light data
+*.physicsrenderlight
+*.physicsrenderlight.meta
+
+# Unity generated physics render light 2d data
+*.physicsrenderlight2d
+*.physicsrenderlight2d.meta
+
+# Unity generated physics render camera data
+*.physicsrendercamera
+*.physicsrendercamera.meta
+
+# Unity generated physics render camera 2d data
+*.physicsrendercamera2d
+*.physicsrendercamera2d.meta
+
+# Unity generated physics render reflection probe data
+*.physicsrenderreflectionprobe
+*.physicsrenderreflectionprobe.meta
+
+# Unity generated physics render reflection probe 2d data
+*.physicsrenderreflectionprobe2d
+*.physicsrenderreflectionprobe2d.meta
+
+# Unity generated physics render light probe data
+*.physicsrenderlightprobe
+*.physicsrenderlightprobe.meta
+
+# Unity generated physics render light probe 2d data
+*.physicsrenderlightprobe2d
+*.physicsrenderlightprobe2d.meta
+
+# Unity generated physics render occlusion data
+*.physicsrenderocclusion
+*.physicsrenderocclusion.meta
+
+# Unity generated physics render occlusion 2d data
+*.physicsrenderocclusion2d
+*.physicsrenderocclusion2d.meta
+
+# Unity generated physics render navigation data
+*.physicsrendernavigation
+*.physicsrendernavigation.meta
+
+# Unity generated physics render navigation 2d data
+*.physicsrendernavigation2d
+*.physicsrendernavigation2d.meta
+
+# Unity generated physics render ai data
+*.physicsrenderai
+*.physicsrenderai.meta
+
+# Unity generated physics render ai 2d data
+*.physicsrenderai2d
+*.physicsrenderai2d.meta
+
+# Unity generated physics render animation data
+*.physicsrenderanimation
+*.physicsrenderanimation.meta
+
+# Unity generated physics render animation 2d data
+*.physicsrenderanimation2d
+*.physicsrenderanimation2d.meta
+
+# Unity generated physics render audio data
+*.physicsrendraudio
+*.physicsrendraudio.meta
+
+# Unity generated physics render audio 2d data
+*.physicsrendraudio2d
+*.physicsrendraudio2d.meta
+
+# Unity generated physics render video data
+*.physicsrendervideo
+*.physicsrendervideo.meta
+
+# Unity generated physics render video 2d data
+*.physicsrendervideo2d
+*.physicsrendervideo2d.meta
+
+# Unity generated physics render particle data
+*.physicsrenderparticle
+*.physicsrenderparticle.meta
+
+# Unity generated physics render particle 2d data
+*.physicsrenderparticle2d
+*.physicsrenderparticle2d.meta
+
+# Unity generated physics render cloth data
+*.physicsrendercloth
+*.physicsrendercloth.meta
+
+# Unity generated physics render cloth 2d data
+*.physicsrendercloth2d
+*.physicsrendercloth2d.meta
+
+# Unity generated physics render wind data
+*.physicsrenderwind
+*.physicsrenderwind.meta
+
+# Unity generated physics render wind 2d data
+*.physicsrenderwind2d
+*.physicsrenderwind2d.meta
+
+# Unity generated physics render halo data
+*.physicsrenderhalo
+*.physicsrenderhalo.meta
+
+# Unity generated physics render halo 2d data
+*.physicsrenderhalo2d
+*.physicsrenderhalo2d.meta
+
+# Unity generated physics render lens flare data
+*.physicsrenderlensflare
+*.physicsrenderlensflare.meta
+
+# Unity generated physics render lens flare 2d data
+*.physicsrenderlensflare2d
+*.physicsrenderlensflare2d.meta
+
+# Unity generated physics render line renderer data
+*.physicsrenderlinerenderer
+*.physicsrenderlinerenderer.meta
+
+# Unity generated physics render line renderer 2d data
+*.physicsrenderlinerenderer2d
+*.physicsrenderlinerenderer2d.meta
+
+# Unity generated physics render trail renderer data
+*.physicsrendertrailrenderer
+*.physicsrendertrailrenderer.meta
+
+# Unity generated physics render trail renderer 2d data
+*.physicsrendertrailrenderer2d
+*.physicsrendertrailrenderer2d.meta
+
+# Unity generated physics render billboard renderer data
+*.physicsrenderbillboardrenderer
+*.physicsrenderbillboardrenderer.meta
+
+# Unity generated physics render billboard renderer 2d data
+*.physicsrenderbillboardrenderer2d
+*.physicsrenderbillboardrenderer2d.meta
+
+# Unity generated physics render particle system renderer data
+*.physicsrenderparticlesystemrenderer
+*.physicsrenderparticlesystemrenderer.meta
+
+# Unity generated physics render particle system renderer 2d data
+*.physicsrenderparticlesystemrenderer2d
+*.physicsrenderparticlesystemrenderer2d.meta
+
+# Unity generated physics render mesh renderer data
+*.physicsrendermeshrenderer
+*.physicsrendermeshrenderer.meta
+
+# Unity generated physics render mesh renderer 2d data
+*.physicsrendermeshrenderer2d
+*.physicsrendermeshrenderer2d.meta
+
+# Unity generated physics render skinned mesh renderer data
+*.physicsrenderskinnedmeshrenderer
+*.physicsrenderskinnedmeshrenderer.meta
+
+# Unity generated physics render skinned mesh renderer 2d data
+*.physicsrenderskinnedmeshrenderer2d
+*.physicsrenderskinnedmeshrenderer2d.meta
+
+# Unity generated physics render sprite renderer data
+*.physicsrenderspriterenderer
+*.physicsrenderspriterenderer.meta
+
+# Unity generated physics render sprite renderer 2d data
+*.physicsrenderspriterenderer2d
+*.physicsrenderspriterenderer2d.meta
+
+# Unity generated physics render tilemap renderer data
+*.physicsrendertilemaprenderer
+*.physicsrendertilemaprenderer.meta
+
+# Unity generated physics render tilemap renderer 2d data
+*.physicsrendertilemaprenderer2d
+*.physicsrendertilemaprenderer2d.meta
+
+# Unity generated physics render canvas renderer data
+*.physicsrendercanvasrenderer
+*.physicsrendercanvasrenderer.meta
+
+# Unity generated physics render canvas renderer 2d data
+*.physicsrendercanvasrenderer2d
+*.physicsrendercanvasrenderer2d.meta
+
+# Unity generated physics render ui renderer data
+*.physicsrenderuirenderer
+*.physicsrenderuirenderer.meta
+
+# Unity generated physics render ui renderer 2d data
+*.physicsrenderuirenderer2d
+*.physicsrenderuirenderer2d.meta
+
+# Unity generated physics render text renderer data
+*.physicsrendertextrenderer
+*.physicsrendertextrenderer.meta
+
+# Unity generated physics render text renderer 2d data
+*.physicsrendertextrenderer2d
+*.physicsrendertextrenderer2d.meta
+
+# Unity generated physics render image renderer data
+*.physicsrenderimagerenderer
+*.physicsrenderimagerenderer.meta
+
+# Unity generated physics render image renderer 2d data
+*.physicsrenderimagerenderer2d
+*.physicsrenderimagerenderer2d.meta
+
+# Unity generated physics render raw image renderer data
+*.physicsrenderrawimagerenderer
+*.physicsrenderrawimagerenderer.meta
+
+# Unity generated physics render raw image renderer 2d data
+*.physicsrenderrawimagerenderer2d
+*.physicsrenderrawimagerenderer2d.meta
+
+# Unity generated physics render sprite mask renderer data
+*.physicsrenderspritemaskrenderer
+*.physicsrenderspritemaskrenderer.meta
+
+# Unity generated physics render sprite mask renderer 2d data
+*.physicsrenderspritemaskrenderer2d
+*.physicsrenderspritemaskrenderer2d.meta
+
+# Unity generated physics render mask renderer data
+*.physicsrendermaskrenderer
+*.physicsrendermaskrenderer.meta
+
+# Unity generated physics render mask renderer 2d data
+*.physicsrendermaskrenderer2d
+*.physicsrendermaskrenderer2d.meta
+
+# Unity generated physics render rect mask 2d renderer data
+*.physicsrenderrectmask2drenderer
+*.physicsrenderrectmask2drenderer.meta
+
+# Unity generated physics render rect mask 2d renderer 2d data
+*.physicsrenderrectmask2drenderer2d
+*.physicsrenderrectmask2drenderer2d.meta
+
+# Unity generated physics render canvas group renderer data
+*.physicsrendercanvasgrouprenderer
+*.physicsrendercanvasgrouprenderer.meta
+
+# Unity generated physics render canvas group renderer 2d data
+*.physicsrendercanvasgrouprenderer2d
+*.physicsrendercanvasgrouprenderer2d.meta
+
+# Unity generated physics render graphic raycast data
+*.physicsrendergraphicraycast
+*.physicsrendergraphicraycast.meta
+
+# Unity generated physics render graphic raycast 2d data
+*.physicsrendergraphicraycast2d
+*.physicsrendergraphicraycast2d.meta
+
+# Unity generated physics render canvas renderer raycast data
+*.physicsrendercanvasrendererraycast
+*.physicsrendercanvasrendererraycast.meta
+
+# Unity generated physics render canvas renderer raycast 2d data
+*.physicsrendercanvasrendererraycast2d
+*.physicsrendercanvasrendererraycast2d.meta
+
+# Unity generated physics render world space canvas renderer data
+*.physicsrenderworldspacecanvasrenderer
+*.physicsrenderworldspacecanvasrenderer.meta
+
+# Unity generated physics render world space canvas renderer 2d data
+*.physicsrenderworldspacecanvasrenderer2d
+*.physicsrenderworldspacecanvasrenderer2d.meta
+
+# Unity generated physics render screen space canvas renderer data
+*.physicsrenderscreenspacecanvasrenderer
+*.physicsrenderscreenspacecanvasrenderer.meta
+
+# Unity generated physics render screen space canvas renderer 2d data
+*.physicsrenderscreenspacecanvasrenderer2d
+*.physicsrenderscreenspacecanvasrenderer2d.meta
+
+# Unity generated physics render world space ui renderer data
+*.physicsrenderworldspaceuirenderer
+*.physicsrenderworldspaceuirenderer.meta
+
+# Unity generated physics render world space ui renderer 2d data
+*.physicsrenderworldspaceuirenderer2d
+*.physicsrenderworldspaceuirenderer2d.meta
+
+# Unity generated physics render screen space ui renderer data
+*.physicsrenderscreenspaceuirenderer
+*.physicsrenderscreenspaceuirenderer.meta
+
+# Unity generated physics render screen space ui renderer 2d data
+*.physicsrenderscreenspaceuirenderer2d
+*.physicsrenderscreenspaceuirenderer2d.meta
+
+# Unity generated physics render canvas scalar data
+*.physicsrendercanvasscalar
+*.physicsrendercanvasscalar.meta
+
+# Unity generated physics render canvas scalar 2d data
+*.physicsrendercanvasscalar2d
+*.physicsrendercanvasscalar2d.meta
+
+# Unity generated physics render graphic raycaster data
+*.physicsrendergraphicraycaster
+*.physicsrendergraphicraycaster.meta
+
+# Unity generated physics render graphic raycaster 2d data
+*.physicsrendergraphicraycaster2d
+*.physicsrendergraphicraycaster2d.meta
+
+# Unity generated physics render physics raycaster data
+*.physicsrenderphysicsraycaster
+*.physicsrenderphysicsraycaster.meta
+
+# Unity generated physics render physics raycaster 2d data
+*.physicsrenderphysicsraycaster2d
+*.physicsrenderphysicsraycaster2d.meta
+
+# Unity generated physics render physics 2d raycaster data
+*.physicsrenderphysics2draycaster
+*.physicsrenderphysics2draycaster.meta
+
+# Unity generated physics render physics 2d raycaster 2d data
+*.physicsrenderphysics2draycaster2d
+*.physicsrenderphysics2draycaster2d.meta
+
+# Unity generated physics render event system data
+*.physicsrendereventsystem
+*.physicsrendereventsystem.meta
+
+# Unity generated physics render event system 2d data
+*.physicsrendereventsystem2d
+*.physicsrendereventsystem2d.meta
+
+# Unity generated physics render stand alone input module data
+*.physicsrenderstandaloneinputmodule
+*.physicsrenderstandaloneinputmodule.meta
+
+# Unity generated physics render stand alone input module 2d data
+*.physicsrenderstandaloneinputmodule2d
+*.physicsrenderstandaloneinputmodule2d.meta
+
+# Unity generated physics render touch input module data
+*.physicsrendertouchinputmodule
+*.physicsrendertouchinputmodule.meta
+
+# Unity generated physics render touch input module 2d data
+*.physicsrendertouchinputmodule2d
+*.physicsrendertouchinputmodule2d.meta
+
+# Unity generated physics render base input data
+*.physicsrenderbaseinput
+*.physicsrenderbaseinput.meta
+
+# Unity generated physics render base input 2d data
+*.physicsrenderbaseinput2d
+*.physicsrenderbaseinput2d.meta
+
+# Unity generated physics render pointer input module data
+*.physicsrenderpointerinputmodule
+*.physicsrenderpointerinputmodule.meta
+
+# Unity generated physics render pointer input module 2d data
+*.physicsrenderpointerinputmodule2d
+*.physicsrenderpointerinputmodule2d.meta
+
+# Unity generated physics render base raycast module data
+*.physicsrenderbaseraycastmodule
+*.physicsrenderbaseraycastmodule.meta
+
+# Unity generated physics render base raycast module 2d data
+*.physicsrenderbaseraycastmodule2d
+*.physicsrenderbaseraycastmodule2d.meta
+
+# Unity generated physics render physics raycast module data
+*.physicsrenderphysicsraycastmodule
+*.physicsrenderphysicsraycastmodule.meta
+
+# Unity generated physics render physics raycast module 2d data
+*.physicsrenderphysicsraycastmodule2d
+*.physicsrenderphysicsraycastmodule2d.meta
+
+# Unity generated physics render physics 2d raycast module data
+*.physicsrenderphysics2draycastmodule
+*.physicsrenderphysics2draycastmodule.meta
+
+# Unity generated physics render physics 2d raycast module 2d data
+*.physicsrenderphysics2draycastmodule2d
+*.physicsrenderphysics2draycastmodule2d.meta
+
+# Unity generated physics render event trigger data
+*.physicsrendereventtrigger
+*.physicsrendereventtrigger.meta
+
+# Unity generated physics render event trigger 2d data
+*.physicsrendereventtrigger2d
+*.physicsrendereventtrigger2d.meta
+
+# Unity generated physics render physics event trigger data
+*.physicsrenderphysicseventtrigger
+*.physicsrenderphysicseventtrigger.meta
+
+# Unity generated physics render physics event trigger 2d data
+*.physicsrenderphysicseventtrigger2d
+*.physicsrenderphysicseventtrigger2d.meta
+
+# Unity generated physics render physics 2d event trigger data
+*.physicsrenderphysics2deventtrigger
+*.physicsrenderphysics2deventtrigger.meta
+
+# Unity generated physics render physics 2d event trigger 2d data
+*.physicsrenderphysics2deventtrigger2d
+*.physicsrenderphysics2deventtrigger2d.meta
+
+# Unity generated physics render base event data data
+*.physicsrenderbaseeventdata
+*.physicsrenderbaseeventdata.meta
+
+# Unity generated physics render base event data 2d data
+*.physicsrenderbaseeventdata2d
+*.physicsrenderbaseeventdata2d.meta
+
+# Unity generated physics render pointer event data data
+*.physicsrenderpointereventdata
+*.physicsrenderpointereventdata.meta
+
+# Unity generated physics render pointer event data 2d data
+*.physicsrenderpointereventdata2d
+*.physicsrenderpointereventdata2d.meta
+
+# Unity generated physics render axis event data data
+*.physicsrenderaxiseventdata
+*.physicsrenderaxiseventdata.meta
+
+# Unity generated physics render axis event data 2d data
+*.physicsrenderaxiseventdata2d
+*.physicsrenderaxiseventdata2d.meta
+
+# Unity generated physics render base input event data data
+*.physicsrenderbaseinputeventdata
+*.physicsrenderbaseinputeventdata.meta
+
+# Unity generated physics render base input event data 2d data
+*.physicsrenderbaseinputeventdata2d
+*.physicsrenderbaseinputeventdata2d.meta
+
+# Unity generated physics render pointer input event data data
+*.physicsrenderpointerinputeventdata
+*.physicsrenderpointerinputeventdata.meta
+
+# Unity generated physics render pointer input event data 2d data
+*.physicsrenderpointerinputeventdata2d
+*.physicsrenderpointerinputeventdata2d.meta
+
+# Unity generated physics render mouse input event data data
+*.physicsrendermouseinputeventdata
+*.physicsrendermouseinputeventdata.meta
+
+# Unity generated physics render mouse input event data 2d data
+*.physicsrendermouseinputeventdata2d
+*.physicsrendermouseinputeventdata2d.meta
+
+# Unity generated physics render touch input event data data
+*.physicsrendertouchinputeventdata
+*.physicsrendertouchinputeventdata.meta
+
+# Unity generated physics render touch input event data 2d data
+*.physicsrendertouchinputeventdata2d
+*.physicsrendertouchinputeventdata2d.meta
+
+# Unity generated physics render base pointer event data data
+*.physicsrenderbasepointereventdata
+*.physicsrenderbasepointereventdata.meta
+
+# Unity generated physics render base pointer event data 2d data
+*.physicsrenderbasepointereventdata2d
+*.physicsrenderbasepointereventdata2d.meta
+
+# Unity generated physics render pointer down event data data
+*.physicsrenderpointerdowneventdata
+*.physicsrenderpointerdowneventdata.meta
+
+# Unity generated physics render pointer down event data 2d data
+*.physicsrenderpointerdowneventdata2d
+*.physicsrenderpointerdowneventdata2d.meta
+
+# Unity generated physics render pointer up event data data
+*.physicsrenderpointerupeventdata
+*.physicsrenderpointerupeventdata.meta
+
+# Unity generated physics render pointer up event data 2d data
+*.physicsrenderpointerupeventdata2d
+*.physicsrenderpointerupeventdata2d.meta
+
+# Unity generated physics render pointer click event data data
+*.physicsrenderpointerclickeventdata
+*.physicsrenderpointerclickeventdata.meta
+
+# Unity generated physics render pointer click event data 2d data
+*.physicsrenderpointerclickeventdata2d
+*.physicsrenderpointerclickeventdata2d.meta
+
+# Unity generated physics render pointer enter event data data
+*.physicsrenderpointerentereventdata
+*.physicsrenderpointerentereventdata.meta
+
+# Unity generated physics render pointer enter event data 2d data
+*.physicsrenderpointerentereventdata2d
+*.physicsrenderpointerentereventdata2d.meta
+
+# Unity generated physics render pointer exit event data data
+*.physicsrenderpointerexiteventdata
+*.physicsrenderpointerexiteventdata.meta
+
+# Unity generated physics render pointer exit event data 2d data
+*.physicsrenderpointerexiteventdata2d
+*.physicsrenderpointerexiteventdata2d.meta
+
+# Unity generated physics render pointer hover event data data
+*.physicsrenderpointerhovereventdata
+*.physicsrenderpointerhovereventdata.meta
+
+# Unity generated physics render pointer hover event data 2d data
+*.physicsrenderpointerhovereventdata2d
+*.physicsrenderpointerhovereventdata2d.meta
+
+# Unity generated physics render pointer move event data data
+*.physicsrenderpointermoveeventdata
+*.physicsrenderpointermoveeventdata.meta
+
+# Unity generated physics render pointer move event data 2d data
+*.physicsrenderpointermoveeventdata2d
+*.physicsrenderpointermoveeventdata2d.meta
+
+# Unity generated physics render pointer drag event data data
+*.physicsrenderpointerdrageventdata
+*.physicsrenderpointerdrageventdata.meta
+
+# Unity generated physics render pointer drag event data 2d data
+*.physicsrenderpointerdrageventdata2d
+*.physicsrenderpointerdrageventdata2d.meta
+
+# Unity generated physics render pointer begin drag event data data
+*.physicsrenderpointerbegindrageventdata
+*.physicsrenderpointerbegindrageventdata.meta
+
+# Unity generated physics render pointer begin drag event data 2d data
+*.physicsrenderpointerbegindrageventdata2d
+*.physicsrenderpointerbegindrageventdata2d.meta
+
+# Unity generated physics render pointer end drag event data data
+*.physicsrenderpointerenddrageventdata
+*.physicsrenderpointerenddrageventdata.meta
+
+# Unity generated physics render pointer end drag event data 2d data
+*.physicsrenderpointerenddrageventdata2d
+*.physicsrenderpointerenddrageventdata2d.meta
+
+# Unity generated physics render pointer drop event data data
+*.physicsrenderpointerdropeventdata
+*.physicsrenderpointerdropeventdata.meta
+
+# Unity generated physics render pointer drop event data 2d data
+*.physicsrenderpointerdropeventdata2d
+*.physicsrenderpointerdropeventdata2d.meta
+
+# Unity generated physics render pointer scroll event data data
+*.physicsrenderpointerscrolleventdata
+*.physicsrenderpointerscrolleventdata.meta
+
+# Unity generated physics render pointer scroll event data 2d data
+*.physicsrenderpointerscrolleventdata2d
+*.physicsrenderpointerscrolleventdata2d.meta
+
+# Unity generated physics render pointer update event data data
+*.physicsrenderpointerupdateeventdata
+*.physicsrenderpointerupdateeventdata.meta
+
+# Unity generated physics render pointer update event data 2d data
+*.physicsrenderpointerupdateeventdata2d
+*.physicsrenderpointerupdateeventdata2d.meta
+
+# Unity generated physics render base input module data
+*.physicsrenderbaseinputmodule
+*.physicsrenderbaseinputmodule.meta
+
+# Unity generated physics render base input module 2d data
+*.physicsrenderbaseinputmodule2d
+*.physicsrenderbaseinputmodule2d.meta
+
+# Unity generated physics render pointer input module data
+*.physicsrenderpointerinputmodule
+*.physicsrenderpointerinputmodule.meta
+
+# Unity generated physics render pointer input module 2d data
+*.physicsrenderpointerinputmodule2d
+*.physicsrenderpointerinputmodule2d.meta
+
+# Unity generated physics render stand alone input module data
+*.physicsrenderstandaloneinputmodule
+*.physicsrenderstandaloneinputmodule.meta
+
+# Unity generated physics render stand alone input module 2d data
+*.physicsrenderstandaloneinputmodule2d
+*.physicsrenderstandaloneinputmodule2d.meta
+
+# Unity generated physics render touch input module data
+*.physicsrendertouchinputmodule
+*.physicsrendertouchinputmodule.meta
+
+# Unity generated physics render touch input module 2d data
+*.physicsrendertouchinputmodule2d
+*.physicsrendertouchinputmodule2d.meta
+
+# Unity generated physics render base raycast module data
+*.physicsrenderbaseraycastmodule
+*.physicsrenderbaseraycastmodule.meta
+
+# Unity generated physics render base raycast module 2d data
+*.physicsrenderbaseraycastmodule2d
+*.physicsrenderbaseraycastmodule2d.meta
+
+# Unity generated physics render physics raycast module data
+*.physicsrenderphysicsraycastmodule
+*.physicsrenderphysicsraycastmodule.meta
+
+# Unity generated physics render physics raycast module 2d data
+*.physicsrenderphysicsraycastmodule2d
+*.physicsrenderphysicsraycastmodule2d.meta
+
+# Unity generated physics render physics 2d raycast module data
+*.physicsrenderphysics2draycastmodule
+*.physicsrenderphysics2draycastmodule.meta
+
+# Unity generated physics render physics 2d raycast module 2d data
+*.physicsrenderphysics2draycastmodule2d
+*.physicsrenderphysics2draycastmodule2d.meta
+
+# Unity generated physics render event system data
+*.physicsrendereventsystem
+*.physicsrendereventsystem.meta
+
+# Unity generated physics render event system 2d data
+*.physicsrendereventsystem2d
+*.physicsrendereventsystem2d.meta
+
+# Unity generated physics render base event data data
+*.physicsrenderbaseeventdata
+*.physicsrenderbaseeventdata.meta
+
+# Unity generated physics render base event data 2d data
+*.physicsrenderbaseeventdata2d
+*.physicsrenderbaseeventdata2d.meta
+
+# Unity generated physics render pointer event data data
+*.physicsrenderpointereventdata
+*.physicsrenderpointereventdata.meta
+
+# Unity generated physics render pointer event data 2d data
+*.physicsrenderpointereventdata2d
+*.physicsrenderpointereventdata2d.meta
+
+# Unity generated physics render axis event data data
+*.physicsrenderaxiseventdata
+*.physicsrenderaxiseventdata.meta
+
+# Unity generated physics render axis event data 2d data
+*.physicsrenderaxiseventdata2d
+*.physicsrenderaxiseventdata2d.meta
+
+# Unity generated physics render base input event data data
+*.physicsrenderbaseinputeventdata
+*.physicsrenderbaseinputeventdata.meta
+
+# Unity generated physics render base input event data 2d data
+*.physicsrenderbaseinputeventdata2d
+*.physicsrenderbaseinputeventdata2d.meta
+
+# Unity generated physics render pointer input event data data
+*.physicsrenderpointerinputeventdata
+*.physicsrenderpointerinputeventdata.meta
+
+# Unity generated physics render pointer input event data 2d data
+*.physicsrenderpointerinputeventdata2d
+*.physicsrenderpointerinputeventdata2d.meta
+
+# Unity generated physics render mouse input event data data
+*.physicsrendermouseinputeventdata
+*.physicsrendermouseinputeventdata.meta
+
+# Unity generated physics render mouse input event data 2d data
+*.physicsrendermouseinputeventdata2d
+*.physicsrendermouseinputeventdata2d.meta
+
+# Unity generated physics render touch input event data data
+*.physicsrendertouchinputeventdata
+*.physicsrendertouchinputeventdata.meta
+
+# Unity generated physics render touch input event data 2d data
+*.physicsrendertouchinputeventdata2d
+*.physicsrendertouchinputeventdata2d.meta
+
+# Unity generated physics render base pointer event data data
+*.physicsrenderbasepointereventdata
+*.physicsrenderbasepointereventdata.meta
+
+# Unity generated physics render base pointer event data 2d data
+*.physicsrenderbasepointereventdata2d
+*.physicsrenderbasepointereventdata2d.meta
+
+# Unity generated physics render pointer down event data data
+*.physicsrenderpointerdowneventdata
+*.physicsrenderpointerdowneventdata.meta
+
+# Unity generated physics render pointer down event data 2d data
+*.physicsrenderpointerdowneventdata2d
+*.physicsrenderpointerdowneventdata2d.meta
+
+# Unity generated physics render pointer up event data data
+*.physicsrenderpointerupeventdata
+*.physicsrenderpointerupeventdata.meta
+
+# Unity generated physics render pointer up event data 2d data
+*.physicsrenderpointerupeventdata2d
+*.physicsrenderpointerupeventdata2d.meta
+
+# Unity generated physics render pointer click event data data
+*.physicsrenderpointerclickeventdata
+*.physicsrenderpointerclickeventdata.meta
+
+# Unity generated physics render pointer click event data 2d data
+*.physicsrenderpointerclickeventdata2d
+*.physicsrenderpointerclickeventdata2d.meta
+
+# Unity generated physics render pointer enter event data data
+*.physicsrenderpointerentereventdata
+*.physicsrenderpointerentereventdata.meta
+
+# Unity generated physics render pointer enter event data 2d data
+*.physicsrenderpointerentereventdata2d
+*.physicsrenderpointerentereventdata2d.meta
+
+# Unity generated physics render pointer exit event data data
+*.physicsrenderpointerexiteventdata
+*.physicsrenderpointerexiteventdata.meta
+
+# Unity generated physics render pointer exit event data 2d data
+*.physicsrenderpointerexiteventdata2d
+*.physicsrenderpointerexiteventdata2d.meta
+
+# Unity generated physics render pointer hover event data data
+*.physicsrenderpointerhovereventdata
+*.physicsrenderpointerhovereventdata.meta
+
+# Unity generated physics render pointer hover event data 2d data
+*.physicsrenderpointerhovereventdata2d
+*.physicsrenderpointerhovereventdata2d.meta
+
+# Unity generated physics render pointer move event data data
+*.physicsrenderpointermoveeventdata
+*.physicsrenderpointermoveeventdata.meta
+
+# Unity generated physics render pointer move event data 2d data
+*.physicsrenderpointermoveeventdata2d
+*.physicsrenderpointermoveeventdata2d.meta
+
+# Unity generated physics render pointer drag event data data
+*.physicsrenderpointerdrageventdata
+*.physicsrenderpointerdrageventdata.meta
+
+# Unity generated physics render pointer drag event data 2d data
+*.physicsrenderpointerdrageventdata2d
+*.physicsrenderpointerdrageventdata2d.meta
+
+# Unity generated physics render pointer begin drag event data data
+*.physicsrenderpointerbegindrageventdata
+*.physicsrenderpointerbegindrageventdata.meta
+
+# Unity generated physics render pointer begin drag event data 2d data
+*.physicsrenderpointerbegindrageventdata2d
+*.physicsrenderpointerbegindrageventdata2d.meta
+
+# Unity generated physics render pointer end drag event data data
+*.physicsrenderpointerenddrageventdata
+*.physicsrenderpointerenddrageventdata.meta
+
+# Unity generated physics render pointer end drag event data 2d data
+*.physicsrenderpointerenddrageventdata2d
+*.physicsrenderpointerenddrageventdata2d.meta
+
+# Unity generated physics render pointer drop event data data
+*.physicsrenderpointerdropeventdata
+*.physicsrenderpointerdropeventdata.meta
+
+# Unity generated physics render pointer drop event data 2d data
+*.physicsrenderpointerdropeventdata2d
+*.physicsrenderpointerdropeventdata2d.meta
+
+# Unity generated physics render pointer scroll event data data
+*.physicsrenderpointerscrolleventdata
+*.physicsrenderpointerscrolleventdata.meta
+
+# Unity generated physics render pointer scroll event data 2d data
+*.physicsrenderpointerscrolleventdata2d
+*.physicsrenderpointerscrolleventdata2d.meta
+
+# Unity generated physics render pointer update event data data
+*.physicsrenderpointerupdateeventdata
+*.physicsrenderpointerupdateeventdata.meta
+
+# Unity generated physics render pointer update event data 2d data
+*.physicsrenderpointerupdateeventdata2d
+*.physicsrenderpointerupdateeventdata2d.meta
+
+# Unity generated physics render base input module data
+*.physicsrenderbaseinputmodule
+*.physicsrenderbaseinputmodule.meta
+
+# Unity generated physics render base input module 2d data
+*.physicsrenderbaseinputmodule2d
+*.physicsrenderbaseinputmodule2d.meta
+
+# Unity generated physics render pointer input module data
+*.physicsrenderpointerinputmodule
+*.physicsrenderpointerinputmodule.meta
+
+# Unity generated physics render pointer input module 2d data
+*.physicsrenderpointerinputmodule2d
+*.physicsrenderpointerinputmodule2d.meta
+
+# Unity generated physics render stand alone input module data
+*.physicsrenderstandaloneinputmodule
+*.physicsrenderstandaloneinputmodule.meta
+
+# Unity generated physics render stand alone input module 2d data
+*.physicsrenderstandaloneinputmodule2d
+*.physicsrenderstandaloneinputmodule2d.meta
+
+# Unity generated physics render touch input module data
+*.physicsrendertouchinputmodule
+*.physicsrendertouchinputmodule.meta
+
+# Unity generated physics render touch input module 2d data
+*.physicsrendertouchinputmodule2d
+*.physicsrendertouchinputmodule2d.meta
+
+# Unity generated physics render base raycast module data
+*.physicsrenderbaseraycastmodule
+*.physicsrenderbaseraycastmodule.meta
+
+# Unity generated physics render base raycast module 2d data
+*.physicsrenderbaseraycastmodule2d
+*.physicsrenderbaseraycastmodule2d.meta
+
+# Unity generated physics render physics raycast module data
+*.physicsrenderphysicsraycastmodule
+*.physicsrenderphysicsraycastmodule.meta
+
+# Unity generated physics render physics raycast module 2d data
+*.physicsrenderphysicsraycastmodule2d
+*.physicsrenderphysicsraycastmodule2d.meta
+
+# Unity generated physics render physics 2d raycast module data
+*.physicsrenderphysics2draycastmodule
+*.physicsrenderphysics2draycastmodule.meta
+
+# Unity generated physics render physics 2d raycast module 2d data
+*.physicsrenderphysics2draycastmodule2d
+*.physicsrenderphysics2draycastmodule2d.meta
+
+# Unity generated physics render event system data
+*.physicsrendereventsystem
+*.physicsrendereventsystem.meta
+
+# Unity generated physics render event system 2d data
+*.physicsrendereventsystem2d
+*.physicsrendereventsystem2d.meta
+
+# Unity generated physics render base event data data
+*.physicsrenderbaseeventdata
+*.physicsrenderbaseeventdata.meta
+
+# Unity generated physics render base event data 2d data
+*.physicsrenderbaseeventdata2d
+*.physicsrenderbaseeventdata2d.meta
+
+# Unity generated physics render pointer event data data
+*.physicsrenderpointereventdata
+*.physicsrenderpointereventdata.meta
+
+# Unity generated physics render pointer event data 2d data
+*.physicsrenderpointereventdata2d
+*.physicsrenderpointereventdata2d.meta
+
+# Unity generated physics render axis event data data
+*.physicsrenderaxiseventdata
+*.physicsrenderaxiseventdata.meta
+
+# Unity generated physics render axis event data 2d data
+*.physicsrenderaxiseventdata2d
+*.physicsrenderaxiseventdata2d.meta
+
+# Unity generated physics render base input event data data
+*.physicsrenderbaseinputeventdata
+*.physicsrenderbaseinputeventdata.meta
+
+# Unity generated physics render base input event data 2d data
+*.physicsrenderbaseinputeventdata2d
+*.physicsrenderbaseinputeventdata2d.meta
+
+# Unity generated physics render pointer input event data data
+*.physicsrenderpointerinputeventdata
+*.physicsrenderpointerinputeventdata.meta
+
+# Unity generated physics render pointer input event data 2d data
+*.physicsrenderpointerinputeventdata2d
+*.physicsrenderpointerinputeventdata2d.meta
+
+# Unity generated physics render mouse input event data data
+*.physicsrendermouseinputeventdata
+*.physicsrendermouseinputeventdata.meta
+
+# Unity generated physics render mouse input event data 2d data
+*.physicsrendermouseinputeventdata2d
+*.physicsrenderpointerinputeventdata2d.meta
+
+# Unity generated physics render touch input event data data
+*.physicsrendertouchinputeventdata
+*.physicsrendertouchinputeventdata.meta
+
+# Unity generated physics render touch input event data 2d data
+*.physicsrendertouchinputeventdata2d
+*.physicsrenderpointerinputeventdata2d.meta
+
+# Unity generated physics render base pointer event data data
+*.physicsrenderbasepointereventdata
+*.physicsrenderbasepointereventdata.meta
+
+# Unity generated physics render base pointer event data 2d data
+*.physicsrenderbasepointereventdata2d
+*.physicsrenderbasepointereventdata2d.meta
+
+# Unity generated physics render pointer down event data data
+*.physicsrenderpointerdowneventdata
+*.physicsrenderpointerdowneventdata.meta
+
+# Unity generated physics render pointer down event data 2d data
+*.physicsrenderpointerdowneventdata2d
+*.physicsrenderpointerdowneventdata2d.meta
+
+# Unity generated physics render pointer up event data data
+*.physicsrenderpointerupeventdata
+*.physicsrenderpointerupeventdata.meta
+
+# Unity generated physics render pointer up event data 2d data
+*.physicsrenderpointerupeventdata2d
+*.physicsrenderpointerupeventdata2d.meta
+
+# Unity generated physics render pointer click event data data
+*.physicsrenderpointerclickeventdata
+*.physicsrenderpointerclickeventdata.meta
+
+# Unity generated physics render pointer click event data 2d data
+*.physicsrenderpointerclickeventdata2d
+*.physicsrenderpointerclickeventdata2d.meta
+
+# Unity generated physics render pointer enter event data data
+*.physicsrenderpointerentereventdata
+*.physicsrenderpointerentereventdata.meta
+
+# Unity generated physics render pointer enter event data 2d data
+*.physicsrenderpointerentereventdata2d
+*.physicsrenderpointerentereventdata2d.meta
+
+# Unity generated physics render pointer exit event data data
+*.physicsrenderpointerexiteventdata
+*.physicsrenderpointerexiteventdata.meta
+
+# Unity generated physics render pointer exit event data 2d data
+*.physicsrenderpointerexiteventdata2d
+*.physicsrenderpointerexiteventdata2d.meta
+
+# Unity generated physics render pointer hover event data data
+*.physicsrenderpointerhovereventdata
+*.physicsrenderpointerhovereventdata.meta
+
+# Unity generated physics render pointer hover event data 2d data
+*.physicsrenderpointerhovereventdata2d
+*.physicsrenderpointerhovereventdata2d.meta
+
+# Unity generated physics render pointer move event data data
+*.physicsrenderpointermoveeventdata
+*.physicsrenderpointermoveeventdata.meta
+
+# Unity generated physics render pointer move event data 2d data
+*.physicsrenderpointermoveeventdata2d
+*.physicsrenderpointermoveeventdata2d.meta
+
+# Unity generated physics render pointer drag event data data
+*.physicsrenderpointerdrageventdata
+*.physicsrenderpointerdrageventdata.meta
+
+# Unity generated physics render pointer drag event data 2d data
+*.physicsrenderpointerdrageventdata2d
+*.physicsrenderpointerdrageventdata2d.meta
+
+# Unity generated physics render pointer begin drag event data data
+*.physicsrenderpointerbegindrageventdata
+*.physicsrenderpointerbegindrageventdata.meta
+
+# Unity generated physics render pointer begin drag event data 2d data
+*.physicsrenderpointerbegindrageventdata2d
+*.physicsrenderpointerbegindrageventdata2d.meta
+
+# Unity generated physics render pointer end drag event data data
+*.physicsrenderpointerenddrageventdata
+*.physicsrenderpointerenddrageventdata.meta
+
+# Unity generated physics render pointer end drag event data 2d data
+*.physicsrenderpointerenddrageventdata2d
+*.physicsrenderpointerenddrageventdata2d.meta
+
+# Unity generated physics render pointer drop event data data
+*.physicsrenderpointerdropeventdata
+*.physicsrenderpointerdropeventdata.meta
+
+# Unity generated physics render pointer drop event data 2d data
+*.physicsrenderpointerdropeventdata2d
+*.physicsrenderpointerdropeventdata2d.meta
+
+# Unity generated physics render pointer scroll event data data
+*.physicsrenderpointerscrolleventdata
+*.physicsrenderpointerscrolleventdata.meta
+
+# Unity generated physics render pointer scroll event data 2d data
+*.physicsrenderpointerscrolleventdata2d
+*.physicsrenderpointerscrolleventdata2d.meta
+
+# Unity generated physics render pointer update event data data
+*.physicsrenderpointerupdateeventdata
+*.physicsrenderpointerupdateeventdata.meta
+
+# Unity generated physics render pointer update event data 2d data
+*.physicsrenderpointerupdateeventdata2d
+*.physicsrenderpointerupdateeventdata2d.meta
