@@ -18,6 +18,12 @@ export class Match {
   @Column({ nullable: true })
   duration: number;
 
+  @Column({ type: 'varchar', length: 20, default: 'pending' })
+  status: 'pending' | 'active' | 'completed';
+
+  @Column({ name: 'match_started_at', type: 'timestamp', nullable: true })
+  matchStartedAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
