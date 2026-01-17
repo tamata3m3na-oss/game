@@ -24,6 +24,24 @@ export class Match {
   @Column({ name: 'match_started_at', type: 'timestamp', nullable: true })
   matchStartedAt: Date;
 
+  @Column({ name: 'match_ended_at', type: 'timestamp', nullable: true })
+  matchEndedAt: Date;
+
+  @Column({ name: 'player1_final_health', nullable: true })
+  player1FinalHealth: number;
+
+  @Column({ name: 'player2_final_health', nullable: true })
+  player2FinalHealth: number;
+
+  @Column({ name: 'player1_damage_dealt', nullable: true })
+  player1DamageDealt: number;
+
+  @Column({ name: 'player2_damage_dealt', nullable: true })
+  player2DamageDealt: number;
+
+  @Column({ name: 'end_reason', nullable: true })
+  endReason: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

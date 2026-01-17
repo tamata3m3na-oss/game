@@ -133,9 +133,10 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
         await this.gameEngine.stopMatch(matchId);
       }
 
-      await this.matchRepository.update(matchId, { 
-        status: 'completed',
-        winnerId: opponentId,
+      await this.matchRepository.update(matchId, {
+       status: 'completed',
+       winnerId: opponentId,
+       endReason: 'disconnection',
       });
 
       const winner = await this.userRepository.findOne({ where: { id: opponentId } });
@@ -157,7 +158,7 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
       this.sessions.emitToPlayer(opponentId, 'game:end', {
         matchId,
         winner: opponentId,
-        reason: 'opponent_disconnected',
+        endReason: 'disconnection',
       });
 
       await this.cleanupMatchState(matchId);

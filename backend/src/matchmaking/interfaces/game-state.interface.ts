@@ -4,8 +4,14 @@ export interface PlayerState {
   y: number;
   rotation: number;
   health: number;
+  shieldHealth: number;
+  shieldActive: boolean;
+  shieldEndTick: number;
+  fireReady: boolean;
+  fireReadyTick: number;
   abilityReady: boolean;
   lastAbilityTime: number;
+  damageDealt: number;
 }
 
 export interface GameState {
