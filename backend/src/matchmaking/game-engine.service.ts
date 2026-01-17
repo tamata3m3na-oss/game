@@ -21,6 +21,16 @@ export class GameEngineService {
   private readonly mapHeight = 100;
   private readonly abilityCooldown = 5000; // 5 seconds
   private readonly maxHealth = 100;
+  private readonly maxShield = 50;
+  private readonly weaponDamage = 25;
+  private readonly weaponCooldownTicks = 20; // 0.5s at 20Hz
+  private readonly shieldDurationTicks = 40; // 2s at 20Hz
+  private readonly abilityCooldownTicks = 100; // 5s at 20Hz
+  private readonly bulletRange = 50; // units
+  private readonly bulletSpeed = 8; // units per second
+  private readonly bulletSpeedPerTick = this.bulletSpeed / this.tickRate; // 0.4 units per tick
+  private readonly hitboxRadius = 2; // units
+  private readonly maxMatchDurationMs = 5 * 60 * 1000; // 5 minutes
 
   private readonly activeMatches = new Map<number, NodeJS.Timeout>();
   private readonly inputQueues = new Map<number, Map<number, PlayerInput[]>>();
@@ -46,8 +56,14 @@ export class GameEngineService {
         y: 50,
         rotation: 0,
         health: this.maxHealth,
+        shieldHealth: 0,
+        shieldActive: false,
+        shieldEndTick: 0,
+        fireReady: true,
+        fireReadyTick: 0,
         abilityReady: true,
         lastAbilityTime: 0,
+        damageDealt: 0,
       },
       player2: {
         id: player2Id,
@@ -55,8 +71,14 @@ export class GameEngineService {
         y: 50,
         rotation: 180,
         health: this.maxHealth,
+        shieldHealth: 0,
+        shieldActive: false,
+        shieldEndTick: 0,
+        fireReady: true,
+        fireReadyTick: 0,
         abilityReady: true,
         lastAbilityTime: 0,
+        damageDealt: 0,
       },
       tick: 0,
       timestamp: Date.now(),
@@ -127,6 +149,12 @@ export class GameEngineService {
       return;
     }
 
+    const match = await this.matchRepository.findOne({ where: { id: matchId } });
+    if (!match) {
+      await this.stopMatch(matchId);
+      return;
+    }
+
     const matchQueues = this.inputQueues.get(matchId);
     if (!matchQueues) {
       return;
@@ -140,6 +168,10 @@ export class GameEngineService {
 
     this.updateAbilityCooldowns(state.player1);
     this.updateAbilityCooldowns(state.player2);
+    this.updateFireCooldowns(state.player1, state.tick);
+    this.updateFireCooldowns(state.player2, state.tick);
+    this.updateShieldStatus(state.player1, state.tick);
+    this.updateShieldStatus(state.player2, state.tick);
 
     if (player1Input?.fire) {
       this.processFire(state, state.player1, state.player2);
@@ -149,25 +181,33 @@ export class GameEngineService {
       this.processFire(state, state.player2, state.player1);
     }
 
-    if (player1Input?.ability && state.player1.abilityReady) {
-      this.processAbility(state, state.player1, state.player2);
+    if (player1Input?.ability) {
+      this.processAbility(state, state.player1);
     }
 
-    if (player2Input?.ability && state.player2.abilityReady) {
-      this.processAbility(state, state.player2, state.player1);
+    if (player2Input?.ability) {
+      this.processAbility(state, state.player2);
     }
 
     state.tick++;
     state.timestamp = Date.now();
 
+    // Check for timeout (5 minutes)
+    const matchDuration = state.timestamp - (match.matchStartedAt?.getTime() || Date.now());
+    if (matchDuration >= this.maxMatchDurationMs && !state.winner) {
+      state.status = 'completed';
+      await this.endMatch(matchId, state, 'timeout');
+      return;
+    }
+
     if (state.player1.health <= 0) {
       state.winner = state.player2.id;
       state.status = 'completed';
-      await this.endMatch(matchId, state);
+      await this.endMatch(matchId, state, 'defeat');
     } else if (state.player2.health <= 0) {
       state.winner = state.player1.id;
       state.status = 'completed';
-      await this.endMatch(matchId, state);
+      await this.endMatch(matchId, state, 'defeat');
     }
 
     await this.saveGameState(matchId, state);
@@ -221,29 +261,67 @@ export class GameEngineService {
     }
   }
 
-  private processFire(state: GameState, shooter: PlayerState, target: PlayerState): void {
-    const distance = Math.sqrt(
-      Math.pow(target.x - shooter.x, 2) + Math.pow(target.y - shooter.y, 2)
-    );
-
-    if (distance <= 10) {
-      target.health = Math.max(0, target.health - 10);
+  private updateFireCooldowns(player: PlayerState, currentTick: number): void {
+    if (!player.fireReady && currentTick >= player.fireReadyTick) {
+      player.fireReady = true;
     }
   }
 
-  private processAbility(state: GameState, caster: PlayerState, target: PlayerState): void {
-    if (!caster.abilityReady) {
+  private updateShieldStatus(player: PlayerState, currentTick: number): void {
+    if (player.shieldActive && currentTick >= player.shieldEndTick) {
+      player.shieldActive = false;
+      player.shieldHealth = 0;
+    }
+  }
+
+  private processFire(state: GameState, shooter: PlayerState, target: PlayerState): void {
+    if (!shooter.fireReady) {
       return;
     }
 
     const distance = Math.sqrt(
-      Math.pow(target.x - caster.x, 2) + Math.pow(target.y - caster.y, 2)
+      Math.pow(target.x - shooter.x, 2) + Math.pow(target.y - shooter.y, 2)
     );
 
-    if (distance <= 15) {
-      target.health = Math.max(0, target.health - 25);
+    if (distance <= this.bulletRange) {
+      // Simple hit detection - check if target is within hitbox radius
+      const hitDetected = distance <= this.hitboxRadius;
+
+      if (hitDetected) {
+        // Apply damage to shield first, then health
+        if (target.shieldActive && target.shieldHealth > 0) {
+         target.shieldHealth -= this.weaponDamage;
+         if (target.shieldHealth < 0) {
+           const overflowDamage = Math.abs(target.shieldHealth);
+           target.health -= overflowDamage; // Apply overflow damage to health
+           target.shieldActive = false;
+           target.shieldHealth = 0;
+         }
+        } else {
+         target.health -= this.weaponDamage;
+        }
+
+        // Update damage dealt
+        shooter.damageDealt += this.weaponDamage;
+
+        // Reset fire cooldown
+        shooter.fireReady = false;
+        shooter.fireReadyTick = state.tick + this.weaponCooldownTicks;
+      }
+    }
+  }
+
+  private processAbility(state: GameState, caster: PlayerState): void {
+    if (!caster.abilityReady) {
+      return;
     }
 
+    // Activate shield
+    caster.shieldActive = true;
+    caster.shieldHealth = this.maxShield;
+    caster.shieldEndTick = state.tick + this.shieldDurationTicks;
+
+    // Reset ability cooldown
     caster.abilityReady = false;
     caster.lastAbilityTime = Date.now();
   }
@@ -265,7 +343,7 @@ export class GameEngineService {
     return true;
   }
 
-  private async endMatch(matchId: number, state: GameState): Promise<void> {
+  private async endMatch(matchId: number, state: GameState, endReason: string): Promise<void> {
     const match = await this.matchRepository.findOne({ where: { id: matchId } });
     if (!match) {
       return;
@@ -273,10 +351,21 @@ export class GameEngineService {
 
     const duration = state.timestamp - (match.matchStartedAt?.getTime() || Date.now());
 
+    // Determine final health values
+    const player1FinalHealth = Math.max(0, state.player1.health);
+    const player2FinalHealth = Math.max(0, state.player2.health);
+
+    // Save detailed match results
     await this.matchRepository.update(matchId, {
       status: 'completed',
       winnerId: state.winner,
       duration: Math.floor(duration / 1000),
+      matchEndedAt: new Date(),
+      player1FinalHealth,
+      player2FinalHealth,
+      player1DamageDealt: state.player1.damageDealt,
+      player2DamageDealt: state.player2.damageDealt,
+      endReason,
     });
 
     if (state.winner) {
@@ -302,12 +391,14 @@ export class GameEngineService {
       matchId,
       winner: state.winner,
       finalState: state,
+      endReason,
     });
 
     this.sessions.emitToPlayer(state.player2.id, 'game:end', {
       matchId,
       winner: state.winner,
       finalState: state,
+      endReason,
     });
 
     await this.stopMatch(matchId);
