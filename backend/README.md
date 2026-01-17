@@ -1,6 +1,6 @@
 # Chess Game Backend
 
-NestJS backend with authentication and database integration.
+NestJS backend with authentication and real-time PvP game system.
 
 ## Features
 
@@ -8,9 +8,12 @@ NestJS backend with authentication and database integration.
 - Refresh token support
 - Player profile management
 - PostgreSQL database with TypeORM
-- Redis for caching
+- Redis for caching and matchmaking
 - Input validation with class-validator
 - CORS enabled for frontend
+- **WebSocket-based PvP matchmaking system**
+- **Server-authoritative game loop (20Hz tick rate)**
+- Real-time match gameplay
 
 ## Setup
 
@@ -95,6 +98,23 @@ The server will run on http://localhost:3000
 - winnerId (Foreign Key -> users.id)
 - duration
 - createdAt
+
+## WebSocket Events
+
+### Matchmaking (Namespace: `/pvp`)
+- `queue:join` - Join matchmaking queue
+- `queue:leave` - Leave matchmaking queue
+- `match:ready` - Mark player ready for match
+- **`game:input`** - Send player input (movement, fire, ability)
+
+### Server Events
+- `queue:status` - Queue position updates
+- `match:found` - Match found notification
+- `match:start` - Match starting (game loop begins)
+- **`game:snapshot`** - Game state broadcast (every 50ms)
+- **`game:end`** - Match ended with results
+
+See [MATCHMAKING.md](./MATCHMAKING.md) and [GAME_LOOP.md](./GAME_LOOP.md) for detailed documentation.
 
 ## Scripts
 

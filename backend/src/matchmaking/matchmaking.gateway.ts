@@ -11,11 +11,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Logger, UseGuards } from '@nestjs/common';
 import { MatchmakingService } from './matchmaking.service';
+import { GameEngineService } from './game-engine.service';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../database/entities/user.entity';
 import { PvpSessionService } from './pvp-session.service';
+import { GameInputDto } from './dto/game-input.dto';
 import * as jwt from 'jsonwebtoken';
 import { JwtPayload } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
@@ -39,6 +41,7 @@ export class MatchmakingGateway
 
   constructor(
     private readonly matchmakingService: MatchmakingService,
+    private readonly gameEngine: GameEngineService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly sessions: PvpSessionService,
@@ -147,6 +150,35 @@ export class MatchmakingGateway
     } catch (error) {
       this.logger.error(
         `Error handling match ready for user ${userId}: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  @UseGuards(WsJwtGuard)
+  @SubscribeMessage('game:input')
+  async handleGameInput(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: GameInputDto,
+  ) {
+    const userId = client.data.userId;
+
+    try {
+      const matchId = await this.matchmakingService.getPlayerActiveMatch(userId);
+      if (!matchId) {
+        return;
+      }
+
+      await this.gameEngine.handlePlayerInput(matchId, userId, {
+        playerId: userId,
+        moveX: data.moveX,
+        moveY: data.moveY,
+        fire: data.fire,
+        ability: data.ability,
+        timestamp: data.timestamp,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error handling game input for user ${userId}: ${(error as Error).message}`,
       );
     }
   }

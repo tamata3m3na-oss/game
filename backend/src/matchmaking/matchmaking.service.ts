@@ -7,6 +7,7 @@ import { User } from '../database/entities/user.entity';
 import { Match } from '../database/entities/match.entity';
 import { WaitingPlayer } from './interfaces/waiting-player.interface';
 import { PvpSessionService } from './pvp-session.service';
+import { GameEngineService } from './game-engine.service';
 
 interface QueueStatusPayload {
   position: number;
@@ -34,12 +35,18 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
   private interval: NodeJS.Timeout | null = null;
   private processing = false;
 
+  private gameEngine: GameEngineService;
+
   constructor(
     @Inject(REDIS_CLIENT) private readonly redis: RedisClientType,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Match) private readonly matchRepository: Repository<Match>,
     private readonly sessions: PvpSessionService,
   ) {}
+
+  setGameEngine(gameEngine: GameEngineService) {
+    this.gameEngine = gameEngine;
+  }
 
   onModuleInit() {
     this.interval = setInterval(() => {
@@ -117,13 +124,45 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     }
 
     const started = matchState.started === '1';
-    if (started) {
-      return;
-    }
-
     const player1Id = parseInt(matchState.player1Id, 10);
     const player2Id = parseInt(matchState.player2Id, 10);
     const opponentId = playerId === player1Id ? player2Id : player1Id;
+
+    if (started) {
+      if (this.gameEngine && this.gameEngine.isMatchActive(matchId)) {
+        await this.gameEngine.stopMatch(matchId);
+      }
+
+      await this.matchRepository.update(matchId, { 
+        status: 'completed',
+        winnerId: opponentId,
+      });
+
+      const winner = await this.userRepository.findOne({ where: { id: opponentId } });
+      if (winner) {
+        await this.userRepository.update(opponentId, {
+          wins: winner.wins + 1,
+          rating: winner.rating + 25,
+        });
+
+        const loser = await this.userRepository.findOne({ where: { id: playerId } });
+        if (loser) {
+          await this.userRepository.update(playerId, {
+            losses: loser.losses + 1,
+            rating: Math.max(0, loser.rating - 25),
+          });
+        }
+      }
+
+      this.sessions.emitToPlayer(opponentId, 'game:end', {
+        matchId,
+        winner: opponentId,
+        reason: 'opponent_disconnected',
+      });
+
+      await this.cleanupMatchState(matchId);
+      return;
+    }
 
     await this.matchRepository.update(matchId, { status: 'completed' });
 
@@ -233,6 +272,10 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     await this.redis.expire(matchKey, 60 * 60);
     await this.redis.expire(this.playerMatchKey(player1Id), 60 * 60);
     await this.redis.expire(this.playerMatchKey(player2Id), 60 * 60);
+
+    if (this.gameEngine) {
+      await this.gameEngine.startMatch(matchId, player1Id, player2Id);
+    }
   }
 
   private async tick(): Promise<void> {
@@ -546,5 +589,19 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     } catch {
       return null;
     }
+  }
+
+  async getPlayerActiveMatch(playerId: number): Promise<number | null> {
+    const matchIdStr = await this.redis.get(this.playerMatchKey(playerId));
+    if (!matchIdStr) {
+      return null;
+    }
+
+    const matchId = parseInt(matchIdStr, 10);
+    if (this.gameEngine && this.gameEngine.isMatchActive(matchId)) {
+      return matchId;
+    }
+
+    return null;
   }
 }
