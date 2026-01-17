@@ -24,6 +24,15 @@ export class User {
   @Column({ default: 0 })
   losses: number;
 
+  @Column({ name: 'rating_change', default: 0 })
+  ratingChange: number;
+
+  @Column({ name: 'last_match_id', nullable: true })
+  lastMatchId: number;
+
+  @Column({ name: 'last_match_at', type: 'timestamp', nullable: true })
+  lastMatchAt: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

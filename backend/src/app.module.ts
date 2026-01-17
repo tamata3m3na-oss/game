@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { PlayerModule } from './player/player.module';
 import { RedisModule } from './redis/redis.module';
 import { MatchmakingModule } from './matchmaking/matchmaking.module';
+import { RankingModule } from './ranking/ranking.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MatchmakingModule } from './matchmaking/matchmaking.module';
     AuthModule,
     PlayerModule,
     MatchmakingModule,
+    RankingModule,
   ],
 })
 export class AppModule {}
