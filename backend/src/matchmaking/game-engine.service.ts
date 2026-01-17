@@ -8,6 +8,7 @@ import { User } from '../database/entities/user.entity';
 import { GameState, PlayerState } from './interfaces/game-state.interface';
 import { PlayerInput } from './interfaces/player-input.interface';
 import { PvpSessionService } from './pvp-session.service';
+import { RankingService } from '../ranking/ranking.service';
 
 @Injectable()
 export class GameEngineService {
@@ -40,6 +41,7 @@ export class GameEngineService {
     @InjectRepository(Match) private readonly matchRepository: Repository<Match>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly sessions: PvpSessionService,
+    private readonly rankingService: RankingService,
   ) {}
 
   async startMatch(matchId: number, player1Id: number, player2Id: number): Promise<void> {
@@ -112,6 +114,20 @@ export class GameEngineService {
       this.inputQueues.delete(matchId);
       await this.redis.del(this.gameStateKey(matchId));
       this.logger.log(`Stopped game loop for match ${matchId}`);
+    }
+  }
+
+  async stopMatchWithResult(matchId: number, endReason: string = 'normal'): Promise<void> {
+    // Get the current game state before stopping
+    const state = await this.getGameState(matchId);
+    
+    // Stop the game loop first
+    await this.stopMatch(matchId);
+    
+    // If we have a game state and it's still active, end the match properly
+    if (state && state.status === 'active') {
+      state.status = 'completed';
+      await this.endMatch(matchId, state, endReason);
     }
   }
 
@@ -368,23 +384,12 @@ export class GameEngineService {
       endReason,
     });
 
-    if (state.winner) {
-      const winner = await this.userRepository.findOne({ where: { id: state.winner } });
-      const loser = await this.userRepository.findOne({
-        where: { id: state.winner === state.player1.id ? state.player2.id : state.player1.id }
-      });
-
-      if (winner && loser) {
-        await this.userRepository.update(winner.id, {
-          wins: winner.wins + 1,
-          rating: winner.rating + 25,
-        });
-
-        await this.userRepository.update(loser.id, {
-          losses: loser.losses + 1,
-          rating: Math.max(0, loser.rating - 25),
-        });
-      }
+    // Process match result with ELO ranking system
+    try {
+      await this.rankingService.processMatchResult(matchId);
+      this.logger.log(`Successfully processed ELO ranking for match ${matchId}`);
+    } catch (error) {
+      this.logger.error(`Failed to process ELO ranking for match ${matchId}: ${error}`);
     }
 
     this.sessions.emitToPlayer(state.player1.id, 'game:end', {

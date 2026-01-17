@@ -8,6 +8,7 @@ import { Match } from '../database/entities/match.entity';
 import { WaitingPlayer } from './interfaces/waiting-player.interface';
 import { PvpSessionService } from './pvp-session.service';
 import { GameEngineService } from './game-engine.service';
+import { RankingService } from '../ranking/ranking.service';
 
 interface QueueStatusPayload {
   position: number;
@@ -42,6 +43,7 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Match) private readonly matchRepository: Repository<Match>,
     private readonly sessions: PvpSessionService,
+    private readonly rankingService: RankingService,
   ) {}
 
   setGameEngine(gameEngine: GameEngineService) {
@@ -130,28 +132,21 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
 
     if (started) {
       if (this.gameEngine && this.gameEngine.isMatchActive(matchId)) {
-        await this.gameEngine.stopMatch(matchId);
-      }
-
-      await this.matchRepository.update(matchId, {
-       status: 'completed',
-       winnerId: opponentId,
-       endReason: 'disconnection',
-      });
-
-      const winner = await this.userRepository.findOne({ where: { id: opponentId } });
-      if (winner) {
-        await this.userRepository.update(opponentId, {
-          wins: winner.wins + 1,
-          rating: winner.rating + 25,
+        await this.gameEngine.stopMatchWithResult(matchId, 'disconnection');
+      } else {
+        // If game engine is not active, manually process the disconnection
+        await this.matchRepository.update(matchId, {
+          status: 'completed',
+          winnerId: opponentId,
+          endReason: 'disconnection',
         });
 
-        const loser = await this.userRepository.findOne({ where: { id: playerId } });
-        if (loser) {
-          await this.userRepository.update(playerId, {
-            losses: loser.losses + 1,
-            rating: Math.max(0, loser.rating - 25),
-          });
+        // Process match result with ELO ranking system
+        try {
+          await this.rankingService.processMatchResult(matchId);
+          this.logger.log(`Successfully processed ELO ranking for disconnected match ${matchId}`);
+        } catch (error) {
+          this.logger.error(`Failed to process ELO ranking for disconnected match ${matchId}: ${error}`);
         }
       }
 

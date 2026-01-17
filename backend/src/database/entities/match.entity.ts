@@ -42,6 +42,18 @@ export class Match {
   @Column({ name: 'end_reason', nullable: true })
   endReason: string;
 
+  @Column({ name: 'player1_rating_before', nullable: true })
+  player1RatingBefore: number;
+
+  @Column({ name: 'player1_rating_after', nullable: true })
+  player1RatingAfter: number;
+
+  @Column({ name: 'player2_rating_before', nullable: true })
+  player2RatingBefore: number;
+
+  @Column({ name: 'player2_rating_after', nullable: true })
+  player2RatingAfter: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
