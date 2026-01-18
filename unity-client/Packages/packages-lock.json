@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "com.endel.nativewebsocket": {
-      "version": "https://github.com/endel/NativeWebSocket.git#upm",
+    "com.demigiant.dotween": {
+      "version": "1.2.705",
       "depth": 0,
-      "source": "git",
+      "source": "registry",
       "dependencies": {},
-      "hash": "c3686a3f3c2e0c8c3c6a3e3c3c3c3c3c"
+      "url": "https://packages.unity.com"
     },
     "com.unity.addressables": {
       "version": "1.19.19",
