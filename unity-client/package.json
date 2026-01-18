@@ -2,7 +2,7 @@
   "name": "pvp-unity-client",
   "version": "1.0.0",
   "displayName": "PvP Unity Client",
-  "description": "Unity client for the PvP game with Socket.IO and JWT authentication",
+  "description": "Unity client for the PvP game with NativeWebSocket and JWT authentication",
   "unity": "2022.3",
   "dependencies": {
     "com.unity.inputsystem": "1.7.0",
@@ -10,7 +10,6 @@
     "com.unity.ugui": "1.0.0",
     "com.unity.addressables": "1.19.19",
     "com.unity.render-pipelines.universal": "14.0.7",
-    "com.github.socketio.socket-io-client": "https://github.com/socketio/socket.io-client-unity.git#2.0.0",
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
   "keywords": [
@@ -18,7 +17,7 @@
     "game",
     "pvp",
     "multiplayer",
-    "socket.io",
+    "websocket",
     "jwt"
   ],
   "author": "Game Development Team",

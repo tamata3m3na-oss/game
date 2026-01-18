@@ -180,6 +180,8 @@ TestCache/
 
 # Unity generated package manager files
 Packages/
+!Packages/manifest.json
+!Packages/packages-lock.json
 
 # Unity generated project version
 ProjectVersion.txt

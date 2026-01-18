@@ -1,15 +1,22 @@
 # PvP Unity Client
 
-A complete Unity client for the PvP game with Socket.IO real-time communication and JWT authentication.
+A complete Unity client for the PvP game with NativeWebSocket real-time communication and JWT authentication.
+
+## ⚠️ IMPORTANT: Setup Required
+
+**Before opening this project, see:** [UNITY_SETUP_INSTRUCTIONS.md](UNITY_SETUP_INSTRUCTIONS.md)
+
+**Migration complete! See:** [MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md)
 
 ## Features
 
 - **Authentication**: JWT-based login/register system
-- **Real-time Multiplayer**: Socket.IO WebSocket communication
+- **Real-time Multiplayer**: NativeWebSocket raw WebSocket communication
 - **Game Mechanics**: Ship movement, weapons, abilities, and shields
 - **Scene Management**: Login, Lobby, Game, and Result scenes
 - **Performance Optimization**: Object pooling, Addressables, and 60 FPS target
 - **Cross-platform**: Designed for Android with keyboard fallback for development
+- **Premium UI**: DOTween animations, glow effects, and smooth transitions
 
 ## Architecture
 
@@ -49,35 +56,48 @@ LoginScene → LobbyScene → GameScene → ResultScene → LobbyScene
 ### Requirements
 
 - Unity 2022.3 LTS or later
-- Android build support
+- Android build support (optional, for mobile builds)
 - Universal Render Pipeline (URP)
 
 ### Installation
 
 1. Clone this repository
-2. Open in Unity 2022.3+
-3. Install required packages via Package Manager:
-   - Input System
-   - TextMeshPro
-   - Addressables
-   - URP
-   - Socket.IO Client for Unity
-   - Newtonsoft JSON
+2. **READ [UNITY_SETUP_INSTRUCTIONS.md](UNITY_SETUP_INSTRUCTIONS.md) FIRST**
+3. Open in Unity 2022.3+
+4. Install required packages:
+   - ✅ Automatically installed via `Packages/manifest.json`:
+     - Input System
+     - TextMeshPro
+     - Addressables
+     - URP
+     - NativeWebSocket (from GitHub)
+     - Newtonsoft JSON
+   - ⚠️ **MANUALLY INSTALL** (REQUIRED):
+     - **DOTween** from Unity Asset Store (Free)
+       - After install: Tools > Demigiant > DOTween Utility Panel > Setup
+     - **TextMeshPro Essential Resources**
+       - Window > TextMeshPro > Import TMP Essential Resources
 
 ### Configuration
 
-1. Set up scenes in Build Settings:
+1. Set up scenes in Build Settings (when creating scenes):
    - LoginScene
    - LobbyScene
    - GameScene  
    - ResultScene
 
-2. Configure server URL in NetworkManager:
+2. Configure server URL in NetworkManager (Inspector or code):
    ```csharp
-   public string ServerUrl = "http://your-server-url:3000";
+   public string ServerUrl = "ws://localhost:3000"; // WebSocket URL
+   public string PvpNamespace = "/pvp";
    ```
 
-3. Set up URP renderer and quality settings for mobile
+3. Configure auth URL in AuthManager (Inspector or code):
+   ```csharp
+   public string ServerUrl = "http://localhost:3000"; // REST API URL
+   ```
+
+4. Set up URP renderer and quality settings for mobile (if targeting mobile)
 
 ## Development
 
