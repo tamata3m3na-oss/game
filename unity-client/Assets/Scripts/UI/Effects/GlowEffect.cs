@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using DG.Tweening;
+using System.Collections;
 
 namespace UI.Effects
 {
@@ -29,7 +29,7 @@ namespace UI.Effects
 
         private Graphic targetGraphic;
         private Shadow shadowComponent;
-        private Tween pulseTween;
+        private Coroutine pulseCoroutine;
         private Color originalColor;
         private bool isHovered = false;
 
@@ -113,24 +113,33 @@ namespace UI.Effects
 
             shadowComponent.enabled = true;
 
-            if (pulseTween != null && pulseTween.IsActive())
+            if (pulseCoroutine != null)
             {
-                pulseTween.Kill();
+                StopCoroutine(pulseCoroutine);
             }
 
-            pulseTween = DOTween.To(() => shadowComponent.effectColor.a,
-                x => shadowComponent.effectColor = new Color(glowColor.r, glowColor.g, glowColor.b, x),
-                maxIntensity * glowColor.a, pulseSpeed)
-                .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo)
-                .OnStepComplete(() =>
+            pulseCoroutine = StartCoroutine(PulseCoroutine());
+        }
+
+        private IEnumerator PulseCoroutine()
+        {
+            float time = 0f;
+            
+            while (glowMode == GlowMode.Pulse)
+            {
+                time += Time.deltaTime * pulseSpeed;
+                
+                // Calculate pulsing alpha using sine wave
+                float alpha = (Mathf.Sin(time) + 1f) / 2f; // Convert to 0-1 range
+                alpha = Mathf.Lerp(minIntensity, maxIntensity, alpha);
+                
+                if (shadowComponent != null)
                 {
-                    // Toggle between min and max intensity
-                    if (shadowComponent.effectColor.a >= maxIntensity * glowColor.a - 0.01f)
-                    {
-                        // Going down
-                    }
-                });
+                    shadowComponent.effectColor = new Color(glowColor.r, glowColor.g, glowColor.b, alpha * glowColor.a);
+                }
+                
+                yield return null;
+            }
         }
 
         public void StartBreathe()
@@ -138,22 +147,44 @@ namespace UI.Effects
             if (targetGraphic == null) return;
 
             // Breathe effect on the element itself
-            transform.DOScale(1.05f, pulseSpeed)
-                .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo);
+            if (pulseCoroutine != null)
+            {
+                StopCoroutine(pulseCoroutine);
+            }
+
+            pulseCoroutine = StartCoroutine(BreatheCoroutine());
 
             // Also pulse the glow
             StartPulse();
         }
 
+        private IEnumerator BreatheCoroutine()
+        {
+            float time = 0f;
+            Vector3 originalScale = transform.localScale;
+            
+            while (glowMode == GlowMode.Breathe)
+            {
+                time += Time.deltaTime * pulseSpeed;
+                
+                // Calculate breathing scale using sine wave
+                float scale = 1f + 0.05f * Mathf.Sin(time * 2f);
+                transform.localScale = originalScale * scale;
+                
+                yield return null;
+            }
+            
+            transform.localScale = originalScale;
+        }
+
         public void StopPulse()
         {
-            if (pulseTween != null && pulseTween.IsActive())
+            if (pulseCoroutine != null)
             {
-                pulseTween.Kill();
+                StopCoroutine(pulseCoroutine);
+                pulseCoroutine = null;
             }
 
-            transform.DOKill();
             transform.localScale = Vector3.one;
         }
 
@@ -186,17 +217,58 @@ namespace UI.Effects
         {
             if (shadowComponent == null) return;
 
+            StartCoroutine(FlashGlowCoroutine(duration));
+        }
+
+        private IEnumerator FlashGlowCoroutine(float duration)
+        {
             Color original = shadowComponent.effectColor;
             Color flashColor = glowColor * 2f;
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(DOTween.To(() => shadowComponent.effectColor.a,
-                x => shadowComponent.effectColor = new Color(flashColor.r, flashColor.g, flashColor.b, x),
-                1f, duration / 2).SetEase(Ease.OutQuad));
-            sequence.Append(DOTween.To(() => shadowComponent.effectColor.a,
-                x => shadowComponent.effectColor = new Color(original.r, original.g, original.b, x),
-                glowIntensity, duration / 2).SetEase(Ease.InQuad));
+            float halfDuration = duration / 2f;
+            
+            // Flash up
+            float elapsed = 0f;
+            while (elapsed < halfDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / halfDuration);
+                float easedT = EaseOutQuad(t);
+                
+                Color current = Color.Lerp(original, flashColor, easedT);
+                shadowComponent.effectColor = current;
+                
+                yield return null;
+            }
+            
+            // Flash down
+            elapsed = 0f;
+            while (elapsed < halfDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / halfDuration);
+                float easedT = EaseInQuad(t);
+                
+                Color current = Color.Lerp(flashColor, original * glowIntensity, easedT);
+                shadowComponent.effectColor = current;
+                
+                yield return null;
+            }
+            
+            shadowComponent.effectColor = original * glowIntensity;
         }
+
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+
+        private float EaseInQuad(float t)
+        {
+            return t * t;
+        }
+        #endregion
 
         #region Hover Events
         public void OnHoverEnter()

@@ -570,45 +570,104 @@ namespace UI.Scenes
             // Ability visual effect
             if (playerShip != null)
             {
-                // Expanding shield visual
-                GameObject shieldVisual = new GameObject("AbilityVisual");
-                shieldVisual.transform.position = playerShip.transform.position;
-                
-                // Add circle sprite
-                SpriteRenderer sr = shieldVisual.AddComponent<SpriteRenderer>();
-                // Would need a circle sprite reference here
-                
-                // Animate scale up
-                shieldVisual.transform.DOScale(3f, 0.3f).SetEase(Ease.OutQuad);
-                
-                // Fade out and destroy
-                sr.DOFade(0f, 0.3f).SetEase(Ease.OutQuad).OnComplete(() => Destroy(shieldVisual));
+                StartCoroutine(AbilityVisualCoroutine(playerShip.transform.position));
             }
+        }
+
+        private IEnumerator AbilityVisualCoroutine(Vector3 position)
+        {
+            // Expanding shield visual
+            GameObject shieldVisual = new GameObject("AbilityVisual");
+            shieldVisual.transform.position = position;
+            
+            // Add circle sprite
+            SpriteRenderer sr = shieldVisual.AddComponent<SpriteRenderer>();
+            // Would need a circle sprite reference here
+            
+            // Animate scale up and fade out
+            float duration = 0.3f;
+            float elapsed = 0f;
+            Vector3 startScale = Vector3.one;
+            Vector3 targetScale = Vector3.one * 3f;
+            Color startColor = sr.color;
+            Color targetColor = new Color(startColor.r, startColor.g, startColor.b, 0f);
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                
+                shieldVisual.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+                sr.color = Color.Lerp(startColor, targetColor, t);
+                
+                yield return null;
+            }
+            
+            Destroy(shieldVisual);
         }
 
         private void ShowHitMarker()
         {
             if (hitMarker == null) return;
             
+            StartCoroutine(HitMarkerAnimation());
+        }
+
+        private IEnumerator HitMarkerAnimation()
+        {
+            if (hitMarker == null) yield break;
+            
             hitMarker.gameObject.SetActive(true);
             hitMarker.localScale = Vector3.one * 1.2f;
             
-            // Animate hit marker
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(hitMarker.DOScale(0.8f, 0.1f).SetEase(Ease.OutQuad));
-            sequence.Append(hitMarker.DOScale(1f, 0.05f).SetEase(Ease.InQuad));
-            sequence.Append(hitMarker.DOFade(0f, 0.05f).SetEase(Ease.InQuad));
-            
-            StartCoroutine(HideHitMarkerAfterDelay(0.2f));
-        }
-
-        private IEnumerator HideHitMarkerAfterDelay(float delay)
-        {
-            yield return new WaitForSeconds(delay);
-            if (hitMarker != null)
+            // Scale down animation
+            float elapsed = 0f;
+            float duration = 0.1f;
+            while (elapsed < duration)
             {
-                hitMarker.gameObject.SetActive(false);
-                hitMarker.GetComponent<CanvasGroup>()?.DOFade(1f, 0f);
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                hitMarker.localScale = Vector3.Lerp(Vector3.one * 1.2f, Vector3.one * 0.8f, t);
+                yield return null;
+            }
+            
+            // Scale up animation
+            elapsed = 0f;
+            duration = 0.05f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseInQuad(t);
+                hitMarker.localScale = Vector3.Lerp(Vector3.one * 0.8f, Vector3.one, t);
+                yield return null;
+            }
+            
+            // Fade out animation
+            CanvasGroup canvasGroup = hitMarker.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = hitMarker.gameObject.AddComponent<CanvasGroup>();
+            }
+            
+            elapsed = 0f;
+            duration = 0.05f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseInQuad(t);
+                canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);
+                yield return null;
+            }
+            
+            // Hide hit marker
+            hitMarker.gameObject.SetActive(false);
+            if (canvasGroup != null)
+            {
+                canvasGroup.alpha = 1f;
             }
         }
 
@@ -637,6 +696,18 @@ namespace UI.Scenes
                 AnimationController.Instance.Pulse(opponentNameText.transform, 1.1f, 0.3f);
             }
         }
+
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+
+        private float EaseInQuad(float t)
+        {
+            return t * t;
+        }
+        #endregion
 
         private void OnDestroy()
         {
