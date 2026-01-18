@@ -100,10 +100,10 @@ public class GameStateManager : MonoBehaviour
         Debug.Log("Game started: Match " + matchId + " Player " + playerId + " vs " + opponentId);
     }
     
-    private void HandleGameSnapshot(NetworkManager.GameState state)
+    private void HandleGameSnapshot(NetworkManager.NetworkGameState state)
     {
         if (state == null) return;
-        
+
         // Calculate snapshot delay
         float currentTime = Time.time;
         float serverTime = state.timestamp / 1000f; // Convert milliseconds to seconds
@@ -127,7 +127,7 @@ public class GameStateManager : MonoBehaviour
         lastProcessedTick = state.tick;
     }
     
-    private void UpdateShipsFromState(NetworkManager.GameState state)
+    private void UpdateShipsFromState(NetworkManager.NetworkGameState state)
     {
         if (playerShip != null && opponentShip != null)
         {
@@ -145,7 +145,7 @@ public class GameStateManager : MonoBehaviour
         }
     }
     
-    private void CheckForAntiCheatViolations(NetworkManager.GameState state)
+    private void CheckForAntiCheatViolations(NetworkManager.NetworkGameState state)
     {
         // Check for position jumps
         if (playerShip != null)

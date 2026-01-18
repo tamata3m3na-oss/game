@@ -1,7 +1,7 @@
 /// <summary>
 /// Application game state (Boot, Lobby, Match, Result)
-/// 
-/// NOTE: This is different from NetworkManager.GameState which represents
+///
+/// NOTE: This is different from NetworkManager.NetworkGameState which represents
 /// server-sent game snapshot data containing player positions, health, etc.
 /// </summary>
 public enum AppGameState
