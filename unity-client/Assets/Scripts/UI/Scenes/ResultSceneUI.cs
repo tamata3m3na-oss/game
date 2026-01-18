@@ -316,7 +316,7 @@ namespace UI.Scenes
             text.color = originalColor;
         }
 
-        private void DisplayStats(GameState gameState, int localPlayerId)
+        private void DisplayStats(NetworkManager.NetworkGameState gameState, int localPlayerId)
         {
             // Calculate stats
             int yourHealth = gameState.player1.id == localPlayerId ? gameState.player1.health : gameState.player2.health;
