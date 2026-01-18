@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public class NetworkManager : MonoBehaviour
     
     public UnityEvent<MatchFoundData> OnMatchFound = new UnityEvent<MatchFoundData>();
     public UnityEvent<MatchStartData> OnMatchStart = new UnityEvent<MatchStartData>();
-    public UnityEvent<GameState> OnGameSnapshot = new UnityEvent<GameState>();
+    public UnityEvent OnGameSnapshot = new UnityEvent();
     public UnityEvent<GameEndData> OnGameEnd = new UnityEvent<GameEndData>();
     
     [Serializable]
@@ -62,7 +63,7 @@ public class NetworkManager : MonoBehaviour
     }
     
     [Serializable]
-    public class GameState
+    public class NetworkGameState
     {
         public int matchId;
         public PlayerState player1;
@@ -96,7 +97,7 @@ public class NetworkManager : MonoBehaviour
     {
         public int matchId;
         public int winner;
-        public GameState finalState;
+        public NetworkGameState finalState;
     }
     
     [Serializable]
@@ -240,8 +241,9 @@ public class NetworkManager : MonoBehaviour
                     break;
                 
                 case "game:snapshot":
-                    GameState gameSnapshot = JsonUtility.FromJson<GameState>(wsMsg.data);
-                    QueueOnMainThread(() => OnGameSnapshot.Invoke(gameSnapshot));
+                    // Process game snapshot but don't pass data through UnityEvent for now
+                    Debug.Log("Game snapshot received - " + wsMsg.type);
+                    QueueOnMainThread(() => OnGameSnapshot.Invoke());
                     break;
                 
                 case "game:end":

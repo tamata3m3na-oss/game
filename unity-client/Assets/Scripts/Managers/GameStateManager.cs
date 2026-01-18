@@ -20,7 +20,7 @@ public class GameStateManager : MonoBehaviour
     public int currentMatchId = -1;
     
     // Game state
-    private NetworkManager.GameState currentGameState;
+    private NetworkManager.NetworkGameState currentGameState;
     private int lastProcessedTick = -1;
     private float snapshotDelay = 0f;
     private int fpsCounter = 0;
@@ -167,7 +167,7 @@ public class GameStateManager : MonoBehaviour
         OnGameEnded.Invoke(data.winner);
     }
     
-    public NetworkManager.GameState GetCurrentGameState()
+    public NetworkManager.NetworkGameState GetCurrentGameState()
     {
         return currentGameState;
     }
