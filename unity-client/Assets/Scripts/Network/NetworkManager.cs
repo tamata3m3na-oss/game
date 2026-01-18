@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using NativeWebSocket;
-using Newtonsoft.Json;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -13,7 +14,8 @@ public class NetworkManager : MonoBehaviour
     public string ServerUrl = "ws://localhost:3000";
     public string PvpNamespace = "/pvp";
     
-    private WebSocket socket;
+    private ClientWebSocket socket;
+    private CancellationTokenSource cancellationTokenSource;
     private Queue<Action> eventQueue = new Queue<Action>();
     private bool isConnected = false;
     private string authToken = "";
@@ -119,13 +121,6 @@ public class NetworkManager : MonoBehaviour
     
     private void Update()
     {
-        if (socket != null)
-        {
-#if !UNITY_WEBGL || UNITY_EDITOR
-            socket.DispatchMessageQueue();
-#endif
-        }
-        
         while (eventQueue.Count > 0)
         {
             Action action;
@@ -143,48 +138,23 @@ public class NetworkManager : MonoBehaviour
         
         string wsUrl = ServerUrl + PvpNamespace + "?token=" + authToken;
         
-        socket = new WebSocket(wsUrl);
+        socket = new ClientWebSocket();
+        cancellationTokenSource = new CancellationTokenSource();
         
-        socket.OnOpen = () =>
+        Debug.Log("Attempting WebSocket connection to: " + wsUrl);
+        
+        try
         {
+            await socket.ConnectAsync(new Uri(wsUrl), cancellationTokenSource.Token);
+            
             isConnected = true;
             QueueOnMainThread(() =>
             {
                 OnConnected.Invoke("Connected to server");
                 Debug.Log("WebSocket connected to server");
             });
-        };
-        
-        socket.OnClose = (e) =>
-        {
-            isConnected = false;
-            QueueOnMainThread(() =>
-            {
-                OnDisconnected.Invoke("Disconnected: " + e.ToString());
-                Debug.Log("WebSocket disconnected: " + e);
-            });
-        };
-        
-        socket.OnError = (e) =>
-        {
-            QueueOnMainThread(() =>
-            {
-                OnConnectionError.Invoke("Error: " + e);
-                Debug.LogError("WebSocket error: " + e);
-            });
-        };
-        
-        socket.OnMessage = (bytes) =>
-        {
-            string message = System.Text.Encoding.UTF8.GetString(bytes);
-            ProcessMessage(message);
-        };
-        
-        Debug.Log("Attempting WebSocket connection to: " + wsUrl);
-        
-        try
-        {
-            await socket.Connect();
+            
+            StartCoroutine(ReceiveLoop());
         }
         catch (Exception ex)
         {
@@ -193,11 +163,58 @@ public class NetworkManager : MonoBehaviour
         }
     }
     
+    private IEnumerator ReceiveLoop()
+    {
+        var buffer = new byte[4096];
+        
+        while (socket.State == System.Net.WebSockets.WebSocketState.Open && !cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            try
+            {
+                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationTokenSource.Token);
+                
+                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+                {
+                    await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closing", cancellationTokenSource.Token);
+                    isConnected = false;
+                    QueueOnMainThread(() =>
+                    {
+                        OnDisconnected.Invoke("Server closed connection");
+                        Debug.Log("WebSocket disconnected: Server closed connection");
+                    });
+                    break;
+                }
+                
+                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Text)
+                {
+                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    ProcessMessage(message);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("WebSocket receive error: " + ex.Message);
+                isConnected = false;
+                QueueOnMainThread(() =>
+                {
+                    OnConnectionError.Invoke("Connection error: " + ex.Message);
+                });
+                break;
+            }
+            
+            yield return null;
+        }
+    }
+    
     private void ProcessMessage(string message)
     {
         try
         {
-            WebSocketMessage wsMsg = JsonConvert.DeserializeObject<WebSocketMessage>(message);
+            WebSocketMessage wsMsg = JsonUtility.FromJson<WebSocketMessage>(message);
             
             if (wsMsg == null || string.IsNullOrEmpty(wsMsg.type))
             {
@@ -208,27 +225,27 @@ public class NetworkManager : MonoBehaviour
             switch (wsMsg.type)
             {
                 case "queue:status":
-                    var queueStatus = JsonConvert.DeserializeObject<QueueStatus>(wsMsg.data);
+                    QueueStatus queueStatus = JsonUtility.FromJson<QueueStatus>(wsMsg.data);
                     QueueOnMainThread(() => OnQueueStatus.Invoke(queueStatus));
                     break;
                 
                 case "match:found":
-                    var matchFound = JsonConvert.DeserializeObject<MatchFoundData>(wsMsg.data);
+                    MatchFoundData matchFound = JsonUtility.FromJson<MatchFoundData>(wsMsg.data);
                     QueueOnMainThread(() => OnMatchFound.Invoke(matchFound));
                     break;
                 
                 case "match:start":
-                    var matchStart = JsonConvert.DeserializeObject<MatchStartData>(wsMsg.data);
+                    MatchStartData matchStart = JsonUtility.FromJson<MatchStartData>(wsMsg.data);
                     QueueOnMainThread(() => OnMatchStart.Invoke(matchStart));
                     break;
                 
                 case "game:snapshot":
-                    var gameSnapshot = JsonConvert.DeserializeObject<GameState>(wsMsg.data);
+                    GameState gameSnapshot = JsonUtility.FromJson<GameState>(wsMsg.data);
                     QueueOnMainThread(() => OnGameSnapshot.Invoke(gameSnapshot));
                     break;
                 
                 case "game:end":
-                    var gameEnd = JsonConvert.DeserializeObject<GameEndData>(wsMsg.data);
+                    GameEndData gameEnd = JsonUtility.FromJson<GameEndData>(wsMsg.data);
                     QueueOnMainThread(() => OnGameEnd.Invoke(gameEnd));
                     break;
                 
@@ -251,98 +268,104 @@ public class NetworkManager : MonoBehaviour
         }
     }
     
-    public async void JoinQueue()
+    private async Task SendMessageAsync(string json)
     {
-        if (!isConnected || socket == null)
+        if (!isConnected || socket == null || socket.State != System.Net.WebSockets.WebSocketState.Open)
         {
             Debug.LogError("Not connected to server");
             return;
         }
         
-        var message = new WebSocketMessage
+        try
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            await socket.SendAsync(new ArraySegment<byte>(buffer), System.Net.WebSockets.WebSocketMessageType.Text, true, cancellationTokenSource.Token);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Failed to send message: " + ex.Message);
+        }
+    }
+    
+    public async void JoinQueue()
+    {
+        WebSocketMessage message = new WebSocketMessage
         {
             type = "queue:join",
             data = "{}"
         };
         
-        string json = JsonConvert.SerializeObject(message);
-        await socket.SendText(json);
+        string json = JsonUtility.ToJson(message);
+        await SendMessageAsync(json);
         
         Debug.Log("Joined matchmaking queue");
     }
     
     public async void LeaveQueue()
     {
-        if (!isConnected || socket == null)
-        {
-            Debug.LogError("Not connected to server");
-            return;
-        }
-        
-        var message = new WebSocketMessage
+        WebSocketMessage message = new WebSocketMessage
         {
             type = "queue:leave",
             data = "{}"
         };
         
-        string json = JsonConvert.SerializeObject(message);
-        await socket.SendText(json);
+        string json = JsonUtility.ToJson(message);
+        await SendMessageAsync(json);
         
         Debug.Log("Left matchmaking queue");
     }
     
     public async void MarkMatchReady(int matchId)
     {
-        if (!isConnected || socket == null)
-        {
-            Debug.LogError("Not connected to server");
-            return;
-        }
-        
-        var data = new { matchId = matchId };
-        var message = new WebSocketMessage
+        var data = new MatchReadyData { matchId = matchId };
+        WebSocketMessage message = new WebSocketMessage
         {
             type = "match:ready",
-            data = JsonConvert.SerializeObject(data)
+            data = JsonUtility.ToJson(data)
         };
         
-        string json = JsonConvert.SerializeObject(message);
-        await socket.SendText(json);
+        string json = JsonUtility.ToJson(message);
+        await SendMessageAsync(json);
         
         Debug.Log("Marked ready for match: " + matchId);
     }
     
     public async void SendGameInput(GameInputData input)
     {
-        if (!isConnected || socket == null)
-        {
-            Debug.LogError("Not connected to server");
-            return;
-        }
-        
-        var message = new WebSocketMessage
+        WebSocketMessage message = new WebSocketMessage
         {
             type = "game:input",
-            data = JsonConvert.SerializeObject(input)
+            data = JsonUtility.ToJson(input)
         };
         
-        string json = JsonConvert.SerializeObject(message);
-        await socket.SendText(json);
+        string json = JsonUtility.ToJson(message);
+        await SendMessageAsync(json);
     }
     
     public async void Disconnect()
     {
-        if (socket != null && socket.State == WebSocketState.Open)
+        cancellationTokenSource?.Cancel();
+        
+        if (socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open)
         {
-            await socket.Close();
+            try
+            {
+                await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Disconnecting", CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Error closing WebSocket: " + ex.Message);
+            }
         }
+        
+        socket?.Dispose();
         socket = null;
         isConnected = false;
     }
     
     public bool IsConnected()
     {
-        return isConnected && socket != null && socket.State == WebSocketState.Open;
+        return isConnected && socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open;
     }
     
     private void OnDestroy()
@@ -350,12 +373,15 @@ public class NetworkManager : MonoBehaviour
         Disconnect();
     }
     
-    private async void OnApplicationQuit()
+    private void OnApplicationQuit()
     {
-        if (socket != null && socket.State == WebSocketState.Open)
-        {
-            await socket.Close();
-        }
+        Disconnect();
+    }
+    
+    [Serializable]
+    private class MatchReadyData
+    {
+        public int matchId;
     }
 }
 

@@ -6,7 +6,7 @@
     "com.unity.addressables": "1.19.19",
     "com.unity.render-pipelines.universal": "14.0.7",
     "com.unity.nuget.newtonsoft-json": "3.2.1",
-    "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#upm"
+    "com.demigiant.dotween": "1.2.705"
   },
   "scopedRegistries": []
 }
