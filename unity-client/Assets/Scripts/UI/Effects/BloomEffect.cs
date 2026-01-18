@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using DG.Tweening;
+using System.Collections;
 
 namespace UI.Effects
 {
@@ -26,7 +26,7 @@ namespace UI.Effects
 
         private Graphic targetGraphic;
         private Shadow[] bloomShadows;
-        private Tween pulseTween;
+        private Coroutine pulseCoroutine;
         private Color originalColor;
 
         private void Awake()
@@ -67,17 +67,30 @@ namespace UI.Effects
         {
             if (bloomShadows == null || bloomShadows.Length == 0) return;
 
-            if (pulseTween != null && pulseTween.IsActive())
+            if (pulseCoroutine != null)
             {
-                pulseTween.Kill();
+                StopCoroutine(pulseCoroutine);
             }
 
-            // Create pulse animation for all bloom layers
-            pulseTween = DOTween.To(() => bloomIntensity,
-                x => UpdateBloomIntensity(x),
-                maxIntensity, pulseSpeed)
-                .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo);
+            pulseCoroutine = StartCoroutine(PulseCoroutine());
+        }
+
+        private IEnumerator PulseCoroutine()
+        {
+            float time = 0f;
+            
+            while (animateBloom)
+            {
+                time += Time.deltaTime * pulseSpeed;
+                
+                // Calculate pulsing intensity using sine wave
+                float intensity = (Mathf.Sin(time) + 1f) / 2f; // Convert to 0-1 range
+                intensity = Mathf.Lerp(minIntensity, maxIntensity, intensity);
+                
+                UpdateBloomIntensity(intensity);
+                
+                yield return null;
+            }
         }
 
         private void UpdateBloomIntensity(float intensity)
@@ -96,9 +109,10 @@ namespace UI.Effects
 
         public void StopPulse()
         {
-            if (pulseTween != null && pulseTween.IsActive())
+            if (pulseCoroutine != null)
             {
-                pulseTween.Kill();
+                StopCoroutine(pulseCoroutine);
+                pulseCoroutine = null;
             }
         }
 
@@ -126,7 +140,7 @@ namespace UI.Effects
         {
             bloomSpread = spread;
             
-            for (int i = 0; i < bloomShadows.Length; i++)
+            for (int i = 0; i < bloomLayers; i++)
             {
                 if (bloomShadows[i] != null)
                 {
@@ -138,15 +152,41 @@ namespace UI.Effects
 
         public void FlashBloom(float duration = 0.3f, float flashIntensity = 2f)
         {
+            StartCoroutine(FlashBloomCoroutine(duration, flashIntensity));
+        }
+
+        private IEnumerator FlashBloomCoroutine(float duration, float flashIntensity)
+        {
             float originalIntensity = bloomIntensity;
+            float halfDuration = duration / 2f;
             
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(DOTween.To(() => bloomIntensity,
-                x => UpdateBloomIntensity(x),
-                flashIntensity, duration / 2).SetEase(Ease.OutQuad));
-            sequence.Append(DOTween.To(() => bloomIntensity,
-                x => UpdateBloomIntensity(x),
-                originalIntensity, duration / 2).SetEase(Ease.InQuad));
+            // Flash up
+            float elapsed = 0f;
+            while (elapsed < halfDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / halfDuration);
+                float easedT = EaseOutQuad(t);
+                float currentIntensity = Mathf.Lerp(originalIntensity, flashIntensity, easedT);
+                
+                UpdateBloomIntensity(currentIntensity);
+                yield return null;
+            }
+            
+            // Flash down
+            elapsed = 0f;
+            while (elapsed < halfDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / halfDuration);
+                float easedT = EaseInQuad(t);
+                float currentIntensity = Mathf.Lerp(flashIntensity, originalIntensity, easedT);
+                
+                UpdateBloomIntensity(currentIntensity);
+                yield return null;
+            }
+            
+            UpdateBloomIntensity(originalIntensity);
         }
 
         public void RemoveBloom()
@@ -195,6 +235,18 @@ namespace UI.Effects
                 }
             }
         }
+
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+
+        private float EaseInQuad(float t)
+        {
+            return t * t;
+        }
+        #endregion
 
         #region Preset Colors
         public void SetCyanBloom()
@@ -245,6 +297,7 @@ namespace UI.Effects
         private TextMeshProUGUI textMesh;
         private BloomEffect bloomEffect;
         private float nextFlickerTime;
+        private Coroutine flickerCoroutine;
 
         private void Awake()
         {
@@ -260,9 +313,17 @@ namespace UI.Effects
             bloomEffect.SetBloomIntensity(neonIntensity);
         }
 
-        private void Update()
+        private void Start()
         {
             if (flicker)
+            {
+                StartFlicker();
+            }
+        }
+
+        private void Update()
+        {
+            if (flicker && flickerCoroutine == null)
             {
                 CheckFlicker();
             }
@@ -300,11 +361,64 @@ namespace UI.Effects
         {
             flicker = enable;
             textMesh.enabled = true;
+            
+            if (flicker)
+            {
+                StartFlicker();
+            }
+            else
+            {
+                StopFlicker();
+            }
+        }
+
+        private void StartFlicker()
+        {
+            if (flickerCoroutine == null)
+            {
+                flickerCoroutine = StartCoroutine(FlickerCoroutine());
+            }
+        }
+
+        private void StopFlicker()
+        {
+            if (flickerCoroutine != null)
+            {
+                StopCoroutine(flickerCoroutine);
+                flickerCoroutine = null;
+            }
+            textMesh.enabled = true;
+            bloomEffect.SetBloomIntensity(neonIntensity);
+        }
+
+        private IEnumerator FlickerCoroutine()
+        {
+            while (flicker)
+            {
+                // Random on/off intervals
+                if (Random.value < 0.3f)
+                {
+                    textMesh.enabled = false;
+                    yield return new WaitForSeconds(Random.Range(0.05f, 0.15f));
+                }
+                else
+                {
+                    textMesh.enabled = true;
+                    float randomIntensity = Random.Range(0.7f, 1.3f) * neonIntensity;
+                    bloomEffect.SetBloomIntensity(randomIntensity);
+                    yield return new WaitForSeconds(flickerSpeed);
+                }
+            }
         }
 
         public void SetFlickerSpeed(float speed)
         {
             flickerSpeed = speed;
+        }
+
+        private void OnDestroy()
+        {
+            StopFlicker();
         }
     }
 }

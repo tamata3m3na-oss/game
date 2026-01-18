@@ -275,10 +275,22 @@ if (AnimationController.Instance == null)
 }
 ```
 
-### Verify DOTween Installation
+### Check Animation System Status
+```csharp
+// Check if AnimationController is initialized
+if (AnimationController.Instance == null)
+{
+    Debug.LogWarning("AnimationController not initialized");
+    // Managers will auto-initialize when needed
+}
 ```
-Tools > Demigiant > DOTween Utility Panel
-Should show version and setup status
+
+### Check System Setup
+```csharp
+// Verify all systems are working
+Debug.Log($"AnimationController: {AnimationController.Instance != null}");
+Debug.Log($"TransitionManager: {TransitionManager.Instance != null}");
+Debug.Log($"ParticleController: {ParticleController.Instance != null}");
 ```
 
 ### Check Particle Prefabs
@@ -291,8 +303,13 @@ Should show version and setup status
 
 **Animations not playing:**
 1. Check if AnimationController.Instance is null
-2. Verify DOTween is installed and setup
+2. Verify managers are initialized
 3. Check console for errors
+
+**Scripts not compiling:**
+1. No external dependencies required
+2. All animations use Unity Coroutines
+3. Check for missing using statements
 
 **Particles not appearing:**
 1. Check particle prefab assignments

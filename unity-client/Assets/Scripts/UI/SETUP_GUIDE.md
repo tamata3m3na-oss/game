@@ -2,25 +2,9 @@
 
 ## Prerequisites
 
-### Required Package: DOTween
+### ✅ No External Dependencies Required
 
-This UI enhancement system requires **DOTween** (by Demigiant) for animations.
-
-#### Installation Options:
-
-**Option 1: Unity Asset Store (Recommended)**
-1. Open Unity
-2. Go to Window > General > Asset Store
-3. Search for "DOTween"
-4. Import the package
-5. Run the DOTween Setup utility: Tools > Demigiant > DOTween Utility Panel > Setup DOTween
-
-**Option 2: Package Manager (Unity 2019.4+)**
-1. Open Window > Package Manager
-2. Click the "+" button
-3. Select "Add package from git URL"
-4. Enter: `https://github.com/Demigiant/dotween.git`
-5. Click Add
+This UI enhancement system now uses **built-in Unity Coroutines** for all animations, eliminating external dependencies.
 
 ## Quick Start
 
@@ -158,24 +142,24 @@ TransitionManager.Instance.TransitionToMatch();
 
 ## Troubleshooting
 
-### "DOTween not found" Error
+### "Scripts not compiling" Error
 
-**Solution:** Install DOTween
-1. Open Asset Store (Window > General > Asset Store)
-2. Search for "DOTween"
-3. Import and run setup utility
+**Solution:** All scripts now use built-in Unity Coroutines
+1. No external packages required
+2. All animations implemented using Unity's IEnumerator
+3. Easing functions included for smooth animations
 
 ### Animations Not Playing
 
 **Possible Causes:**
 1. `AnimationController.Instance` is null
-2. DOTween not installed
-3. Managers not initialized
+2. Managers not initialized
+3. Script execution order issues
 
 **Solution:**
-- Verify DOTween is installed
 - Check console for initialization errors
 - Ensure `InitializeManagers()` is called in `Start()`
+- Verify scripts are attached to GameObjects
 
 ### Particles Not Appearing
 
@@ -303,6 +287,35 @@ TransitionManager.Instance.TransitionToMatch();
 - [ ] leaderboardButton (Button)
 - [ ] lobbyButton (Button)
 - [ ] buttonsContainer (Transform)
+
+## Animation System Overview
+
+### Built-in Easing Functions
+The system includes these easing functions:
+- `EaseOutQuad` - Smooth deceleration
+- `EaseInQuad` - Smooth acceleration  
+- `EaseInOutQuad` - Combined acceleration/deceleration
+- `EaseOutBack` - Bounce effect at end
+- `EaseInOutSine` - Sine wave interpolation
+- `EaseLinear` - Constant speed
+
+### Animation Categories
+1. **Fade Animations** - CanvasGroup and TextMeshPro alpha
+2. **Scale Animations** - Transform scaling with bounce effects
+3. **Slide Animations** - Position-based sliding
+4. **Shake Animations** - Position, rotation, and scale shaking
+5. **Special Animations** - Glitch, counter, float, rotate effects
+6. **Button Animations** - Press and hover feedback
+7. **Health Bar Animations** - Smooth fill amount changes
+8. **Staggered Animations** - Sequential element animations
+
+### Performance Benefits
+- ✅ No external dependencies
+- ✅ Built-in Unity Coroutines
+- ✅ Memory efficient
+- ✅ Automatic cleanup
+- ✅ Thread-safe
+- ✅ Mobile and desktop compatible
 
 ## Next Steps
 

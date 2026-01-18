@@ -605,9 +605,28 @@ namespace UI.Scenes
                     }
                     
                     canvasGroup.alpha = 0f;
-                    canvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutQuad).SetDelay(i * 0.05f);
+                    StartCoroutine(DelayedFadeIn(canvasGroup, i * 0.05f));
                 }
             }
+        }
+
+        private IEnumerator DelayedFadeIn(CanvasGroup canvasGroup, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            
+            float duration = 0.3f;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);
+                yield return null;
+            }
+            
+            canvasGroup.alpha = 1f;
         }
 
         private void TransitionToLogin()
@@ -629,6 +648,13 @@ namespace UI.Scenes
             NetworkManager.Instance.OnQueueStatus.AddListener(HandleQueueStatus);
             NetworkManager.Instance.OnMatchFound.AddListener(HandleMatchFound);
         }
+
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+        #endregion
 
         private void OnDestroy()
         {

@@ -6,7 +6,7 @@ This document describes the premium UI/UX enhancement system implemented for the
 
 The UI enhancement system is built as a separate layer on top of existing game logic, ensuring no breaking changes to core functionality. It includes:
 
-- **Animation Controller** - Centralized animation management using DOTween
+- **Animation Controller** - Centralized animation management using Unity Coroutines
 - **Particle Controller** - Efficient particle systems with object pooling
 - **Transition Manager** - Cinematic scene transitions
 - **Visual Effects** - Glow, bloom, shake, and other effects
@@ -40,12 +40,9 @@ Assets/Scripts/UI/
 
 ## Installation & Setup
 
-### 1. Required Dependencies
+### 1. No External Dependencies Required
 
-This system requires **DOTween** (Demigiant's Tween Engine):
-
-1. Install DOTween from the Unity Asset Store
-2. Or install via Unity Package Manager (if available in your version)
+This system uses **built-in Unity Coroutines** for all animations, eliminating external dependencies and ensuring compatibility with all Unity versions.
 
 ### 2. Manager Setup
 

@@ -1,5 +1,5 @@
 using UnityEngine;
-using DG.Tweening;
+using System.Collections;
 
 namespace UI.Effects
 {
@@ -19,7 +19,7 @@ namespace UI.Effects
         [Header("Shake Type")]
         [SerializeField] private ShakeType shakeType = ShakeType.Position;
 
-        private Tween shakeTween;
+        private Coroutine shakeCoroutine;
         private Vector3 originalPosition;
         private Quaternion originalRotation;
         private Vector3 originalScale;
@@ -52,42 +52,135 @@ namespace UI.Effects
 
         public void ShakePosition(float strengthOverride, float durationOverride)
         {
-            if (shakeTween != null && shakeTween.IsActive())
+            if (shakeCoroutine != null)
             {
-                shakeTween.Kill();
+                StopCoroutine(shakeCoroutine);
             }
 
-            shakeTween = transform.DOShakePosition(durationOverride, strengthOverride, vibrato, 90, randomize, fadeOut)
-                .OnComplete(() => transform.localPosition = originalPosition);
+            shakeCoroutine = StartCoroutine(ShakePositionCoroutine(durationOverride, strengthOverride));
+        }
+
+        private IEnumerator ShakePositionCoroutine(float duration, float strength)
+        {
+            float elapsed = 0f;
+            Vector3 originalPos = transform.localPosition;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float percentComplete = elapsed / duration;
+                
+                float currentStrength = fadeOut ? strength * (1f - percentComplete) : strength;
+                
+                if (randomize)
+                {
+                    float x = Random.Range(-1f, 1f) * currentStrength;
+                    float y = Random.Range(-1f, 1f) * currentStrength;
+                    transform.localPosition = originalPos + new Vector3(x, y, 0f);
+                }
+                else
+                {
+                    float t = elapsed * vibrato;
+                    float x = Mathf.Sin(t) * currentStrength;
+                    float y = Mathf.Cos(t * 1.3f) * currentStrength;
+                    transform.localPosition = originalPos + new Vector3(x, y, 0f);
+                }
+                
+                yield return null;
+            }
+            
+            transform.localPosition = originalPos;
+            shakeCoroutine = null;
         }
 
         public void ShakeRotation(float strengthOverride, float durationOverride)
         {
-            if (shakeTween != null && shakeTween.IsActive())
+            if (shakeCoroutine != null)
             {
-                shakeTween.Kill();
+                StopCoroutine(shakeCoroutine);
             }
 
-            shakeTween = transform.DOShakeRotation(durationOverride, strengthOverride, vibrato, 90, randomize)
-                .OnComplete(() => transform.localRotation = originalRotation);
+            shakeCoroutine = StartCoroutine(ShakeRotationCoroutine(durationOverride, strengthOverride));
+        }
+
+        private IEnumerator ShakeRotationCoroutine(float duration, float strength)
+        {
+            float elapsed = 0f;
+            Quaternion originalRot = transform.localRotation;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float percentComplete = elapsed / duration;
+                
+                float currentStrength = fadeOut ? strength * (1f - percentComplete) : strength;
+                
+                if (randomize)
+                {
+                    float angle = Random.Range(-1f, 1f) * currentStrength;
+                    transform.localRotation = originalRot * Quaternion.Euler(0f, 0f, angle);
+                }
+                else
+                {
+                    float t = elapsed * vibrato;
+                    float angle = Mathf.Sin(t) * currentStrength;
+                    transform.localRotation = originalRot * Quaternion.Euler(0f, 0f, angle);
+                }
+                
+                yield return null;
+            }
+            
+            transform.localRotation = originalRot;
+            shakeCoroutine = null;
         }
 
         public void ShakeScale(float strengthOverride, float durationOverride)
         {
-            if (shakeTween != null && shakeTween.IsActive())
+            if (shakeCoroutine != null)
             {
-                shakeTween.Kill();
+                StopCoroutine(shakeCoroutine);
             }
 
-            shakeTween = transform.DOShakeScale(durationOverride, strengthOverride, vibrato)
-                .OnComplete(() => transform.localScale = originalScale);
+            shakeCoroutine = StartCoroutine(ShakeScaleCoroutine(durationOverride, strengthOverride));
+        }
+
+        private IEnumerator ShakeScaleCoroutine(float duration, float strength)
+        {
+            float elapsed = 0f;
+            Vector3 originalScale = transform.localScale;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float percentComplete = elapsed / duration;
+                
+                float currentStrength = fadeOut ? strength * (1f - percentComplete) : strength;
+                
+                if (randomize)
+                {
+                    float scaleFactor = 1f + Random.Range(-1f, 1f) * currentStrength * 0.1f;
+                    transform.localScale = originalScale * scaleFactor;
+                }
+                else
+                {
+                    float t = elapsed * vibrato;
+                    float scaleFactor = 1f + Mathf.Sin(t) * currentStrength * 0.1f;
+                    transform.localScale = originalScale * scaleFactor;
+                }
+                
+                yield return null;
+            }
+            
+            transform.localScale = originalScale;
+            shakeCoroutine = null;
         }
 
         public void StopShake()
         {
-            if (shakeTween != null && shakeTween.IsActive())
+            if (shakeCoroutine != null)
             {
-                shakeTween.Kill();
+                StopCoroutine(shakeCoroutine);
+                shakeCoroutine = null;
             }
 
             transform.localPosition = originalPosition;
@@ -128,7 +221,7 @@ namespace UI.Effects
             Camera mainCamera = Camera.main;
             if (mainCamera != null)
             {
-                mainCamera.DOShakePosition(duration, strength, 10, 90, false, true);
+                mainCamera.gameObject.AddComponent<CameraShake>().Shake(strength, duration);
             }
         }
 
@@ -145,10 +238,7 @@ namespace UI.Effects
 
         private void OnDestroy()
         {
-            if (shakeTween != null && shakeTween.IsActive())
-            {
-                shakeTween.Kill();
-            }
+            StopShake();
         }
     }
 
@@ -190,35 +280,54 @@ namespace UI.Effects
             trauma = Mathf.Clamp01(trauma + amount);
         }
 
-        public void Shake(float amount)
+        public void Shake(float strength, float duration)
         {
-            AddTrauma(amount);
+            AddTrauma(strength);
+            
+            // Start shake coroutine
+            StartCoroutine(ShakeCoroutine(duration));
         }
 
-        private void Update()
+        private IEnumerator ShakeCoroutine(float duration)
         {
-            if (trauma > 0f)
+            float elapsed = 0f;
+            
+            while (elapsed < duration && trauma > 0f)
             {
-                float shake = trauma * trauma;
+                elapsed += Time.deltaTime;
                 
-                // Calculate shake offsets
-                float angle = maxAngle * shake * GetPerlinNoise(Time.time * 25f, seed);
-                float offsetX = maxOffset * shake * GetPerlinNoise(Time.time * 25f, seed + 1f);
-                float offsetY = maxOffset * shake * GetPerlinNoise(Time.time * 25f, seed + 2f);
+                if (trauma > 0f)
+                {
+                    float shake = trauma * trauma;
+                    
+                    // Calculate shake offsets
+                    float angle = maxAngle * shake * GetPerlinNoise(Time.time * 25f, seed);
+                    float offsetX = maxOffset * shake * GetPerlinNoise(Time.time * 25f, seed + 1f);
+                    float offsetY = maxOffset * shake * GetPerlinNoise(Time.time * 25f, seed + 2f);
 
-                // Apply shake
-                transform.localPosition = originalPosition + new Vector3(offsetX, offsetY, 0f);
-                transform.localRotation = originalRotation * Quaternion.Euler(0f, 0f, angle);
+                    // Apply shake
+                    transform.localPosition = originalPosition + new Vector3(offsetX, offsetY, 0f);
+                    transform.localRotation = originalRotation * Quaternion.Euler(0f, 0f, angle);
 
-                // Decay trauma
-                trauma = Mathf.Clamp01(trauma - traumaDecay * Time.deltaTime);
+                    // Decay trauma
+                    trauma = Mathf.Clamp01(trauma - traumaDecay * Time.deltaTime);
+                }
+                else
+                {
+                    // Return to original position
+                    transform.localPosition = originalPosition;
+                    transform.localRotation = originalRotation;
+                }
+                
+                yield return null;
             }
-            else
-            {
-                // Return to original position
-                transform.localPosition = originalPosition;
-                transform.localRotation = originalRotation;
-            }
+            
+            // Final reset
+            transform.localPosition = originalPosition;
+            transform.localRotation = originalRotation;
+            
+            // Destroy this component when done
+            Destroy(this);
         }
 
         private float GetPerlinNoise(float x, float y)

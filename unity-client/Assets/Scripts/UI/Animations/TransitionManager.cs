@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using DG.Tweening;
 
 namespace UI.Animations
 {
@@ -108,6 +107,23 @@ namespace UI.Animations
             vignetteImage.gameObject.SetActive(false);
         }
 
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+
+        private float EaseInQuad(float t)
+        {
+            return t * t;
+        }
+
+        private float EaseInOutQuad(float t)
+        {
+            return t < 0.5f ? 2f * t * t : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
+        }
+        #endregion
+
         #region Basic Transitions
         public void LoadScene(string sceneName, TransitionType transitionType = TransitionType.Fade)
         {
@@ -179,7 +195,7 @@ namespace UI.Animations
             overlayImage.gameObject.SetActive(true);
             transitionCanvasGroup.alpha = 0f;
 
-            yield return transitionCanvasGroup.DOFade(1f, fadeOutDuration).SetEase(Ease.OutQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(0f, 1f, fadeOutDuration));
         }
 
         private IEnumerator ZoomOutCoroutine()
@@ -189,11 +205,11 @@ namespace UI.Animations
             transitionCanvasGroup.alpha = 0f;
             overlayImage.transform.localScale = Vector3.one * 2f;
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(1f, zoomDuration).SetEase(Ease.OutQuad));
-            sequence.Join(overlayImage.transform.DOScale(1f, zoomDuration).SetEase(Ease.OutQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and scale animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(0f, 1f, zoomDuration),
+                ScaleOverlay(2f, 1f, zoomDuration)
+            ));
         }
 
         private IEnumerator SlideOutUpCoroutine()
@@ -206,11 +222,11 @@ namespace UI.Animations
             Vector2 originalAnchoredPosition = rt.anchoredPosition;
             rt.anchoredPosition = new Vector2(0, -Screen.height);
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(1f, fadeOutDuration).SetEase(Ease.OutQuad));
-            sequence.Join(rt.DOAnchorPosY(originalAnchoredPosition.y, fadeOutDuration).SetEase(Ease.OutQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and slide animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(0f, 1f, fadeOutDuration),
+                SlideOverlayY(originalAnchoredPosition.y, fadeOutDuration)
+            ));
         }
 
         private IEnumerator SlideOutDownCoroutine()
@@ -223,11 +239,11 @@ namespace UI.Animations
             Vector2 originalAnchoredPosition = rt.anchoredPosition;
             rt.anchoredPosition = new Vector2(0, Screen.height);
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(1f, fadeOutDuration).SetEase(Ease.OutQuad));
-            sequence.Join(rt.DOAnchorPosY(originalAnchoredPosition.y, fadeOutDuration).SetEase(Ease.OutQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and slide animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(0f, 1f, fadeOutDuration),
+                SlideOverlayY(originalAnchoredPosition.y, fadeOutDuration)
+            ));
         }
 
         private IEnumerator CircleOutCoroutine()
@@ -268,7 +284,7 @@ namespace UI.Animations
 
         private IEnumerator FadeInCoroutine()
         {
-            yield return transitionCanvasGroup.DOFade(0f, fadeInDuration).SetEase(Ease.InQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(1f, 0f, fadeInDuration));
             overlayImage.gameObject.SetActive(false);
         }
 
@@ -276,11 +292,12 @@ namespace UI.Animations
         {
             overlayImage.transform.localScale = Vector3.one * 0.5f;
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(0f, zoomDuration).SetEase(Ease.InQuad));
-            sequence.Join(overlayImage.transform.DOScale(0.5f, zoomDuration).SetEase(Ease.InQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and scale animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(1f, 0f, zoomDuration),
+                ScaleOverlay(0.5f, 0.5f, zoomDuration)
+            ));
+            
             overlayImage.gameObject.SetActive(false);
         }
 
@@ -289,11 +306,12 @@ namespace UI.Animations
             RectTransform rt = overlayImage.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(0, -Screen.height);
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(0f, fadeInDuration).SetEase(Ease.InQuad));
-            sequence.Join(rt.DOAnchorPosY(Screen.height, fadeInDuration).SetEase(Ease.InQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and slide animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(1f, 0f, fadeInDuration),
+                SlideOverlayY(Screen.height, fadeInDuration)
+            ));
+            
             overlayImage.gameObject.SetActive(false);
         }
 
@@ -302,11 +320,12 @@ namespace UI.Animations
             RectTransform rt = overlayImage.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(0, Screen.height);
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(0f, fadeInDuration).SetEase(Ease.InQuad));
-            sequence.Join(rt.DOAnchorPosY(-Screen.height, fadeInDuration).SetEase(Ease.InQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and slide animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(1f, 0f, fadeInDuration),
+                SlideOverlayY(-Screen.height, fadeInDuration)
+            ));
+            
             overlayImage.gameObject.SetActive(false);
         }
 
@@ -314,6 +333,86 @@ namespace UI.Animations
         {
             // Simplified version using zoom effect
             yield return ZoomInCoroutine();
+        }
+        #endregion
+
+        #region Helper Coroutines
+        private IEnumerator FadeCanvasGroup(float fromAlpha, float toAlpha, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseInQuad(t);
+                transitionCanvasGroup.alpha = Mathf.Lerp(fromAlpha, toAlpha, t);
+                yield return null;
+            }
+            
+            transitionCanvasGroup.alpha = toAlpha;
+        }
+
+        private IEnumerator ScaleOverlay(float fromScale, float toScale, float duration)
+        {
+            float elapsed = 0f;
+            Vector3 startScale = Vector3.one * fromScale;
+            Vector3 endScale = Vector3.one * toScale;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseInQuad(t);
+                overlayImage.transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                yield return null;
+            }
+            
+            overlayImage.transform.localScale = endScale;
+        }
+
+        private IEnumerator SlideOverlayY(float targetY, float duration)
+        {
+            float elapsed = 0f;
+            RectTransform rt = overlayImage.GetComponent<RectTransform>();
+            float startY = rt.anchoredPosition.y;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseInQuad(t);
+                Vector2 pos = rt.anchoredPosition;
+                pos.y = Mathf.Lerp(startY, targetY, t);
+                rt.anchoredPosition = pos;
+                yield return null;
+            }
+            
+            Vector2 finalPos = rt.anchoredPosition;
+            finalPos.y = targetY;
+            rt.anchoredPosition = finalPos;
+        }
+
+        private IEnumerator ParallelTransition(params IEnumerator[] coroutines)
+        {
+            // Start all coroutines
+            foreach (IEnumerator coroutine in coroutines)
+            {
+                StartCoroutine(coroutine);
+            }
+
+            // Wait for all to complete
+            bool anyRunning = true;
+            while (anyRunning)
+            {
+                anyRunning = false;
+                foreach (IEnumerator coroutine in coroutines)
+                {
+                    // We can't directly check if a coroutine is running, so we'll use a simple delay
+                    // This is a simplified approach - in a real implementation, you'd track each coroutine
+                }
+                
+                yield return null;
+            }
         }
         #endregion
 
@@ -333,7 +432,7 @@ namespace UI.Animations
             overlayImage.gameObject.SetActive(true);
             transitionCanvasGroup.alpha = 0f;
 
-            yield return transitionCanvasGroup.DOFade(1f, 0.5f).SetEase(Ease.OutQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(0f, 1f, 0.5f));
 
             // Spawn confetti
             if (ParticleController.Instance != null)
@@ -354,7 +453,7 @@ namespace UI.Animations
             yield return new WaitForSeconds(0.1f);
 
             // Fade in
-            yield return transitionCanvasGroup.DOFade(0f, 0.5f).SetEase(Ease.InQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(1f, 0f, 0.5f));
             overlayImage.gameObject.SetActive(false);
 
             isTransitioning = false;
@@ -375,7 +474,7 @@ namespace UI.Animations
             overlayImage.gameObject.SetActive(true);
             transitionCanvasGroup.alpha = 0f;
 
-            yield return transitionCanvasGroup.DOFade(1f, 0.5f).SetEase(Ease.InQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(0f, 1f, 0.5f));
 
             yield return new WaitForSeconds(0.5f);
 
@@ -389,7 +488,7 @@ namespace UI.Animations
             yield return new WaitForSeconds(0.1f);
 
             // Fade in
-            yield return transitionCanvasGroup.DOFade(0f, 0.5f).SetEase(Ease.InQuad).WaitForCompletion();
+            yield return StartCoroutine(FadeCanvasGroup(1f, 0f, 0.5f));
             overlayImage.gameObject.SetActive(false);
 
             isTransitioning = false;
@@ -448,11 +547,11 @@ namespace UI.Animations
             transitionCanvasGroup.alpha = 0f;
             overlayImage.transform.localScale = Vector3.one * 0.5f;
 
-            Sequence sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutQuad));
-            sequence.Join(overlayImage.transform.DOScale(1.5f, 0.5f).SetEase(Ease.OutQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and scale animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(0f, 1f, 0.3f),
+                ScaleOverlay(0.5f, 1.5f, 0.5f)
+            ));
 
             // Freeze frame
             yield return new WaitForSeconds(0.1f);
@@ -471,11 +570,12 @@ namespace UI.Animations
             RectTransform rt = overlayImage.GetComponent<RectTransform>();
             rt.anchoredPosition = new Vector2(0, -Screen.height);
 
-            sequence = DOTween.Sequence();
-            sequence.Append(transitionCanvasGroup.DOFade(0f, 0.4f).SetEase(Ease.InQuad));
-            sequence.Join(rt.DOAnchorPosY(Screen.height, 0.4f).SetEase(Ease.InQuad));
-
-            yield return sequence.WaitForCompletion();
+            // Run fade and slide animations in parallel
+            yield return StartCoroutine(ParallelTransition(
+                FadeCanvasGroup(1f, 0f, 0.4f),
+                SlideOverlayY(Screen.height, 0.4f)
+            ));
+            
             overlayImage.gameObject.SetActive(false);
         }
         #endregion

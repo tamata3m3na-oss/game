@@ -6,7 +6,6 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using UI.Animations;
 using UI.Effects;
-using DG.Tweening;
 
 namespace UI.Scenes
 {
@@ -398,7 +397,7 @@ namespace UI.Scenes
             {
                 elapsed += Time.deltaTime;
                 float t = elapsed / duration;
-                currentValue = Mathf.RoundToInt(Mathf.Lerp(ratingBefore, ratingAfter, t));
+                currentValue = Mathf.RoundToInt(Mathf.Lerp(ratingBefore, ratingAfter, EaseOutQuad(t)));
                 ratingAfterText.text = currentValue.ToString();
                 
                 // Scale animation during count
@@ -420,6 +419,13 @@ namespace UI.Scenes
                 AnimationController.Instance.Pulse(ratingArrow.transform, 1.2f, 0.3f);
             }
         }
+
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+        #endregion
 
         private void OnNextMatchClicked()
         {

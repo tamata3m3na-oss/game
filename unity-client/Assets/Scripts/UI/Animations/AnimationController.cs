@@ -1,11 +1,10 @@
 using System.Collections;
 using UnityEngine;
-using DG.Tweening;
 
 namespace UI.Animations
 {
     /// <summary>
-    /// Central controller for all UI animations using DOTween
+    /// Central controller for all UI animations using Coroutines
     /// Provides smooth, performant animations for all UI elements
     /// </summary>
     public class AnimationController : MonoBehaviour
@@ -18,8 +17,42 @@ namespace UI.Animations
         [SerializeField] private float defaultSlideDuration = 0.5f;
         [SerializeField] private float defaultBounceDuration = 0.5f;
         
-        [SerializeField] private Ease defaultEase = Ease.OutQuad;
-        [SerializeField] private Ease bounceEase = Ease.OutBack;
+        // Animation state tracking
+        private System.Collections.Generic.Dictionary<Transform, Coroutine> activeAnimations = new System.Collections.Generic.Dictionary<Transform, Coroutine>();
+        
+        #region Easing Functions
+        private float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
+        }
+
+        private float EaseInQuad(float t)
+        {
+            return t * t;
+        }
+
+        private float EaseInOutQuad(float t)
+        {
+            return t < 0.5f ? 2f * t * t : 1f - Mathf.Pow(-2f * t + 2f, 2f) / 2f;
+        }
+
+        private float EaseOutBack(float t)
+        {
+            float c1 = 1.70158f;
+            float c3 = c1 + 1f;
+            return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
+        }
+
+        private float EaseInOutSine(float t)
+        {
+            return -(Mathf.Cos(Mathf.PI * t) - 1f) / 2f;
+        }
+
+        private float EaseLinear(float t)
+        {
+            return t;
+        }
+        #endregion
         
         private void Awake()
         {
@@ -41,7 +74,7 @@ namespace UI.Animations
             
             float dur = duration > 0 ? duration : defaultFadeDuration;
             canvasGroup.alpha = 0f;
-            canvasGroup.DOFade(1f, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(FadeCoroutine(canvasGroup, 0f, 1f, dur, onComplete));
         }
 
         public void FadeOut(CanvasGroup canvasGroup, float duration = -1, System.Action onComplete = null)
@@ -49,14 +82,44 @@ namespace UI.Animations
             if (canvasGroup == null) return;
             
             float dur = duration > 0 ? duration : defaultFadeDuration;
-            canvasGroup.DOFade(0f, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(FadeCoroutine(canvasGroup, 1f, 0f, dur, onComplete));
+        }
+
+        private IEnumerator FadeCoroutine(CanvasGroup group, float fromAlpha, float toAlpha, float duration, System.Action onComplete)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                group.alpha = Mathf.Lerp(fromAlpha, toAlpha, t);
+                yield return null;
+            }
+            
+            group.alpha = toAlpha;
+            onComplete?.Invoke();
         }
 
         public void FadeText(TextMeshProUGUI text, float fromAlpha, float toAlpha, float duration = 0.3f)
         {
             if (text == null) return;
-            text.alpha = fromAlpha;
-            text.DOFade(toAlpha, duration).SetEase(defaultEase);
+            StartCoroutine(FadeTextCoroutine(text, fromAlpha, toAlpha, duration));
+        }
+
+        private IEnumerator FadeTextCoroutine(TextMeshProUGUI text, float fromAlpha, float toAlpha, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                text.alpha = Mathf.Lerp(fromAlpha, toAlpha, t);
+                yield return null;
+            }
+            
+            text.alpha = toAlpha;
         }
         #endregion
 
@@ -67,7 +130,7 @@ namespace UI.Animations
             
             float dur = duration > 0 ? duration : defaultScaleDuration;
             transform.localScale = Vector3.zero;
-            transform.DOScale(targetScale, dur).SetEase(bounceEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(ScaleCoroutine(transform, targetScale, dur, onComplete));
         }
 
         public void ScaleOut(Transform transform, float duration = -1, System.Action onComplete = null)
@@ -75,32 +138,98 @@ namespace UI.Animations
             if (transform == null) return;
             
             float dur = duration > 0 ? duration : defaultScaleDuration;
-            transform.DOScale(0f, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(ScaleCoroutine(transform, 0f, dur, onComplete));
+        }
+
+        private IEnumerator ScaleCoroutine(Transform transform, float targetScale, float duration, System.Action onComplete)
+        {
+            float elapsed = 0f;
+            Vector3 startScale = transform.localScale;
+            Vector3 endScale = Vector3.one * targetScale;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutBack(t);
+                transform.localScale = Vector3.Lerp(startScale, endScale, t);
+                yield return null;
+            }
+            
+            transform.localScale = endScale;
+            onComplete?.Invoke();
         }
 
         public void Pulse(Transform transform, float scaleAmount = 1.1f, float duration = 0.5f, System.Action onComplete = null)
         {
             if (transform == null) return;
             
-            transform.DOScale(scaleAmount, duration / 2)
-                .SetEase(defaultEase)
-                .SetLoops(2, LoopType.Yoyo)
-                .OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(PulseCoroutine(transform, scaleAmount, duration, onComplete));
+        }
+
+        private IEnumerator PulseCoroutine(Transform transform, float scaleAmount, float duration, System.Action onComplete)
+        {
+            Vector3 originalScale = transform.localScale;
+            Vector3 targetScale = originalScale * scaleAmount;
+            
+            // Scale up
+            yield return StartCoroutine(ScaleTo(transform, targetScale, duration / 2f));
+            
+            // Scale down
+            yield return StartCoroutine(ScaleTo(transform, originalScale, duration / 2f));
+            
+            onComplete?.Invoke();
+        }
+
+        private IEnumerator ScaleTo(Transform transform, Vector3 targetScale, float duration)
+        {
+            float elapsed = 0f;
+            Vector3 startScale = transform.localScale;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+                yield return null;
+            }
+            
+            transform.localScale = targetScale;
         }
 
         public void ContinuousPulse(Transform transform, float scaleAmount = 1.1f, float duration = 2f)
         {
             if (transform == null) return;
             
-            transform.DOScale(scaleAmount, duration / 2)
-                .SetEase(defaultEase)
-                .SetLoops(-1, LoopType.Yoyo);
+            StartCoroutine(ContinuousPulseCoroutine(transform, scaleAmount, duration));
+        }
+
+        private IEnumerator ContinuousPulseCoroutine(Transform transform, float scaleAmount, float duration)
+        {
+            Vector3 originalScale = transform.localScale;
+            Vector3 targetScale = originalScale * scaleAmount;
+            
+            while (true)
+            {
+                // Scale up
+                yield return StartCoroutine(ScaleTo(transform, targetScale, duration / 2f));
+                
+                // Scale down
+                yield return StartCoroutine(ScaleTo(transform, originalScale, duration / 2f));
+            }
         }
 
         public void StopPulse(Transform transform)
         {
             if (transform == null) return;
-            transform.DOKill();
+            
+            if (activeAnimations.ContainsKey(transform))
+            {
+                StopCoroutine(activeAnimations[transform]);
+                activeAnimations.Remove(transform);
+            }
+            
             transform.localScale = Vector3.one;
         }
         #endregion
@@ -113,7 +242,7 @@ namespace UI.Animations
             float dur = duration > 0 ? duration : defaultSlideDuration;
             Vector3 startPos = transform.localPosition + Vector3.down * distance;
             transform.localPosition = startPos;
-            transform.DOLocalMoveY(startPos.y + distance, dur).SetEase(bounceEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(SlideCoroutine(transform, startPos.y + distance, dur, onComplete));
         }
 
         public void SlideDown(Transform transform, float distance = 100f, float duration = -1, System.Action onComplete = null)
@@ -123,7 +252,7 @@ namespace UI.Animations
             float dur = duration > 0 ? duration : defaultSlideDuration;
             Vector3 startPos = transform.localPosition + Vector3.up * distance;
             transform.localPosition = startPos;
-            transform.DOLocalMoveY(startPos.y - distance, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(SlideCoroutine(transform, startPos.y - distance, dur, onComplete));
         }
 
         public void SlideInFromLeft(Transform transform, float distance = 100f, float duration = -1, System.Action onComplete = null)
@@ -133,7 +262,7 @@ namespace UI.Animations
             float dur = duration > 0 ? duration : defaultSlideDuration;
             Vector3 startPos = transform.localPosition + Vector3.left * distance;
             transform.localPosition = startPos;
-            transform.DOLocalMoveX(startPos.x + distance, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(SlideXCoroutine(transform, startPos.x + distance, dur, onComplete));
         }
 
         public void SlideOutToLeft(Transform transform, float distance = 100f, float duration = -1, System.Action onComplete = null)
@@ -141,7 +270,53 @@ namespace UI.Animations
             if (transform == null) return;
             
             float dur = duration > 0 ? duration : defaultSlideDuration;
-            transform.DOLocalMoveX(transform.localPosition.x - distance, dur).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
+            StartCoroutine(SlideXCoroutine(transform, transform.localPosition.x - distance, dur, onComplete));
+        }
+
+        private IEnumerator SlideCoroutine(Transform transform, float targetY, float duration, System.Action onComplete)
+        {
+            float elapsed = 0f;
+            float startY = transform.localPosition.y;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutBack(t);
+                
+                Vector3 pos = transform.localPosition;
+                pos.y = Mathf.Lerp(startY, targetY, t);
+                transform.localPosition = pos;
+                yield return null;
+            }
+            
+            Vector3 finalPos = transform.localPosition;
+            finalPos.y = targetY;
+            transform.localPosition = finalPos;
+            onComplete?.Invoke();
+        }
+
+        private IEnumerator SlideXCoroutine(Transform transform, float targetX, float duration, System.Action onComplete)
+        {
+            float elapsed = 0f;
+            float startX = transform.localPosition.x;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                
+                Vector3 pos = transform.localPosition;
+                pos.x = Mathf.Lerp(startX, targetX, t);
+                transform.localPosition = pos;
+                yield return null;
+            }
+            
+            Vector3 finalPos = transform.localPosition;
+            finalPos.x = targetX;
+            transform.localPosition = finalPos;
+            onComplete?.Invoke();
         }
         #endregion
 
@@ -149,13 +324,57 @@ namespace UI.Animations
         public void Shake(Transform transform, float strength = 5f, int vibrato = 10, float duration = 0.4f)
         {
             if (transform == null) return;
-            transform.DOShakePosition(duration, strength, vibrato, 90, false, true);
+            StartCoroutine(ShakeCoroutine(transform, strength, vibrato, duration, false));
         }
 
         public void ShakeRotation(Transform transform, float strength = 10f, int vibrato = 10, float duration = 0.4f)
         {
             if (transform == null) return;
-            transform.DOShakeRotation(duration, strength, vibrato, 90, false);
+            StartCoroutine(ShakeRotationCoroutine(transform, strength, vibrato, duration));
+        }
+
+        private IEnumerator ShakeCoroutine(Transform transform, float strength, int vibrato, float duration, bool randomize = true)
+        {
+            Vector3 originalPosition = transform.localPosition;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float percentComplete = elapsed / duration;
+                
+                float strengthMultiplier = 1f - percentComplete;
+                
+                float x = Random.Range(-1f, 1f) * strength * strengthMultiplier;
+                float y = Random.Range(-1f, 1f) * strength * strengthMultiplier;
+                
+                transform.localPosition = originalPosition + new Vector3(x, y, 0f);
+                
+                yield return null;
+            }
+            
+            transform.localPosition = originalPosition;
+        }
+
+        private IEnumerator ShakeRotationCoroutine(Transform transform, float strength, int vibrato, float duration)
+        {
+            Quaternion originalRotation = transform.localRotation;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float percentComplete = elapsed / duration;
+                
+                float strengthMultiplier = 1f - percentComplete;
+                
+                float angle = Random.Range(-1f, 1f) * strength * strengthMultiplier;
+                transform.localRotation = originalRotation * Quaternion.Euler(0f, 0f, angle);
+                
+                yield return null;
+            }
+            
+            transform.localRotation = originalRotation;
         }
         #endregion
 
@@ -187,36 +406,85 @@ namespace UI.Animations
         {
             if (text == null) return;
             
+            StartCoroutine(CounterCoroutine(text, fromValue, toValue, duration));
+        }
+
+        private IEnumerator CounterCoroutine(TextMeshProUGUI text, int fromValue, int toValue, float duration)
+        {
             int currentValue = fromValue;
-            float updateInterval = duration / Mathf.Abs(toValue - fromValue);
+            float elapsed = 0f;
+            int totalSteps = Mathf.Abs(toValue - fromValue);
             
-            DOTween.To(() => currentValue, x => 
+            if (totalSteps == 0)
             {
-                currentValue = x;
+                text.text = toValue.ToString();
+                yield break;
+            }
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                currentValue = Mathf.RoundToInt(Mathf.Lerp(fromValue, toValue, EaseOutQuad(t)));
                 text.text = currentValue.ToString();
-            }, toValue, duration).SetEase(Ease.OutQuad);
+                yield return null;
+            }
+            
+            text.text = toValue.ToString();
         }
 
         public void FloatAnimation(Transform transform, float amplitude = 10f, float duration = 2f)
         {
             if (transform == null) return;
             
-            transform.DOBlendableMoveBy(Vector3.up * amplitude, duration / 2)
-                .SetEase(Ease.InOutSine)
-                .SetLoops(-1, LoopType.Yoyo);
+            StartCoroutine(FloatCoroutine(transform, amplitude, duration));
         }
 
-        public void RotateAnimation(Transform transform, float duration = 6f, RotateMode mode = RotateMode.WorldAxisAdd)
+        private IEnumerator FloatCoroutine(Transform transform, float amplitude, float duration)
+        {
+            Vector3 originalPosition = transform.localPosition;
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float offset = Mathf.Sin(elapsed * Mathf.PI * 2f / duration) * amplitude;
+                transform.localPosition = originalPosition + new Vector3(0f, offset, 0f);
+                yield return null;
+            }
+            
+            transform.localPosition = originalPosition;
+        }
+
+        public void RotateAnimation(Transform transform, float duration = 6f)
         {
             if (transform == null) return;
             
-            transform.DORotate(Vector3.forward * 360, duration, mode).SetEase(Ease.Linear).SetLoops(-1, LoopType.Restart);
+            StartCoroutine(RotateCoroutine(transform, duration));
+        }
+
+        private IEnumerator RotateCoroutine(Transform transform, float duration)
+        {
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                transform.Rotate(Vector3.forward, 360f * Time.deltaTime / duration);
+                yield return null;
+            }
         }
 
         public void StopRotateAnimation(Transform transform)
         {
             if (transform == null) return;
-            transform.DOKill();
+            
+            // Stop all coroutines for this transform
+            if (activeAnimations.ContainsKey(transform))
+            {
+                StopCoroutine(activeAnimations[transform]);
+                activeAnimations.Remove(transform);
+            }
         }
         #endregion
 
@@ -225,24 +493,26 @@ namespace UI.Animations
         {
             if (transform == null) return;
             
-            transform.DOScale(0.95f, 0.1f).SetEase(defaultEase).OnComplete(() => 
-            {
-                transform.DOScale(1f, 0.1f).SetEase(defaultEase).OnComplete(() => onComplete?.Invoke());
-            });
+            StartCoroutine(ButtonPressCoroutine(transform, onComplete));
+        }
+
+        private IEnumerator ButtonPressCoroutine(Transform transform, System.Action onComplete)
+        {
+            // Scale down
+            yield return StartCoroutine(ScaleTo(transform, Vector3.one * 0.95f, 0.1f));
+            
+            // Scale back up
+            yield return StartCoroutine(ScaleTo(transform, Vector3.one, 0.1f));
+            
+            onComplete?.Invoke();
         }
 
         public void ButtonHover(Transform transform, bool isHovering)
         {
             if (transform == null) return;
             
-            if (isHovering)
-            {
-                transform.DOScale(1.05f, 0.2f).SetEase(defaultEase);
-            }
-            else
-            {
-                transform.DOScale(1f, 0.2f).SetEase(defaultEase);
-            }
+            Vector3 targetScale = isHovering ? Vector3.one * 1.05f : Vector3.one;
+            StartCoroutine(ScaleTo(transform, targetScale, 0.2f));
         }
         #endregion
 
@@ -251,15 +521,47 @@ namespace UI.Animations
         {
             if (healthBar == null) return;
             
-            healthBar.DOFillAmount(toValue, duration).SetEase(Ease.OutQuad);
+            StartCoroutine(HealthBarCoroutine(healthBar, fromValue, toValue, duration));
+        }
+
+        private IEnumerator HealthBarCoroutine(Image healthBar, float fromValue, float toValue, float duration)
+        {
+            float elapsed = 0f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                healthBar.fillAmount = Mathf.Lerp(fromValue, toValue, t);
+                yield return null;
+            }
+            
+            healthBar.fillAmount = toValue;
         }
 
         public void DamageFlash(Image flashOverlay, float duration = 0.1f)
         {
             if (flashOverlay == null) return;
             
+            StartCoroutine(DamageFlashCoroutine(flashOverlay, duration));
+        }
+
+        private IEnumerator DamageFlashCoroutine(Image flashOverlay, float duration)
+        {
             flashOverlay.color = new Color(1f, 0f, 0f, 0.5f);
-            flashOverlay.DOFade(0f, duration).SetEase(Ease.OutQuad);
+            
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutQuad(t);
+                flashOverlay.color = new Color(1f, 0f, 0f, Mathf.Lerp(0.5f, 0f, t));
+                yield return null;
+            }
+            
+            flashOverlay.color = Color.clear;
         }
         #endregion
 
@@ -271,13 +573,15 @@ namespace UI.Animations
                 if (transforms[i] != null)
                 {
                     float delay = i * delayBetween;
-                    ScaleIn(transforms[i], 1f, duration, null);
-                    transforms[i].DOScale(0f, 0f).SetDelay(delay).OnComplete(() => 
-                    {
-                        transforms[i].DOScale(1f, duration).SetEase(bounceEase);
-                    });
+                    StartCoroutine(DelayedScaleIn(transforms[i], delay, duration));
                 }
             }
+        }
+
+        private IEnumerator DelayedScaleIn(Transform transform, float delay, float duration)
+        {
+            yield return new WaitForSeconds(delay);
+            ScaleIn(transform, 1f, duration, null);
         }
 
         public void StaggeredFadeIn(CanvasGroup[] canvasGroups, float delayBetween = 0.05f, float duration = 0.3f)
@@ -287,10 +591,15 @@ namespace UI.Animations
                 if (canvasGroups[i] != null)
                 {
                     float delay = i * delayBetween;
-                    canvasGroups[i].alpha = 0f;
-                    canvasGroups[i].DOFade(1f, duration).SetEase(defaultEase).SetDelay(delay);
+                    StartCoroutine(DelayedFadeIn(canvasGroups[i], delay, duration));
                 }
             }
+        }
+
+        private IEnumerator DelayedFadeIn(CanvasGroup canvasGroup, float delay, float duration)
+        {
+            yield return new WaitForSeconds(delay);
+            FadeIn(canvasGroup, duration, null);
         }
 
         public void StaggeredSlideUp(Transform[] transforms, float distance = 50f, float delayBetween = 0.1f, float duration = 0.5f)
@@ -300,18 +609,23 @@ namespace UI.Animations
                 if (transforms[i] != null)
                 {
                     float delay = i * delayBetween;
-                    Vector3 startPos = transforms[i].localPosition + Vector3.down * distance;
-                    transforms[i].localPosition = startPos;
-                    transforms[i].DOLocalMoveY(startPos.y + distance, duration).SetEase(bounceEase).SetDelay(delay);
+                    StartCoroutine(DelayedSlideUp(transforms[i], delay, distance, duration));
                 }
             }
+        }
+
+        private IEnumerator DelayedSlideUp(Transform transform, float delay, float distance, float duration)
+        {
+            yield return new WaitForSeconds(delay);
+            SlideUp(transform, distance, duration, null);
         }
         #endregion
 
         #region Cleanup
         private void OnDestroy()
         {
-            DOTween.KillAll();
+            // Stop all running coroutines
+            StopAllCoroutines();
         }
         #endregion
     }
