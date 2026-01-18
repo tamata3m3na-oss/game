@@ -3,30 +3,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using SocketIOClient;
-using SocketIOClient.Newtonsoft.Json;
+using NativeWebSocket;
+using Newtonsoft.Json;
 
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance { get; private set; }
     
-    public string ServerUrl = "http://localhost:3000";
+    public string ServerUrl = "ws://localhost:3000";
     public string PvpNamespace = "/pvp";
     
-    private SocketIOUnity socket;
+    private WebSocket socket;
     private Queue<Action> eventQueue = new Queue<Action>();
     private bool isConnected = false;
     private string authToken = "";
     
-    // Events
     public UnityEvent<string> OnConnected = new UnityEvent<string>();
     public UnityEvent<string> OnDisconnected = new UnityEvent<string>();
     public UnityEvent<string> OnConnectionError = new UnityEvent<string>();
     
-    // Queue Events
     public UnityEvent<QueueStatus> OnQueueStatus = new UnityEvent<QueueStatus>();
     
-    // Match Events
     public UnityEvent<MatchFoundData> OnMatchFound = new UnityEvent<MatchFoundData>();
     public UnityEvent<MatchStartData> OnMatchStart = new UnityEvent<MatchStartData>();
     public UnityEvent<GameState> OnGameSnapshot = new UnityEvent<GameState>();
@@ -59,7 +56,7 @@ public class NetworkManager : MonoBehaviour
     {
         public int matchId;
         public OpponentData opponent;
-        public string color; // "white" or "black"
+        public string color;
     }
     
     [Serializable]
@@ -100,6 +97,13 @@ public class NetworkManager : MonoBehaviour
         public GameState finalState;
     }
     
+    [Serializable]
+    private class WebSocketMessage
+    {
+        public string type;
+        public string data;
+    }
+    
     private void Awake()
     {
         if (Instance == null)
@@ -115,94 +119,128 @@ public class NetworkManager : MonoBehaviour
     
     private void Update()
     {
-        // Process queued events on main thread
+        if (socket != null)
+        {
+#if !UNITY_WEBGL || UNITY_EDITOR
+            socket.DispatchMessageQueue();
+#endif
+        }
+        
         while (eventQueue.Count > 0)
         {
-            var action = eventQueue.Dequeue();
-            action.Invoke();
+            Action action;
+            lock (eventQueue)
+            {
+                action = eventQueue.Dequeue();
+            }
+            action?.Invoke();
         }
     }
     
-    public void Initialize(string token)
+    public async void Initialize(string token)
     {
         authToken = token;
         
-        var uri = new Uri(ServerUrl);
-        socket = new SocketIOUnity(uri, new SocketIOOptions
-        {
-            Query = new Dictionary<string, string>
-            {
-                {"token", authToken}
-            },
-            EIO = 4,
-            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-            Reconnection = true,
-            ReconnectionAttempts = 5,
-            ReconnectionDelay = 1000,
-            Timeout = 30000,
-            Path = PvpNamespace
-        });
+        string wsUrl = ServerUrl + PvpNamespace + "?token=" + authToken;
         
-        SetupSocketEvents();
+        socket = new WebSocket(wsUrl);
         
-        Debug.Log("Connecting to server...");
-        socket.Connect();
-    }
-    
-    private void SetupSocketEvents()
-    {
-        socket.OnConnected += (sender, e) =>
+        socket.OnOpen = () =>
         {
             isConnected = true;
-            QueueOnMainThread(() => OnConnected.Invoke("Connected to server"));
-            Debug.Log("Connected to server");
+            QueueOnMainThread(() =>
+            {
+                OnConnected.Invoke("Connected to server");
+                Debug.Log("WebSocket connected to server");
+            });
         };
         
-        socket.OnDisconnected += (sender, e) =>
+        socket.OnClose = (e) =>
         {
             isConnected = false;
-            QueueOnMainThread(() => OnDisconnected.Invoke("Disconnected: " + e));
-            Debug.Log("Disconnected: " + e);
+            QueueOnMainThread(() =>
+            {
+                OnDisconnected.Invoke("Disconnected: " + e.ToString());
+                Debug.Log("WebSocket disconnected: " + e);
+            });
         };
         
-        socket.OnError += (sender, e) =>
+        socket.OnError = (e) =>
         {
-            QueueOnMainThread(() => OnConnectionError.Invoke("Error: " + e));
-            Debug.LogError("Socket error: " + e);
+            QueueOnMainThread(() =>
+            {
+                OnConnectionError.Invoke("Error: " + e);
+                Debug.LogError("WebSocket error: " + e);
+            });
         };
         
-        // Queue events
-        socket.On("queue:status", (response) =>
+        socket.OnMessage = (bytes) =>
         {
-            var status = response.GetValue<QueueStatus>();
-            QueueOnMainThread(() => OnQueueStatus.Invoke(status));
-        });
+            string message = System.Text.Encoding.UTF8.GetString(bytes);
+            ProcessMessage(message);
+        };
         
-        // Match events
-        socket.On("match:found", (response) =>
-        {
-            var data = response.GetValue<MatchFoundData>();
-            QueueOnMainThread(() => OnMatchFound.Invoke(data));
-        });
+        Debug.Log("Attempting WebSocket connection to: " + wsUrl);
         
-        socket.On("match:start", (response) =>
+        try
         {
-            var data = response.GetValue<MatchStartData>();
-            QueueOnMainThread(() => OnMatchStart.Invoke(data));
-        });
-        
-        // Game events
-        socket.On("game:snapshot", (response) =>
+            await socket.Connect();
+        }
+        catch (Exception ex)
         {
-            var state = response.GetValue<GameState>();
-            QueueOnMainThread(() => OnGameSnapshot.Invoke(state));
-        });
-        
-        socket.On("game:end", (response) =>
+            Debug.LogError("Failed to connect: " + ex.Message);
+            QueueOnMainThread(() => OnConnectionError.Invoke("Connection failed: " + ex.Message));
+        }
+    }
+    
+    private void ProcessMessage(string message)
+    {
+        try
         {
-            var data = response.GetValue<GameEndData>();
-            QueueOnMainThread(() => OnGameEnd.Invoke(data));
-        });
+            WebSocketMessage wsMsg = JsonConvert.DeserializeObject<WebSocketMessage>(message);
+            
+            if (wsMsg == null || string.IsNullOrEmpty(wsMsg.type))
+            {
+                Debug.LogWarning("Received malformed message");
+                return;
+            }
+            
+            switch (wsMsg.type)
+            {
+                case "queue:status":
+                    var queueStatus = JsonConvert.DeserializeObject<QueueStatus>(wsMsg.data);
+                    QueueOnMainThread(() => OnQueueStatus.Invoke(queueStatus));
+                    break;
+                
+                case "match:found":
+                    var matchFound = JsonConvert.DeserializeObject<MatchFoundData>(wsMsg.data);
+                    QueueOnMainThread(() => OnMatchFound.Invoke(matchFound));
+                    break;
+                
+                case "match:start":
+                    var matchStart = JsonConvert.DeserializeObject<MatchStartData>(wsMsg.data);
+                    QueueOnMainThread(() => OnMatchStart.Invoke(matchStart));
+                    break;
+                
+                case "game:snapshot":
+                    var gameSnapshot = JsonConvert.DeserializeObject<GameState>(wsMsg.data);
+                    QueueOnMainThread(() => OnGameSnapshot.Invoke(gameSnapshot));
+                    break;
+                
+                case "game:end":
+                    var gameEnd = JsonConvert.DeserializeObject<GameEndData>(wsMsg.data);
+                    QueueOnMainThread(() => OnGameEnd.Invoke(gameEnd));
+                    break;
+                
+                default:
+                    Debug.LogWarning("Unknown message type: " + wsMsg.type);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error processing message: " + ex.Message);
+        }
     }
     
     private void QueueOnMainThread(Action action)
@@ -213,7 +251,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
     
-    public void JoinQueue()
+    public async void JoinQueue()
     {
         if (!isConnected || socket == null)
         {
@@ -221,11 +259,19 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         
-        socket.EmitAsync("queue:join");
+        var message = new WebSocketMessage
+        {
+            type = "queue:join",
+            data = "{}"
+        };
+        
+        string json = JsonConvert.SerializeObject(message);
+        await socket.SendText(json);
+        
         Debug.Log("Joined matchmaking queue");
     }
     
-    public void LeaveQueue()
+    public async void LeaveQueue()
     {
         if (!isConnected || socket == null)
         {
@@ -233,11 +279,19 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         
-        socket.EmitAsync("queue:leave");
+        var message = new WebSocketMessage
+        {
+            type = "queue:leave",
+            data = "{}"
+        };
+        
+        string json = JsonConvert.SerializeObject(message);
+        await socket.SendText(json);
+        
         Debug.Log("Left matchmaking queue");
     }
     
-    public void MarkMatchReady(int matchId)
+    public async void MarkMatchReady(int matchId)
     {
         if (!isConnected || socket == null)
         {
@@ -246,11 +300,19 @@ public class NetworkManager : MonoBehaviour
         }
         
         var data = new { matchId = matchId };
-        socket.EmitAsync("match:ready", data);
+        var message = new WebSocketMessage
+        {
+            type = "match:ready",
+            data = JsonConvert.SerializeObject(data)
+        };
+        
+        string json = JsonConvert.SerializeObject(message);
+        await socket.SendText(json);
+        
         Debug.Log("Marked ready for match: " + matchId);
     }
     
-    public void SendGameInput(GameInputData input)
+    public async void SendGameInput(GameInputData input)
     {
         if (!isConnected || socket == null)
         {
@@ -258,22 +320,29 @@ public class NetworkManager : MonoBehaviour
             return;
         }
         
-        socket.EmitAsync("game:input", input);
+        var message = new WebSocketMessage
+        {
+            type = "game:input",
+            data = JsonConvert.SerializeObject(input)
+        };
+        
+        string json = JsonConvert.SerializeObject(message);
+        await socket.SendText(json);
     }
     
-    public void Disconnect()
+    public async void Disconnect()
     {
-        if (socket != null)
+        if (socket != null && socket.State == WebSocketState.Open)
         {
-            socket.Disconnect();
-            socket = null;
+            await socket.Close();
         }
+        socket = null;
         isConnected = false;
     }
     
     public bool IsConnected()
     {
-        return isConnected;
+        return isConnected && socket != null && socket.State == WebSocketState.Open;
     }
     
     private void OnDestroy()
@@ -281,9 +350,12 @@ public class NetworkManager : MonoBehaviour
         Disconnect();
     }
     
-    private void OnApplicationQuit()
+    private async void OnApplicationQuit()
     {
-        Disconnect();
+        if (socket != null && socket.State == WebSocketState.Open)
+        {
+            await socket.Close();
+        }
     }
 }
 
