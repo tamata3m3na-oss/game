@@ -84,14 +84,3 @@ Thumbs.db
 # Rider
 .idea/
 
-# DOTween
-Assets/Plugins/Demigiant/DOTween/Pro/Generated*
-
-# TextMeshPro
-[Tt]extMesh[Pp]ro/
-
-# Package Manager
-Packages/packages-lock.json
-
-# Assembly Definition
-Assets/Scripts/Assembly-CSharp.asmdef
