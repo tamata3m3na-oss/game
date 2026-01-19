@@ -15,3 +15,9 @@
 -r:System.Runtime.InteropServices.dll
 -r:System.Text.dll
 -r:System.Text.RegularExpressions.dll
+-r:UnityEngine.AudioModule.dll
+-r:UnityEngine.PhysicsModule.dll
+-r:UnityEngine.Physics2DModule.dll
+-r:UnityEngine.ParticleSystemModule.dll
+-r:UnityEngine.UIModule.dll
+-r:UnityEngine.UI.dll
