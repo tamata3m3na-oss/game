@@ -1,4 +1,4 @@
-# Unity Project Files
+# Unity Generated
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -6,6 +6,42 @@
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
+
+# Memory Captures
+[Mm]emoryCaptures/
+
+# Asset meta data
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Unity3D generated meta files
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity3D generated file on crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# Packed Addressables
+[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+
+# Temporary auto-generated Android Assets
+[Aa]ssets/[Ss]treamingAssets/aa.meta
+[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Visual Studio cache directory
 .vs/
@@ -36,72 +72,26 @@ ExportedObj/
 *.pdb.meta
 *.mdb.meta
 
-# Unity3D generated file on crash reports
-sysinfo.txt
-
-# Builds
-*.apk
-*.aab
-*.unitypackage
-*.app
-
-# Crashlytics generated file
-crashlytics-build.properties
-
-# Packed Addressables
-[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
-
-# Temporary auto-generated Android Assets
-[Aa]ssets/[Ss]treamingAssets/aa.meta
-[Aa]ssets/[Ss]treamingAssets/aa/*
-
-# VS Code
-.vscode/
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Rider
 .idea/
 
-# macOS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# DOTween
+Assets/Plugins/Demigiant/DOTween/Pro/Generated*
 
-# Audio files
-*.wav
-*.mp3
-*.ogg
-*.flac
-*.aiff
+# TextMeshPro
+[Tt]extMesh[Pp]ro/
 
-# Image files (for development)
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.tga
-*.tiff
+# Package Manager
+Packages/packages-lock.json
 
-# Log files
-*.log
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Package files
-*.zip
-*.tar.gz
-
-# Temporary files
-*.tmp
-*.temp
+# Assembly Definition
+Assets/Scripts/Assembly-CSharp.asmdef
