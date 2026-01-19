@@ -29,7 +29,7 @@ public class NetworkManager : MonoBehaviour
     
     public UnityEvent<MatchFoundData> OnMatchFound = new UnityEvent<MatchFoundData>();
     public UnityEvent<MatchStartData> OnMatchStart = new UnityEvent<MatchStartData>();
-    public UnityEvent OnGameSnapshot = new UnityEvent();
+    public UnityEvent<NetworkGameState> OnGameSnapshot = new UnityEvent<NetworkGameState>();
     public UnityEvent<GameEndData> OnGameEnd = new UnityEvent<GameEndData>();
     
     [Serializable]
@@ -241,9 +241,8 @@ public class NetworkManager : MonoBehaviour
                     break;
                 
                 case "game:snapshot":
-                    // Process game snapshot but don't pass data through UnityEvent for now
-                    Debug.Log("Game snapshot received - " + wsMsg.type);
-                    QueueOnMainThread(() => OnGameSnapshot.Invoke());
+                    NetworkGameState gameState = JsonUtility.FromJson<NetworkGameState>(wsMsg.data);
+                    QueueOnMainThread(() => OnGameSnapshot.Invoke(gameState));
                     break;
                 
                 case "game:end":
