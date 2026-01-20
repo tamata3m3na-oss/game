@@ -210,7 +210,10 @@ public class AuthManager : MonoBehaviour
                     Debug.Log("Login successful");
                     
                     // Initialize network manager
-                    NetworkManager.Instance.Initialize(authToken);
+                    if (NetworkManager.Instance != null)
+                    {
+                        NetworkManager.Instance.Initialize(authToken);
+                    }
                 }
                 catch (Exception e)
                 {

@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -8,239 +6,189 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
+[DefaultExecutionOrder(-9000)]
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance { get; private set; }
-    
+
     public string ServerUrl = "ws://localhost:3000";
     public string PvpNamespace = "/pvp";
-    
+
     private ClientWebSocket socket;
     private CancellationTokenSource cancellationTokenSource;
+    private Task connectTask;
+    private Task receiveTask;
+
     private NetworkEventManager eventManager;
-    private bool isConnected = false;
+
+    private bool isConnected;
     private string authToken = "";
-    
+
     public UnityEvent<string> OnConnected = new UnityEvent<string>();
     public UnityEvent<string> OnDisconnected = new UnityEvent<string>();
     public UnityEvent<string> OnConnectionError = new UnityEvent<string>();
-    
-    [Serializable]
-    public class QueueStatus
-    {
-        public int position;
-        public int estimatedWait;
-    }
-    
-    [Serializable]
-    public class MatchFoundData
-    {
-        public int matchId;
-        public OpponentData opponent;
-    }
-    
-    [Serializable]
-    public class OpponentData
-    {
-        public int id;
-        public string username;
-        public int rating;
-    }
-    
-    [Serializable]
-    public class MatchStartData
-    {
-        public int matchId;
-        public OpponentData opponent;
-        public string color;
-    }
-    
-    [Serializable]
-    public class NetworkGameState
-    {
-        public int matchId;
-        public PlayerState player1;
-        public PlayerState player2;
-        public int tick;
-        public long timestamp;
-        public int winner;
-        public string status;
-    }
-    
-    [Serializable]
-    public class PlayerState
-    {
-        public int id;
-        public float x;
-        public float y;
-        public float rotation;
-        public int health;
-        public int shieldHealth;
-        public bool shieldActive;
-        public int shieldEndTick;
-        public bool fireReady;
-        public int fireReadyTick;
-        public bool abilityReady;
-        public long lastAbilityTime;
-        public int damageDealt;
-    }
-    
-    [Serializable]
-    public class GameEndData
-    {
-        public int matchId;
-        public int winner;
-        public NetworkGameState finalState;
-    }
-    
-    [Serializable]
-    private class WebSocketMessage
-    {
-        public string type;
-        public string data;
-    }
-    
+
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
-    
-    private void Update()
+
+    public void Initialize(string token)
     {
-        // WebSocket messages are now processed asynchronously by NetworkEventManager
-        // No need for event queue processing here
-    }
-    
-    public async void Initialize(string token)
-    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Debug.LogError("[NetworkManager] Initialize called with empty token.");
+            return;
+        }
+
         authToken = token;
-        
+
+        if (connectTask != null && !connectTask.IsCompleted)
+        {
+            return;
+        }
+
+        connectTask = ConnectAsync();
+    }
+
+    private async Task ConnectAsync()
+    {
         string wsUrl = ServerUrl + PvpNamespace + "?token=" + authToken;
-        
-        socket = new ClientWebSocket();
-        cancellationTokenSource = new CancellationTokenSource();
-        
-        Debug.Log("Attempting WebSocket connection to: " + wsUrl);
-        
+
         try
         {
-            await socket.ConnectAsync(new Uri(wsUrl), cancellationTokenSource.Token);
-            
+            await DisconnectAsync().ConfigureAwait(false);
+
+            socket = new ClientWebSocket();
+            cancellationTokenSource = new CancellationTokenSource();
+
+            ThreadSafeEventQueue.Enqueue(() => Debug.Log("[NetworkManager] Connecting to: " + wsUrl));
+
+            await socket.ConnectAsync(new Uri(wsUrl), cancellationTokenSource.Token).ConfigureAwait(false);
+
             isConnected = true;
-            QueueOnMainThread(() =>
+            ThreadSafeEventQueue.Enqueue(() =>
             {
                 OnConnected.Invoke("Connected to server");
-                Debug.Log("WebSocket connected to server");
+                Debug.Log("[NetworkManager] WebSocket connected");
             });
-            
-            StartCoroutine(ReceiveLoop());
+
+            receiveTask = ReceiveLoopAsync(cancellationTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // expected on shutdown
         }
         catch (Exception ex)
         {
-            Debug.LogError("Failed to connect: " + ex.Message);
-            QueueOnMainThread(() => OnConnectionError.Invoke("Connection failed: " + ex.Message));
+            isConnected = false;
+            ThreadSafeEventQueue.Enqueue(() =>
+            {
+                Debug.LogError("[NetworkManager] Failed to connect: " + ex.Message);
+                OnConnectionError.Invoke("Connection failed: " + ex.Message);
+            });
         }
     }
-    
-    private IEnumerator ReceiveLoop()
+
+    private async Task ReceiveLoopAsync(CancellationToken token)
     {
         var buffer = new byte[4096];
-        
-        while (socket.State == System.Net.WebSockets.WebSocketState.Open && !cancellationTokenSource.Token.IsCancellationRequested)
+
+        try
         {
-            try
+            while (!token.IsCancellationRequested && socket != null && socket.State == WebSocketState.Open)
             {
-                var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationTokenSource.Token);
-                
-                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Close)
+                WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), token)
+                    .ConfigureAwait(false);
+
+                if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Closing", cancellationTokenSource.Token);
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", token)
+                        .ConfigureAwait(false);
+
                     isConnected = false;
-                    QueueOnMainThread(() =>
+                    ThreadSafeEventQueue.Enqueue(() =>
                     {
                         OnDisconnected.Invoke("Server closed connection");
-                        Debug.Log("WebSocket disconnected: Server closed connection");
+                        Debug.Log("[NetworkManager] WebSocket disconnected: server closed connection");
                     });
                     break;
                 }
-                
-                if (result.MessageType == System.Net.WebSockets.WebSocketMessageType.Text)
+
+                if (result.MessageType == WebSocketMessageType.Text)
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    ProcessMessage(message);
+                    ThreadSafeEventQueue.Enqueue(() => ProcessMessage(message));
                 }
             }
-            catch (TaskCanceledException)
+        }
+        catch (OperationCanceledException)
+        {
+            // expected
+        }
+        catch (Exception ex)
+        {
+            isConnected = false;
+            ThreadSafeEventQueue.Enqueue(() =>
             {
-                break;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("WebSocket receive error: " + ex.Message);
-                isConnected = false;
-                QueueOnMainThread(() =>
-                {
-                    OnConnectionError.Invoke("Connection error: " + ex.Message);
-                });
-                break;
-            }
-            
-            yield return null;
+                Debug.LogError("[NetworkManager] WebSocket receive error: " + ex.Message);
+                OnConnectionError.Invoke("Connection error: " + ex.Message);
+            });
         }
     }
-    
+
     private void ProcessMessage(string message)
     {
         if (eventManager == null)
         {
             eventManager = NetworkEventManager.Instance;
         }
-        
+
+        if (eventManager == null)
+        {
+            Debug.LogError("[NetworkManager] NetworkEventManager is missing (Bootstrap failure).");
+            return;
+        }
+
         try
         {
-            WebSocketMessage wsMsg = JsonUtility.FromJson<WebSocketMessage>(message);
-            
+            WebSocketMessageWrapper wsMsg = JsonUtility.FromJson<WebSocketMessageWrapper>(message);
+
             if (wsMsg == null || string.IsNullOrEmpty(wsMsg.type))
             {
                 Debug.LogWarning("[NetworkManager] Received malformed message");
                 return;
             }
-            
+
             switch (wsMsg.type)
             {
                 case "queue:status":
-                    QueueStatus queueStatus = JsonUtility.FromJson<QueueStatus>(wsMsg.data);
                     eventManager.ProcessNetworkMessage(NetworkEventType.QueueStatus, wsMsg.data);
                     break;
-                
+
                 case "match:found":
-                    MatchFoundData matchFound = JsonUtility.FromJson<MatchFoundData>(wsMsg.data);
                     eventManager.ProcessNetworkMessage(NetworkEventType.MatchFound, wsMsg.data);
                     break;
-                
+
                 case "match:start":
-                    MatchStartData matchStart = JsonUtility.FromJson<MatchStartData>(wsMsg.data);
                     eventManager.ProcessNetworkMessage(NetworkEventType.MatchStart, wsMsg.data);
                     break;
-                
+
                 case "game:snapshot":
-                    NetworkGameState gameState = JsonUtility.FromJson<NetworkGameState>(wsMsg.data);
                     eventManager.ProcessNetworkMessage(NetworkEventType.GameSnapshot, wsMsg.data);
                     break;
-                
+
                 case "game:end":
-                    GameEndData gameEnd = JsonUtility.FromJson<GameEndData>(wsMsg.data);
                     eventManager.ProcessNetworkMessage(NetworkEventType.GameEnd, wsMsg.data);
                     break;
-                
+
                 default:
                     Debug.LogWarning("[NetworkManager] Unknown message type: " + wsMsg.type);
                     break;
@@ -251,139 +199,108 @@ public class NetworkManager : MonoBehaviour
             Debug.LogError("[NetworkManager] Error processing message: " + ex.Message);
         }
     }
-    
-    private void QueueOnMainThread(Action action)
-    {
-        lock (eventQueue)
-        {
-            eventQueue.Enqueue(action);
-        }
-    }
-    
+
     private async Task SendMessageAsync(string json)
     {
-        if (!isConnected || socket == null || socket.State != System.Net.WebSockets.WebSocketState.Open)
+        if (!IsConnected())
         {
-            Debug.LogError("Not connected to server");
+            ThreadSafeEventQueue.Enqueue(() => Debug.LogError("[NetworkManager] Not connected to server"));
             return;
         }
-        
+
         try
         {
             byte[] buffer = Encoding.UTF8.GetBytes(json);
-            await socket.SendAsync(new ArraySegment<byte>(buffer), System.Net.WebSockets.WebSocketMessageType.Text, true, cancellationTokenSource.Token);
+            await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cancellationTokenSource.Token)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            // expected
         }
         catch (Exception ex)
         {
-            Debug.LogError("Failed to send message: " + ex.Message);
+            ThreadSafeEventQueue.Enqueue(() => Debug.LogError("[NetworkManager] Failed to send message: " + ex.Message));
         }
     }
-    
-    public async void JoinQueue()
+
+    public void JoinQueue()
     {
-        WebSocketMessage message = new WebSocketMessage
-        {
-            type = "queue:join",
-            data = "{}"
-        };
-        
+        var message = new WebSocketMessageWrapper("queue:join", "{}");
         string json = JsonUtility.ToJson(message);
-        await SendMessageAsync(json);
-        
-        Debug.Log("Joined matchmaking queue");
+        _ = SendMessageAsync(json);
     }
-    
-    public async void LeaveQueue()
+
+    public void LeaveQueue()
     {
-        WebSocketMessage message = new WebSocketMessage
-        {
-            type = "queue:leave",
-            data = "{}"
-        };
-        
+        var message = new WebSocketMessageWrapper("queue:leave", "{}");
         string json = JsonUtility.ToJson(message);
-        await SendMessageAsync(json);
-        
-        Debug.Log("Left matchmaking queue");
+        _ = SendMessageAsync(json);
     }
-    
-    public async void MarkMatchReady(int matchId)
+
+    public void MarkMatchReady(int matchId)
     {
         var data = new MatchReadyData { matchId = matchId };
-        WebSocketMessage message = new WebSocketMessage
-        {
-            type = "match:ready",
-            data = JsonUtility.ToJson(data)
-        };
-        
+        var message = new WebSocketMessageWrapper("match:ready", JsonUtility.ToJson(data));
         string json = JsonUtility.ToJson(message);
-        await SendMessageAsync(json);
-        
-        Debug.Log("Marked ready for match: " + matchId);
+        _ = SendMessageAsync(json);
     }
-    
-    public async void SendGameInput(GameInputData input)
+
+    public void SendGameInput(GameInputData input)
     {
-        WebSocketMessage message = new WebSocketMessage
-        {
-            type = "game:input",
-            data = JsonUtility.ToJson(input)
-        };
-        
+        var message = new WebSocketMessageWrapper("game:input", JsonUtility.ToJson(input));
         string json = JsonUtility.ToJson(message);
-        await SendMessageAsync(json);
+        _ = SendMessageAsync(json);
     }
-    
-    public async void Disconnect()
+
+    public void Disconnect()
+    {
+        _ = DisconnectAsync();
+    }
+
+    private async Task DisconnectAsync()
     {
         cancellationTokenSource?.Cancel();
-        
-        if (socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open)
+
+        if (socket != null && socket.State == WebSocketState.Open)
         {
             try
             {
-                await socket.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "Disconnecting", CancellationToken.None);
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", CancellationToken.None)
+                    .ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.LogError("Error closing WebSocket: " + ex.Message);
+                // ignore
             }
         }
-        
+
         socket?.Dispose();
         socket = null;
+
+        cancellationTokenSource?.Dispose();
+        cancellationTokenSource = null;
+
         isConnected = false;
     }
-    
+
     public bool IsConnected()
     {
-        return isConnected && socket != null && socket.State == System.Net.WebSockets.WebSocketState.Open;
+        return isConnected && socket != null && socket.State == WebSocketState.Open;
     }
-    
+
     private void OnDestroy()
     {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
         Disconnect();
     }
-    
+
     private void OnApplicationQuit()
     {
         Disconnect();
     }
-    
-    [Serializable]
-    private class MatchReadyData
-    {
-        public int matchId;
-    }
-}
-
-[Serializable]
-public class GameInputData
-{
-    public int playerId;
-    public long timestamp;
-    public float moveX;
-    public float moveY;
-    public bool fire;
-    public bool ability;
 }

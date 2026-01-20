@@ -45,18 +45,10 @@ namespace UI.Scenes
 
         private void Start()
         {
-            // Initialize animation system
-            if (AnimationController.Instance == null)
+            // Managed by BootstrapRunner.
+            if (AnimationController.Instance == null || ParticleController.Instance == null)
             {
-                GameObject animControllerObj = new GameObject("AnimationController");
-                animControllerObj.AddComponent<AnimationController>();
-            }
-
-            // Initialize particle system
-            if (ParticleController.Instance == null)
-            {
-                GameObject particleControllerObj = new GameObject("ParticleController");
-                particleControllerObj.AddComponent<ParticleController>();
+                Debug.LogWarning("[LoginSceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
             }
 
             // Set up button listeners

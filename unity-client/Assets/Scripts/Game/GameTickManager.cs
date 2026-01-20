@@ -1,43 +1,41 @@
+using System;
 using UnityEngine;
 
 /// <summary>
-GameTickManager: تنسيق الـ ticks والتوقيت
-المسؤوليات:
-- تتبع آخر tick تمت معالجته
-- حساب lag وتأخير الشبكة
-- التنسيق بين الـ snapshots والـ ticks
-</summary>
+/// GameTickManager: تنسيق الـ ticks والتوقيت
+/// المسؤوليات:
+/// - تتبع آخر tick تمت معالجته
+/// - حساب lag وتأخير الشبكة
+/// </summary>
+[DefaultExecutionOrder(-6000)]
 public class GameTickManager : MonoBehaviour
 {
     private static GameTickManager instance;
+
     public static GameTickManager Instance
     {
         get
         {
-            if (instance == null)
+            if (instance != null) return instance;
+
+            if (!UnityMainThread.IsMainThread)
             {
-                instance = FindObjectOfType<GameTickManager>();
-                if (instance == null)
-                {
-                    GameObject go = new GameObject("GameTickManager");
-                    instance = go.AddComponent<GameTickManager>();
-                    DontDestroyOnLoad(go);
-                }
+                return null;
             }
+
+            instance = FindObjectOfType<GameTickManager>();
             return instance;
         }
     }
 
     private int lastProcessedTick = -1;
-    private long lastProcessedTimestamp = 0;
+    private long lastProcessedTimestamp;
 
-    // إحصائيات الشبكة
-    private float averageNetworkDelay = 0f;
-    private float maxNetworkDelay = 0f;
-    private int snapshotCount = 0;
+    private float averageNetworkDelay;
+    private float maxNetworkDelay;
+    private int snapshotCount;
 
-    // Smoothing
-    private float delaySmoothingFactor = 0.1f;
+    [SerializeField] private float delaySmoothingFactor = 0.1f;
 
     private void Awake()
     {
@@ -46,13 +44,11 @@ public class GameTickManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    /// <summary>
-    /// تحديث التيك الحالي من السيرفر
-    /// </summary>
     public void UpdateServerTick(int tick, long timestamp)
     {
         if (tick < lastProcessedTick)
@@ -61,11 +57,9 @@ public class GameTickManager : MonoBehaviour
             return;
         }
 
-        // حساب تأخير الشبكة
         long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        float networkDelay = (currentTime - timestamp) / 1000f; // convert to seconds
+        float networkDelay = (currentTime - timestamp) / 1000f;
 
-        // تحديث المتوسط المتحرك للتأخير
         if (snapshotCount == 0)
         {
             averageNetworkDelay = networkDelay;
@@ -78,51 +72,29 @@ public class GameTickManager : MonoBehaviour
         maxNetworkDelay = Mathf.Max(maxNetworkDelay, networkDelay);
         snapshotCount++;
 
-        // تحديث آخر تيك
         lastProcessedTick = tick;
         lastProcessedTimestamp = timestamp;
-
-        Debug.Log($"[GameTickManager] Updated tick {tick}, Network delay: {networkDelay:F3}s (avg: {averageNetworkDelay:F3}s)");
     }
 
-    /// <summary>
-    /// الحصول على آخر tick تمت معالجته
-    /// </summary>
-    public int GetLastProcessedTick()
-    {
-        return lastProcessedTick;
-    }
+    public int GetLastProcessedTick() => lastProcessedTick;
 
-    /// <summary>
-    /// الحصول على تأخير الشبكة الحالي
-    /// </summary>
-    public float GetNetworkDelay()
-    {
-        return averageNetworkDelay;
-    }
+    public float GetNetworkDelay() => averageNetworkDelay;
 
-    /// <summary>
-    /// الحصول على أقصى تأخير تم رصده
-    /// </summary>
-    public float GetMaxNetworkDelay()
-    {
-        return maxNetworkDelay;
-    }
+    public float GetMaxNetworkDelay() => maxNetworkDelay;
 
-    /// <summary>
-    /// حساب التباين بين التوقيت المحلي والسيرفر
-    /// </summary>
     public float CalculateClockDrift(long serverTimestamp)
     {
         long localTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         return (localTime - serverTimestamp) / 1000f;
     }
 
-    /// <summary>
-    /// التحقق من حالة الـ lag
-    /// </summary>
-    public bool IsLagDetected()
+    public bool IsLagDetected() => averageNetworkDelay > 0.2f;
+
+    private void OnDestroy()
     {
-        return averageNetworkDelay > 0.2f; // أكثر من 200ms يعتبر lag
+        if (instance == this)
+        {
+            instance = null;
+        }
     }
 }
