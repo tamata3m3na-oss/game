@@ -56,9 +56,47 @@ namespace UI.Scenes
 
         private void Start()
         {
-            // Initialize managers if needed
-            InitializeManagers();
+            // CRITICAL: Wait for managers to be ready
+            StartCoroutine(InitializeWhenReady());
+        }
+
+        private IEnumerator InitializeWhenReady()
+        {
+            // Wait max 5 seconds for managers
+            float timeout = 5f;
+            float elapsed = 0f;
             
+            while (elapsed < timeout)
+            {
+                if (AnimationController.Instance != null && ParticleController.Instance != null && TransitionManager.Instance != null)
+                {
+                    // Managers ready - proceed
+                    InitializeUI();
+                    break;
+                }
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            
+            if (AnimationController.Instance == null)
+            {
+                Debug.LogError("[LobbySceneUI] AnimationController not initialized after timeout");
+            }
+            
+            if (ParticleController.Instance == null)
+            {
+                Debug.LogError("[LobbySceneUI] ParticleController not initialized after timeout");
+            }
+            
+            if (TransitionManager.Instance == null)
+            {
+                Debug.LogError("[LobbySceneUI] TransitionManager not initialized after timeout");
+            }
+        }
+
+        private void InitializeUI()
+        {
             // Initialize UI
             UpdatePlayerStats();
             
@@ -81,15 +119,6 @@ namespace UI.Scenes
             if (queuePanel != null)
             {
                 queuePanel.SetActive(false);
-            }
-        }
-
-        private void InitializeManagers()
-        {
-            // Managed by BootstrapRunner.
-            if (AnimationController.Instance == null || ParticleController.Instance == null || TransitionManager.Instance == null)
-            {
-                Debug.LogWarning("[LobbySceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
             }
         }
 

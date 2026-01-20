@@ -387,7 +387,7 @@ TransitionManager.Instance.FlashVignette(Color.red, 0.1f);
 - Automatic return to pool after lifetime
 
 ### Animation Optimization
-- DOTween for efficient tweening
+- Use built-in Unity Coroutines for efficient animation
 - Stop animations when not needed
 - Avoid allocations in Update()
 
