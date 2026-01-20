@@ -13,8 +13,8 @@ import { RankingModule } from '../ranking/ranking.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Match, User]), 
-    RedisModule, 
+    TypeOrmModule.forFeature([Match, User]),
+    RedisModule,
     JwtModule.register({}),
     RankingModule,
   ],

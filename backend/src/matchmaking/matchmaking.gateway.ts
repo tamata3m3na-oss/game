@@ -31,9 +31,7 @@ import { ConfigService } from '@nestjs/config';
   pingTimeout: 30000,
   pingInterval: 25000,
 })
-export class MatchmakingGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class MatchmakingGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -56,8 +54,7 @@ export class MatchmakingGateway
   async handleConnection(client: Socket) {
     try {
       const token =
-        client.handshake.auth?.token ||
-        client.handshake.headers?.authorization?.split(' ')[1];
+        client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
 
       if (!token) {
         this.logger.warn(`Client ${client.id} disconnected: No token provided`);
@@ -76,9 +73,7 @@ export class MatchmakingGateway
       client.data.user = user;
       this.sessions.register(user.id, client.id);
 
-      this.logger.log(
-        `Client connected: ${client.id} (User: ${user.id} - ${user.username})`,
-      );
+      this.logger.log(`Client connected: ${client.id} (User: ${user.id} - ${user.username})`);
     } catch (error) {
       this.logger.error(`Error handling connection: ${(error as Error).message}`);
       client.disconnect();
@@ -111,9 +106,7 @@ export class MatchmakingGateway
       client.emit('queue:status', status);
       this.logger.log(`User ${userId} joined matchmaking queue`);
     } catch (error) {
-      this.logger.error(
-        `Error joining queue for user ${userId}: ${(error as Error).message}`,
-      );
+      this.logger.error(`Error joining queue for user ${userId}: ${(error as Error).message}`);
       client.emit('queue:status', { position: 0, estimatedWait: 0 });
     }
   }
@@ -128,9 +121,7 @@ export class MatchmakingGateway
       client.emit('queue:status', { position: 0, estimatedWait: 0 });
       this.logger.log(`User ${userId} left matchmaking queue`);
     } catch (error) {
-      this.logger.error(
-        `Error leaving queue for user ${userId}: ${(error as Error).message}`,
-      );
+      this.logger.error(`Error leaving queue for user ${userId}: ${(error as Error).message}`);
       client.emit('queue:status', { position: 0, estimatedWait: 0 });
     }
   }
@@ -156,10 +147,7 @@ export class MatchmakingGateway
 
   @UseGuards(WsJwtGuard)
   @SubscribeMessage('game:input')
-  async handleGameInput(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: GameInputDto,
-  ) {
+  async handleGameInput(@ConnectedSocket() client: Socket, @MessageBody() data: GameInputDto) {
     const userId = client.data.userId;
 
     try {
@@ -191,7 +179,7 @@ export class MatchmakingGateway
       }
 
       const decoded = jwt.verify(token, secret);
-      
+
       if (typeof decoded === 'string') {
         return null;
       }

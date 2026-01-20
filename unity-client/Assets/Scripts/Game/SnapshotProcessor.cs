@@ -8,7 +8,6 @@ using UnityEngine;
 /// - التحقق من صحة البيانات الواردة
 /// - تحديث GameStateRepository
 /// </summary>
-[DefaultExecutionOrder(-5000)]
 public class SnapshotProcessor : MonoBehaviour
 {
     private static SnapshotProcessor instance;

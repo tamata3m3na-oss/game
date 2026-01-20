@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using UnityEngine;
 
-[DefaultExecutionOrder(-10001)]
+[DefaultExecutionOrder(-100)]
 public sealed class ThreadSafeEventQueue : MonoBehaviour
 {
     public static ThreadSafeEventQueue Instance { get; private set; }

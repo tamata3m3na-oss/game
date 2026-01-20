@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[DefaultExecutionOrder(-9999)]
 public sealed class SceneInitializer : MonoBehaviour
 {
     private void Awake()

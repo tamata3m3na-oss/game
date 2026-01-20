@@ -36,12 +36,12 @@ export class User {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @OneToMany(() => Match, match => match.player1)
+  @OneToMany(() => Match, (match) => match.player1)
   matchesAsPlayer1: Match[];
 
-  @OneToMany(() => Match, match => match.player2)
+  @OneToMany(() => Match, (match) => match.player2)
   matchesAsPlayer2: Match[];
 
-  @OneToMany(() => Match, match => match.winner)
+  @OneToMany(() => Match, (match) => match.winner)
   matchesAsWinner: Match[];
 }

@@ -25,8 +25,12 @@ export class ELOHelper implements ELORating {
     const winnerChange = Math.round(this.K_FACTOR * (1 - winnerExpected));
     const loserChange = -Math.round(this.K_FACTOR * (1 - loserExpected));
 
-    this.logger.debug(`ELO calculation: Winner ${winner.id} (${winner.rating}) vs Loser ${loser.id} (${loser.rating})`);
-    this.logger.debug(`Expected: Winner=${winnerExpected.toFixed(3)}, Loser=${loserExpected.toFixed(3)}`);
+    this.logger.debug(
+      `ELO calculation: Winner ${winner.id} (${winner.rating}) vs Loser ${loser.id} (${loser.rating})`,
+    );
+    this.logger.debug(
+      `Expected: Winner=${winnerExpected.toFixed(3)}, Loser=${loserExpected.toFixed(3)}`,
+    );
     this.logger.debug(`Changes: Winner=+${winnerChange}, Loser=${loserChange}`);
 
     return { winnerChange, loserChange };
@@ -36,31 +40,36 @@ export class ELOHelper implements ELORating {
     // For ties, both players get +5 rating points (draw bonus)
     // This is a simplified approach for tie handling
     const drawBonus = 5;
-    
+
     this.logger.debug(`Tie handling: Both players get +${drawBonus} rating points`);
-    
-    return { 
-      winnerChange: drawBonus, 
-      loserChange: drawBonus 
+
+    return {
+      winnerChange: drawBonus,
+      loserChange: drawBonus,
     };
   }
 
-  calculateDisconnectionPenalty(disconnectedPlayer: PlayerRating, opponent: PlayerRating): ELOChangeResult {
+  calculateDisconnectionPenalty(
+    disconnectedPlayer: PlayerRating,
+    opponent: PlayerRating,
+  ): ELOChangeResult {
     // Disconnected player gets normal loss penalty
     // Opponent gets win + small bonus for opponent disconnecting
     const winner = opponent;
     const loser = disconnectedPlayer;
-    
+
     const { winnerChange, loserChange } = this.calculateELOChange(winner, loser);
-    
+
     // Give extra 5 points to opponent for dealing with disconnect
     const adjustedWinnerChange = winnerChange + 5;
-    
-    this.logger.debug(`Disconnection penalty: Winner=${winner.id} gets +${adjustedWinnerChange}, Loser=${loser.id} gets ${loserChange}`);
-    
-    return { 
-      winnerChange: adjustedWinnerChange, 
-      loserChange 
+
+    this.logger.debug(
+      `Disconnection penalty: Winner=${winner.id} gets +${adjustedWinnerChange}, Loser=${loser.id} gets ${loserChange}`,
+    );
+
+    return {
+      winnerChange: adjustedWinnerChange,
+      loserChange,
     };
   }
 
