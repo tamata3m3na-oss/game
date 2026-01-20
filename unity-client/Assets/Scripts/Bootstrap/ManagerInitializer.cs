@@ -103,36 +103,16 @@ public sealed class ManagerInitializer : MonoBehaviour
 
     private bool AreCriticalManagersReady()
     {
-        return UnityMainThread.IsMainThread
-            && ThreadSafeEventQueue.Instance != null
-            && NetworkEventManager.GetInstance(false) != null
-            && NetworkManager.Instance != null
-            && AuthManager.Instance != null
-            && InputController.Instance != null
-            && GameStateRepository.GetInstance(false) != null
-            && GameTickManager.GetInstance(false) != null
-            && SnapshotProcessor.GetInstance(false) != null
-            && AnimationController.Instance != null
-            && ParticleController.Instance != null
-            && TransitionManager.Instance != null
-            && FindObjectOfType<SceneInitializer>() != null;
+        // Use the comprehensive safety check
+        return ManagersSafetyCheck.CheckAllManagers("ManagerInitializer");
     }
 
     private void LogMissingManagers()
     {
-        Debug.LogError("[ManagerInitializer] Timed out while waiting for managers. Missing:" +
-                       $" ThreadSafeEventQueue={(ThreadSafeEventQueue.Instance != null)}" +
-                       $" NetworkEventManager={(NetworkEventManager.GetInstance(false) != null)}" +
-                       $" NetworkManager={(NetworkManager.Instance != null)}" +
-                       $" AuthManager={(AuthManager.Instance != null)}" +
-                       $" InputController={(InputController.Instance != null)}" +
-                       $" GameStateRepository={(GameStateRepository.GetInstance(false) != null)}" +
-                       $" GameTickManager={(GameTickManager.GetInstance(false) != null)}" +
-                       $" SnapshotProcessor={(SnapshotProcessor.GetInstance(false) != null)}" +
-                       $" AnimationController={(AnimationController.Instance != null)}" +
-                       $" ParticleController={(ParticleController.Instance != null)}" +
-                       $" TransitionManager={(TransitionManager.Instance != null)}" +
-                       $" SceneInitializer={(FindObjectOfType<SceneInitializer>() != null)}");
+        Debug.LogError("[ManagerInitializer] Timed out while waiting for managers.");
+        
+        // The ManagersSafetyCheck will provide detailed logging
+        ManagersSafetyCheck.CheckAllManagers("ManagerInitializerTimeout");
     }
 
     private void OnDestroy()

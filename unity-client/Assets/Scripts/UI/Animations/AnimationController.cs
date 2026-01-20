@@ -9,9 +9,26 @@ namespace UI.Animations
     /// Central controller for all UI animations using Coroutines
     /// Provides smooth, performant animations for all UI elements
     /// </summary>
+    [DefaultExecutionOrder(-145)]
     public class AnimationController : MonoBehaviour
     {
-        public static AnimationController Instance { get; private set; }
+        public static AnimationController Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    Debug.LogWarning("[AnimationController] Instance is null. Make sure AnimationController is properly initialized.");
+                }
+                return instance;
+            }
+            private set
+            {
+                instance = value;
+            }
+        }
+        
+        private static AnimationController instance;
 
         [Header("Animation Settings")]
         [SerializeField] private float defaultFadeDuration = 0.3f;
@@ -58,15 +75,15 @@ namespace UI.Animations
         
         private void Awake()
         {
-            if (Instance == null)
+            if (Instance != null && Instance != this)
             {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
+                Debug.LogWarning("[AnimationController] Duplicate instance detected. Destroying duplicate.");
                 Destroy(gameObject);
+                return;
             }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         #region Fade Animations

@@ -24,62 +24,105 @@ public sealed class BootstrapRunner : MonoBehaviour
     {
         DontDestroyOnLoad(gameObject);
 
+        Debug.Log("[BootstrapRunner] Starting manager initialization...");
+
         // ManagerInitializer should exist before any other manager relies on singleton access.
         EnsureSingletonComponent<ManagerInitializer>();
 
         // Core threading + network
+        Debug.Log("[BootstrapRunner] Initializing core managers...");
         EnsureSingletonComponent<ThreadSafeEventQueue>();
         EnsureSingletonComponent<NetworkEventManager>();
         EnsureSingletonComponent<NetworkManager>();
 
         // Auth + input
+        Debug.Log("[BootstrapRunner] Initializing auth and input managers...");
         EnsureSingletonComponent<AuthManager>();
         EnsureSingletonComponent<InputController>();
 
         // Game state processing
+        Debug.Log("[BootstrapRunner] Initializing game state managers...");
         EnsureSingletonComponent<GameStateRepository>();
         EnsureSingletonComponent<GameTickManager>();
         EnsureSingletonComponent<SnapshotProcessor>();
 
-        // UI helpers
-        EnsureSingletonComponent<AnimationController>();
+        // UI helpers - ParticleController first due to execution order
+        Debug.Log("[BootstrapRunner] Initializing UI managers...");
         EnsureSingletonComponent<ParticleController>();
+        EnsureSingletonComponent<AnimationController>();
         EnsureSingletonComponent<TransitionManager>();
 
         // Scene hooks
+        Debug.Log("[BootstrapRunner] Initializing scene managers...");
         EnsureSingletonComponent<SceneInitializer>();
 
-        VerifySingletonComponent<ThreadSafeEventQueue>();
-        VerifySingletonComponent<NetworkEventManager>();
-        VerifySingletonComponent<NetworkManager>();
-        VerifySingletonComponent<AuthManager>();
-        VerifySingletonComponent<InputController>();
-        VerifySingletonComponent<GameStateRepository>();
-        VerifySingletonComponent<GameTickManager>();
-        VerifySingletonComponent<SnapshotProcessor>();
-        VerifySingletonComponent<AnimationController>();
-        VerifySingletonComponent<ParticleController>();
-        VerifySingletonComponent<TransitionManager>();
-        VerifySingletonComponent<SceneInitializer>();
+        // Verify all components with detailed logging
+        Debug.Log("[BootstrapRunner] Verifying manager initialization...");
+        bool allVerified = true;
+        allVerified &= VerifySingletonComponent<ThreadSafeEventQueue>();
+        allVerified &= VerifySingletonComponent<NetworkEventManager>();
+        allVerified &= VerifySingletonComponent<NetworkManager>();
+        allVerified &= VerifySingletonComponent<AuthManager>();
+        allVerified &= VerifySingletonComponent<InputController>();
+        allVerified &= VerifySingletonComponent<GameStateRepository>();
+        allVerified &= VerifySingletonComponent<GameTickManager>();
+        allVerified &= VerifySingletonComponent<SnapshotProcessor>();
+        allVerified &= VerifySingletonComponent<ParticleController>();
+        allVerified &= VerifySingletonComponent<AnimationController>();
+        allVerified &= VerifySingletonComponent<TransitionManager>();
+        allVerified &= VerifySingletonComponent<SceneInitializer>();
 
-        ManagerInitializer.Instance?.NotifyBootstrapCompleted();
+        // Perform comprehensive safety check
+        bool safetyCheckPassed = ManagersSafetyCheck.CheckAllManagers("Bootstrap");
+
+        if (allVerified && safetyCheckPassed)
+        {
+            Debug.Log("[BootstrapRunner] All managers initialized and verified successfully.");
+            ManagerInitializer.Instance?.NotifyBootstrapCompleted();
+        }
+        else
+        {
+            Debug.LogError("[BootstrapRunner] Manager initialization failed. Some managers may not be ready.");
+        }
     }
 
     private void EnsureSingletonComponent<T>() where T : Component
     {
         if (FindObjectOfType<T>() != null)
         {
+            Debug.Log($"[BootstrapRunner] {typeof(T).Name} already exists, skipping creation.");
             return;
         }
 
-        gameObject.AddComponent<T>();
+        try
+        {
+            Component component = gameObject.AddComponent<T>();
+            Debug.Log($"[BootstrapRunner] Successfully created {typeof(T).Name}");
+            
+            if (component == null)
+            {
+                Debug.LogError($"[BootstrapRunner] Failed to create {typeof(T).Name} - AddComponent returned null");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[BootstrapRunner] Exception creating {typeof(T).Name}: {ex.Message}");
+        }
     }
 
-    private void VerifySingletonComponent<T>() where T : Component
+    private bool VerifySingletonComponent<T>() where T : Component
     {
-        if (FindObjectOfType<T>() == null)
+        bool isInitialized = FindObjectOfType<T>() != null;
+        
+        if (isInitialized)
         {
-            Debug.LogError($"[BootstrapRunner] Failed to initialize {typeof(T).Name}.");
+            Debug.Log($"[BootstrapRunner] ✅ {typeof(T).Name} verified successfully.");
         }
+        else
+        {
+            Debug.LogError($"[BootstrapRunner] ❌ Failed to initialize {typeof(T).Name}.");
+        }
+        
+        return isInitialized;
     }
 }
