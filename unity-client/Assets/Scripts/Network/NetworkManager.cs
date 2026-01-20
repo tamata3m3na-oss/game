@@ -17,20 +17,13 @@ public class NetworkManager : MonoBehaviour
     
     private ClientWebSocket socket;
     private CancellationTokenSource cancellationTokenSource;
-    private Queue<Action> eventQueue = new Queue<Action>();
+    private NetworkEventManager eventManager;
     private bool isConnected = false;
     private string authToken = "";
     
     public UnityEvent<string> OnConnected = new UnityEvent<string>();
     public UnityEvent<string> OnDisconnected = new UnityEvent<string>();
     public UnityEvent<string> OnConnectionError = new UnityEvent<string>();
-    
-    public UnityEvent<QueueStatus> OnQueueStatus = new UnityEvent<QueueStatus>();
-    
-    public UnityEvent<MatchFoundData> OnMatchFound = new UnityEvent<MatchFoundData>();
-    public UnityEvent<MatchStartData> OnMatchStart = new UnityEvent<MatchStartData>();
-    public UnityEvent<NetworkGameState> OnGameSnapshot = new UnityEvent<NetworkGameState>();
-    public UnityEvent<GameEndData> OnGameEnd = new UnityEvent<GameEndData>();
     
     [Serializable]
     public class QueueStatus
@@ -122,15 +115,8 @@ public class NetworkManager : MonoBehaviour
     
     private void Update()
     {
-        while (eventQueue.Count > 0)
-        {
-            Action action;
-            lock (eventQueue)
-            {
-                action = eventQueue.Dequeue();
-            }
-            action?.Invoke();
-        }
+        // WebSocket messages are now processed asynchronously by NetworkEventManager
+        // No need for event queue processing here
     }
     
     public async void Initialize(string token)
@@ -213,13 +199,18 @@ public class NetworkManager : MonoBehaviour
     
     private void ProcessMessage(string message)
     {
+        if (eventManager == null)
+        {
+            eventManager = NetworkEventManager.Instance;
+        }
+        
         try
         {
             WebSocketMessage wsMsg = JsonUtility.FromJson<WebSocketMessage>(message);
             
             if (wsMsg == null || string.IsNullOrEmpty(wsMsg.type))
             {
-                Debug.LogWarning("Received malformed message");
+                Debug.LogWarning("[NetworkManager] Received malformed message");
                 return;
             }
             
@@ -227,37 +218,37 @@ public class NetworkManager : MonoBehaviour
             {
                 case "queue:status":
                     QueueStatus queueStatus = JsonUtility.FromJson<QueueStatus>(wsMsg.data);
-                    QueueOnMainThread(() => OnQueueStatus.Invoke(queueStatus));
+                    eventManager.ProcessNetworkMessage(NetworkEventType.QueueStatus, wsMsg.data);
                     break;
                 
                 case "match:found":
                     MatchFoundData matchFound = JsonUtility.FromJson<MatchFoundData>(wsMsg.data);
-                    QueueOnMainThread(() => OnMatchFound.Invoke(matchFound));
+                    eventManager.ProcessNetworkMessage(NetworkEventType.MatchFound, wsMsg.data);
                     break;
                 
                 case "match:start":
                     MatchStartData matchStart = JsonUtility.FromJson<MatchStartData>(wsMsg.data);
-                    QueueOnMainThread(() => OnMatchStart.Invoke(matchStart));
+                    eventManager.ProcessNetworkMessage(NetworkEventType.MatchStart, wsMsg.data);
                     break;
                 
                 case "game:snapshot":
                     NetworkGameState gameState = JsonUtility.FromJson<NetworkGameState>(wsMsg.data);
-                    QueueOnMainThread(() => OnGameSnapshot.Invoke(gameState));
+                    eventManager.ProcessNetworkMessage(NetworkEventType.GameSnapshot, wsMsg.data);
                     break;
                 
                 case "game:end":
                     GameEndData gameEnd = JsonUtility.FromJson<GameEndData>(wsMsg.data);
-                    QueueOnMainThread(() => OnGameEnd.Invoke(gameEnd));
+                    eventManager.ProcessNetworkMessage(NetworkEventType.GameEnd, wsMsg.data);
                     break;
                 
                 default:
-                    Debug.LogWarning("Unknown message type: " + wsMsg.type);
+                    Debug.LogWarning("[NetworkManager] Unknown message type: " + wsMsg.type);
                     break;
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError("Error processing message: " + ex.Message);
+            Debug.LogError("[NetworkManager] Error processing message: " + ex.Message);
         }
     }
     
