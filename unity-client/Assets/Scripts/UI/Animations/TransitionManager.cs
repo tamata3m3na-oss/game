@@ -9,9 +9,26 @@ namespace UI.Animations
     /// Manages scene transitions with visual effects
     /// Provides smooth, cinematic transitions between scenes
     /// </summary>
+    [DefaultExecutionOrder(-140)]
     public class TransitionManager : MonoBehaviour
     {
-        public static TransitionManager Instance { get; private set; }
+        public static TransitionManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    Debug.LogWarning("[TransitionManager] Instance is null. Make sure TransitionManager is properly initialized.");
+                }
+                return instance;
+            }
+            private set
+            {
+                instance = value;
+            }
+        }
+        
+        private static TransitionManager instance;
 
         [Header("Transition Overlay")]
         [SerializeField] private Canvas transitionCanvas;
@@ -33,17 +50,24 @@ namespace UI.Animations
 
         private void Awake()
         {
-            if (Instance == null)
+            if (Instance != null && Instance != this)
             {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
+                Debug.LogWarning("[TransitionManager] Duplicate instance detected. Destroying duplicate.");
                 Destroy(gameObject);
+                return;
             }
 
-            InitializeOverlay();
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            try
+            {
+                InitializeOverlay();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[TransitionManager] Exception during initialization: {ex.Message}");
+            }
         }
 
         private void InitializeOverlay()
@@ -427,21 +451,50 @@ namespace UI.Animations
             if (isTransitioning) yield break;
             isTransitioning = true;
 
-            // Show victory effect
-            overlayImage.color = winColor;
-            overlayImage.gameObject.SetActive(true);
-            transitionCanvasGroup.alpha = 0f;
-
-            yield return StartCoroutine(FadeCanvasGroup(0f, 1f, 0.5f));
-
-            // Spawn confetti
-            if (ParticleController.Instance != null)
+            try
             {
-                Vector3 center = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 10f));
-                ParticleController.Instance.SpawnConfettiEffect(center, 100);
-            }
+                // Show victory effect
+                overlayImage.color = winColor;
+                overlayImage.gameObject.SetActive(true);
+                transitionCanvasGroup.alpha = 0f;
 
-            yield return new WaitForSeconds(1f);
+                yield return StartCoroutine(FadeCanvasGroup(0f, 1f, 0.5f));
+
+                // Spawn confetti with comprehensive null safety
+                if (ParticleController.Instance != null)
+                {
+                    try
+                    {
+                        Camera mainCamera = Camera.main;
+                        if (mainCamera != null)
+                        {
+                            Vector3 center = mainCamera.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 10f));
+                            ParticleController.Instance.SpawnConfettiEffect(center, 100);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("[TransitionManager] Camera.main is null. Using default position for confetti.");
+                            ParticleController.Instance.SpawnConfettiEffect(Vector3.zero, 100);
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.LogError($"[TransitionManager] Exception spawning confetti effect: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[TransitionManager] ParticleController.Instance is null. Confetti effect will not be shown.");
+                }
+
+                yield return new WaitForSeconds(1f);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[TransitionManager] Exception during victory transition: {ex.Message}");
+                isTransitioning = false;
+                yield break;
+            }
 
             // Load next scene
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(nextScene);

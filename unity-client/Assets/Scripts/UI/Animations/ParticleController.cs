@@ -7,9 +7,26 @@ namespace UI.Animations
     /// Manages all particle systems for visual effects
     /// Object pooling for performance optimization
     /// </summary>
+    [DefaultExecutionOrder(-150)]
     public class ParticleController : MonoBehaviour
     {
-        public static ParticleController Instance { get; private set; }
+        public static ParticleController Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    Debug.LogWarning("[ParticleController] Instance is null. Make sure ParticleController is properly initialized.");
+                }
+                return instance;
+            }
+            private set
+            {
+                instance = value;
+            }
+        }
+        
+        private static ParticleController instance;
 
         [Header("Particle Prefabs")]
         [SerializeField] private ParticleSystem backgroundParticlePrefab;
@@ -26,64 +43,113 @@ namespace UI.Animations
 
         private void Awake()
         {
-            if (Instance == null)
+            if (Instance != null && Instance != this)
             {
-                Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
-            else
-            {
+                Debug.LogWarning("[ParticleController] Duplicate instance detected. Destroying duplicate.");
                 Destroy(gameObject);
+                return;
             }
 
-            InitializePools();
-        }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
 
-        private void InitializePools()
-        {
-            CreatePool("background", backgroundParticlePrefab, 30);
-            CreatePool("impact", impactParticlePrefab, 50);
-            CreatePool("shieldBreak", shieldBreakPrefab, 20);
-            CreatePool("explosion", explosionPrefab, 10);
-            CreatePool("confetti", confettiPrefab, 30);
-            CreatePool("thruster", thrusterParticlePrefab, 10);
-        }
-
-        private void CreatePool(string key, ParticleSystem prefab, int size)
-        {
-            if (prefab == null) return;
-
-            Queue<ParticleSystem> pool = new Queue<ParticleSystem>();
-            for (int i = 0; i < size; i++)
+            // Initialize pools with safety checks
+            if (!InitializePools())
             {
-                ParticleSystem ps = Instantiate(prefab, transform);
-                ps.gameObject.SetActive(false);
-                pool.Enqueue(ps);
+                Debug.LogError("[ParticleController] Failed to initialize particle pools. Some effects may not work.");
+            }
+        }
+
+        private bool InitializePools()
+        {
+            bool allPoolsInitialized = true;
+            
+            allPoolsInitialized &= CreatePool("background", backgroundParticlePrefab, 30);
+            allPoolsInitialized &= CreatePool("impact", impactParticlePrefab, 50);
+            allPoolsInitialized &= CreatePool("shieldBreak", shieldBreakPrefab, 20);
+            allPoolsInitialized &= CreatePool("explosion", explosionPrefab, 10);
+            allPoolsInitialized &= CreatePool("confetti", confettiPrefab, 30);
+            allPoolsInitialized &= CreatePool("thruster", thrusterParticlePrefab, 10);
+            
+            return allPoolsInitialized;
+        }
+
+        private bool CreatePool(string key, ParticleSystem prefab, int size)
+        {
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[ParticleController] Prefab for pool '{key}' is null. Pool will not be created.");
+                return false;
             }
 
-            particlePools[key] = pool;
+            try
+            {
+                Queue<ParticleSystem> pool = new Queue<ParticleSystem>();
+                for (int i = 0; i < size; i++)
+                {
+                    ParticleSystem ps = Instantiate(prefab, transform);
+                    if (ps != null)
+                    {
+                        ps.gameObject.SetActive(false);
+                        pool.Enqueue(ps);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[ParticleController] Failed to instantiate particle system for pool '{key}' at index {i}.");
+                    }
+                }
+
+                particlePools[key] = pool;
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ParticleController] Exception creating pool '{key}': {ex.Message}");
+                return false;
+            }
         }
 
         #region Spawn Methods
         public ParticleSystem SpawnParticle(string key, Vector3 position, Quaternion rotation, float lifetime = -1)
         {
-            if (!particlePools.ContainsKey(key) || particlePools[key].Count == 0)
+            if (Instance == null)
             {
+                Debug.LogWarning("[ParticleController] Cannot spawn particle - Instance is null.");
                 return null;
             }
 
-            ParticleSystem ps = particlePools[key].Dequeue();
-            ps.transform.position = position;
-            ps.transform.rotation = rotation;
-            ps.gameObject.SetActive(true);
-            ps.Play();
-
-            if (lifetime > 0)
+            if (!particlePools.ContainsKey(key) || particlePools[key].Count == 0)
             {
-                StartCoroutine(ReturnToPoolAfterDelay(key, ps, lifetime));
+                Debug.LogWarning($"[ParticleController] No available particles in pool '{key}' or pool doesn't exist.");
+                return null;
             }
 
-            return ps;
+            try
+            {
+                ParticleSystem ps = particlePools[key].Dequeue();
+                if (ps == null)
+                {
+                    Debug.LogWarning($"[ParticleController] Dequeued null particle from pool '{key}'.");
+                    return null;
+                }
+
+                ps.transform.position = position;
+                ps.transform.rotation = rotation;
+                ps.gameObject.SetActive(true);
+                ps.Play();
+
+                if (lifetime > 0)
+                {
+                    StartCoroutine(ReturnToPoolAfterDelay(key, ps, lifetime));
+                }
+
+                return ps;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[ParticleController] Exception spawning particle '{key}': {ex.Message}");
+                return null;
+            }
         }
 
         public ParticleSystem SpawnParticle(string key, Vector3 position, float lifetime = -1)
@@ -114,52 +180,117 @@ namespace UI.Animations
         #region Specific Effects
         public void SpawnImpactEffect(Vector3 position)
         {
+            if (Instance == null)
+            {
+                Debug.LogWarning("[ParticleController] Cannot spawn impact effect - Instance is null.");
+                return;
+            }
+
             ParticleSystem ps = SpawnParticle("impact", position, 0.5f);
             if (ps != null)
             {
-                var main = ps.main;
-                main.startColor = new Color(1f, 0.5f, 0f, 1f); // Orange spark
+                try
+                {
+                    var main = ps.main;
+                    main.startColor = new Color(1f, 0.5f, 0f, 1f); // Orange spark
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[ParticleController] Exception setting impact effect properties: {ex.Message}");
+                }
             }
         }
 
         public void SpawnShieldBreakEffect(Vector3 position)
         {
+            if (Instance == null)
+            {
+                Debug.LogWarning("[ParticleController] Cannot spawn shield break effect - Instance is null.");
+                return;
+            }
+
             ParticleSystem ps = SpawnParticle("shieldBreak", position, 0.6f);
             if (ps != null)
             {
-                var main = ps.main;
-                main.startColor = new Color(0f, 1f, 1f, 1f); // Cyan particles
+                try
+                {
+                    var main = ps.main;
+                    main.startColor = new Color(0f, 1f, 1f, 1f); // Cyan particles
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[ParticleController] Exception setting shield break effect properties: {ex.Message}");
+                }
             }
         }
 
         public void SpawnExplosionEffect(Vector3 position, float scale = 1f)
         {
+            if (Instance == null)
+            {
+                Debug.LogWarning("[ParticleController] Cannot spawn explosion effect - Instance is null.");
+                return;
+            }
+
             ParticleSystem ps = SpawnParticle("explosion", position, 1f);
             if (ps != null)
             {
-                ps.transform.localScale = Vector3.one * scale;
-                var main = ps.main;
-                main.startColor = new Color(1f, 0.2f, 0f, 1f); // Red-orange
+                try
+                {
+                    ps.transform.localScale = Vector3.one * scale;
+                    var main = ps.main;
+                    main.startColor = new Color(1f, 0.2f, 0f, 1f); // Red-orange
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[ParticleController] Exception setting explosion effect properties: {ex.Message}");
+                }
             }
         }
 
         public void SpawnConfettiEffect(Vector3 position, int burstCount = 50)
         {
+            if (Instance == null)
+            {
+                Debug.LogWarning("[ParticleController] Cannot spawn confetti effect - Instance is null.");
+                return;
+            }
+
             ParticleSystem ps = SpawnParticle("confetti", position, 2f);
             if (ps != null)
             {
-                var emission = ps.emission;
-                emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0, burstCount) });
+                try
+                {
+                    var emission = ps.emission;
+                    emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0, burstCount) });
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[ParticleController] Exception setting confetti effect properties: {ex.Message}");
+                }
             }
         }
 
         public void SpawnThrusterTrail(Vector3 position, Quaternion rotation, float duration = 0.2f)
         {
+            if (Instance == null)
+            {
+                Debug.LogWarning("[ParticleController] Cannot spawn thruster trail - Instance is null.");
+                return;
+            }
+
             ParticleSystem ps = SpawnParticle("thruster", position, rotation, duration);
             if (ps != null)
             {
-                var main = ps.main;
-                main.startColor = new Color(0f, 0.8f, 1f, 0.8f); // Cyan-blue
+                try
+                {
+                    var main = ps.main;
+                    main.startColor = new Color(0f, 0.8f, 1f, 0.8f); // Cyan-blue
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[ParticleController] Exception setting thruster trail properties: {ex.Message}");
+                }
             }
         }
         #endregion
