@@ -51,7 +51,7 @@ public class MatchUIController : MonoBehaviour
 
         if (opponentNameText != null)
         {
-            opponentNameText.text = NetworkEventManager.Instance?.LastMatchStart?.opponent?.username ?? "Opponent";
+            opponentNameText.text = NetworkEventManager.GetInstance(false)?.LastMatchStart?.opponent?.username ?? "Opponent";
         }
 
         matchStartTime = Time.time;

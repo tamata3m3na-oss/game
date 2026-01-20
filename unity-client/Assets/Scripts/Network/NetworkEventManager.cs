@@ -5,20 +5,28 @@ public class NetworkEventManager : MonoBehaviour
 {
     private static NetworkEventManager instance;
 
-    public static NetworkEventManager Instance
+    public static NetworkEventManager GetInstance(bool logIfMissing = true)
     {
-        get
-        {
-            if (instance != null) return instance;
+        if (instance != null) return instance;
 
-            if (!UnityMainThread.IsMainThread)
+        if (!UnityMainThread.IsMainThread)
+        {
+            if (logIfMissing)
             {
-                return null;
+                Debug.LogWarning("[NetworkEventManager] GetInstance() called off the main thread.");
             }
 
-            instance = FindObjectOfType<NetworkEventManager>();
-            return instance;
+            return null;
         }
+
+        instance = FindObjectOfType<NetworkEventManager>();
+
+        if (instance == null && logIfMissing)
+        {
+            Debug.LogError("[NetworkEventManager] NetworkEventManager is missing (Bootstrap failure).");
+        }
+
+        return instance;
     }
 
     public QueueStatusData LastQueueStatus { get; private set; }
@@ -99,6 +107,14 @@ public class NetworkEventManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"[NetworkEventManager] Error processing {eventType}: {e.Message}");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
         }
     }
 }

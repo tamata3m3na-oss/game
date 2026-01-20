@@ -189,7 +189,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (eventManager == null)
         {
-            eventManager = NetworkEventManager.Instance;
+            eventManager = NetworkEventManager.GetInstance(false);
         }
 
         if (eventManager == null)

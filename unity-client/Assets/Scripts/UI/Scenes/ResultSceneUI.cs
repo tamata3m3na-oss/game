@@ -126,7 +126,7 @@ namespace UI.Scenes
 
         private void SubscribeToEvents()
         {
-            var nem = NetworkEventManager.Instance;
+            var nem = NetworkEventManager.GetInstance(false);
             if (nem != null)
             {
                 nem.OnGameEndReceived += HandleGameEnd;
@@ -144,7 +144,7 @@ namespace UI.Scenes
 
             gameObject.SetActive(true);
 
-            NetworkGameState gameState = endData.finalState ?? GameStateRepository.Instance?.GetCurrentState();
+            NetworkGameState gameState = endData.finalState ?? GameStateRepository.GetInstance(false)?.GetCurrentState();
             if (gameState == null) return;
 
             int localPlayerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;
@@ -476,7 +476,7 @@ namespace UI.Scenes
 
         private void OnDestroy()
         {
-            var nem = NetworkEventManager.Instance;
+            var nem = NetworkEventManager.GetInstance(false);
             if (nem != null)
             {
                 nem.OnGameEndReceived -= HandleGameEnd;
