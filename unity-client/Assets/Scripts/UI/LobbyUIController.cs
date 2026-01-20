@@ -47,7 +47,7 @@ public class LobbyUIController : MonoBehaviour
 
         UpdateQueueButtonState();
 
-        var nem = NetworkEventManager.Instance;
+        var nem = NetworkEventManager.GetInstance(false);
         if (nem != null)
         {
             nem.OnQueueStatusReceived += HandleQueueStatus;
@@ -62,7 +62,7 @@ public class LobbyUIController : MonoBehaviour
 
     private void OnDestroy()
     {
-        var nem = NetworkEventManager.Instance;
+        var nem = NetworkEventManager.GetInstance(false);
         if (nem != null)
         {
             nem.OnQueueStatusReceived -= HandleQueueStatus;

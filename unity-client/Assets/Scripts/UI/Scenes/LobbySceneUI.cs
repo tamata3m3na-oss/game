@@ -633,7 +633,7 @@ namespace UI.Scenes
 
         private void SubscribeToEvents()
         {
-            var nem = NetworkEventManager.Instance;
+            var nem = NetworkEventManager.GetInstance(false);
             if (nem != null)
             {
                 nem.OnQueueStatusReceived += HandleQueueStatus;
@@ -650,7 +650,7 @@ namespace UI.Scenes
 
         private void OnDestroy()
         {
-            var nem = NetworkEventManager.Instance;
+            var nem = NetworkEventManager.GetInstance(false);
             if (nem != null)
             {
                 nem.OnQueueStatusReceived -= HandleQueueStatus;

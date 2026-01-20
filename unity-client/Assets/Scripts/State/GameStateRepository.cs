@@ -22,22 +22,30 @@ public class GameStateRepository : MonoBehaviour
     private static readonly object lockObject = new object();
 
     /// <summary>
-    /// الوصول إلى النسخة الوحيدة من الـ Repository (Singleton)
+    /// الحصول على النسخة الوحيدة من الـ Repository (Singleton)
     /// </summary>
-    public static GameStateRepository Instance
+    public static GameStateRepository GetInstance(bool logIfMissing = true)
     {
-        get
-        {
-            if (instance != null) return instance;
+        if (instance != null) return instance;
 
-            if (!UnityMainThread.IsMainThread)
+        if (!UnityMainThread.IsMainThread)
+        {
+            if (logIfMissing)
             {
-                return null;
+                Debug.LogWarning("[GameStateRepository] GetInstance() called off the main thread.");
             }
 
-            instance = FindObjectOfType<GameStateRepository>();
-            return instance;
+            return null;
         }
+
+        instance = FindObjectOfType<GameStateRepository>();
+
+        if (instance == null && logIfMissing)
+        {
+            Debug.LogError("[GameStateRepository] GameStateRepository is missing (Bootstrap failure).");
+        }
+
+        return instance;
     }
 
     #region Private State Storage

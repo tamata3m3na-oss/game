@@ -11,20 +11,28 @@ public class GameTickManager : MonoBehaviour
 {
     private static GameTickManager instance;
 
-    public static GameTickManager Instance
+    public static GameTickManager GetInstance(bool logIfMissing = true)
     {
-        get
-        {
-            if (instance != null) return instance;
+        if (instance != null) return instance;
 
-            if (!UnityMainThread.IsMainThread)
+        if (!UnityMainThread.IsMainThread)
+        {
+            if (logIfMissing)
             {
-                return null;
+                Debug.LogWarning("[GameTickManager] GetInstance() called off the main thread.");
             }
 
-            instance = FindObjectOfType<GameTickManager>();
-            return instance;
+            return null;
         }
+
+        instance = FindObjectOfType<GameTickManager>();
+
+        if (instance == null && logIfMissing)
+        {
+            Debug.LogError("[GameTickManager] GameTickManager is missing (Bootstrap failure).");
+        }
+
+        return instance;
     }
 
     private int lastProcessedTick = -1;

@@ -28,7 +28,7 @@ public class ResultScreenController : MonoBehaviour
             nextMatchButton.onClick.AddListener(OnNextMatchClicked);
         }
 
-        var nem = NetworkEventManager.Instance;
+        var nem = NetworkEventManager.GetInstance(false);
         if (nem != null)
         {
             nem.OnGameEndReceived += OnGameEnd;
@@ -39,15 +39,15 @@ public class ResultScreenController : MonoBehaviour
         }
 
         // If we entered the scene after the event fired, render from cached state.
-        if (NetworkEventManager.Instance?.LastGameEnd != null)
+        if (NetworkEventManager.GetInstance(false)?.LastGameEnd != null)
         {
-            OnGameEnd(NetworkEventManager.Instance.LastGameEnd);
+            OnGameEnd(NetworkEventManager.GetInstance(false).LastGameEnd);
         }
     }
 
     private void OnDestroy()
     {
-        var nem = NetworkEventManager.Instance;
+        var nem = NetworkEventManager.GetInstance(false);
         if (nem != null)
         {
             nem.OnGameEndReceived -= OnGameEnd;
@@ -60,7 +60,7 @@ public class ResultScreenController : MonoBehaviour
 
         gameObject.SetActive(true);
 
-        NetworkGameState gameState = endData.finalState ?? GameStateRepository.Instance?.GetCurrentState();
+        NetworkGameState gameState = endData.finalState ?? GameStateRepository.GetInstance(false)?.GetCurrentState();
         if (gameState == null) return;
 
         int localPlayerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;

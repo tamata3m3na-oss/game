@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -12,24 +13,36 @@ public class SnapshotProcessor : MonoBehaviour
 {
     private static SnapshotProcessor instance;
 
-    public static SnapshotProcessor Instance
+    public static SnapshotProcessor GetInstance(bool logIfMissing = true)
     {
-        get
-        {
-            if (instance != null) return instance;
+        if (instance != null) return instance;
 
-            if (!UnityMainThread.IsMainThread)
+        if (!UnityMainThread.IsMainThread)
+        {
+            if (logIfMissing)
             {
-                return null;
+                Debug.LogWarning("[SnapshotProcessor] GetInstance() called off the main thread.");
             }
 
-            instance = FindObjectOfType<SnapshotProcessor>();
-            return instance;
+            return null;
         }
+
+        instance = FindObjectOfType<SnapshotProcessor>();
+
+        if (instance == null && logIfMissing)
+        {
+            Debug.LogError("[SnapshotProcessor] SnapshotProcessor is missing (Bootstrap failure).");
+        }
+
+        return instance;
     }
 
     private GameStateRepository stateRepository;
     private GameTickManager tickManager;
+    private NetworkEventManager eventManager;
+
+    private bool isSubscribed;
+    private Coroutine waitCoroutine;
 
     private void Awake()
     {
@@ -45,28 +58,60 @@ public class SnapshotProcessor : MonoBehaviour
 
     private void Start()
     {
-        stateRepository = GameStateRepository.Instance;
-        tickManager = GameTickManager.Instance;
+        waitCoroutine = StartCoroutine(WaitForManagers());
+    }
 
-        var nem = NetworkEventManager.Instance;
-        if (nem != null)
+    private IEnumerator WaitForManagers()
+    {
+        if (!ManagerInitializer.IsReady)
         {
-            nem.OnGameSnapshotReceived += HandleGameSnapshot;
-            nem.OnGameEndReceived += HandleGameEnd;
+            yield return ManagerInitializer.WaitForReady();
         }
-        else
+
+        float start = Time.realtimeSinceStartup;
+        const float timeoutSeconds = 10f;
+
+        while (Time.realtimeSinceStartup - start < timeoutSeconds)
         {
-            Debug.LogError("[SnapshotProcessor] NetworkEventManager is missing (Bootstrap failure).");
+            stateRepository ??= GameStateRepository.GetInstance(false);
+            tickManager ??= GameTickManager.GetInstance(false);
+            eventManager ??= NetworkEventManager.GetInstance(false);
+
+            if (!isSubscribed && eventManager != null)
+            {
+                eventManager.OnGameSnapshotReceived += HandleGameSnapshot;
+                eventManager.OnGameEndReceived += HandleGameEnd;
+                isSubscribed = true;
+            }
+
+            if (stateRepository != null && tickManager != null && eventManager != null)
+            {
+                yield break;
+            }
+
+            yield return null;
         }
+
+        Debug.LogError(
+            "[SnapshotProcessor] Timed out waiting for managers. " +
+            $"GameStateRepository={(stateRepository != null)} " +
+            $"GameTickManager={(tickManager != null)} " +
+            $"NetworkEventManager={(eventManager != null)}");
     }
 
     private void OnDestroy()
     {
-        var nem = NetworkEventManager.Instance;
-        if (nem != null)
+        if (waitCoroutine != null)
         {
-            nem.OnGameSnapshotReceived -= HandleGameSnapshot;
-            nem.OnGameEndReceived -= HandleGameEnd;
+            StopCoroutine(waitCoroutine);
+            waitCoroutine = null;
+        }
+
+        if (isSubscribed && eventManager != null)
+        {
+            eventManager.OnGameSnapshotReceived -= HandleGameSnapshot;
+            eventManager.OnGameEndReceived -= HandleGameEnd;
+            isSubscribed = false;
         }
 
         if (instance == this)
@@ -82,6 +127,9 @@ public class SnapshotProcessor : MonoBehaviour
             Debug.LogError("[SnapshotProcessor] Received null snapshot data");
             return;
         }
+
+        stateRepository ??= GameStateRepository.GetInstance();
+        tickManager ??= GameTickManager.GetInstance();
 
         if (stateRepository == null)
         {
@@ -122,6 +170,7 @@ public class SnapshotProcessor : MonoBehaviour
 
         Debug.Log($"[SnapshotProcessor] Game ended. Winner: {endData.winner}");
 
+        stateRepository ??= GameStateRepository.GetInstance(false);
         if (endData.finalState != null && stateRepository != null)
         {
             stateRepository.UpdateGameState(endData.finalState);
