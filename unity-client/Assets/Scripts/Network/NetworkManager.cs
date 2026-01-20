@@ -17,12 +17,12 @@ public class NetworkManager : MonoBehaviour
     private ClientWebSocket socket;
     private CancellationTokenSource cancellationTokenSource;
     private Task connectTask;
-    private Task receiveTask;
 
     private NetworkEventManager eventManager;
 
     private bool isConnected;
     private string authToken = "";
+    private Queue<Action> eventQueue = new Queue<Action>();
 
     public UnityEvent<string> OnConnected = new UnityEvent<string>();
     public UnityEvent<string> OnDisconnected = new UnityEvent<string>();
@@ -40,7 +40,27 @@ public class NetworkManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void Initialize(string token)
+    private void Update()
+    {
+        lock (eventQueue)
+        {
+            while (eventQueue.Count > 0)
+            {
+                var action = eventQueue.Dequeue();
+                action?.Invoke();
+            }
+        }
+    }
+
+    private void Enqueue(Action action)
+    {
+        lock (eventQueue)
+        {
+            eventQueue.Enqueue(action);
+        }
+    }
+
+    public async Task InitializeAsync(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -56,6 +76,12 @@ public class NetworkManager : MonoBehaviour
         }
 
         connectTask = ConnectAsync();
+        await connectTask;
+    }
+
+    public void Initialize(string token)
+    {
+        _ = InitializeAsync(token);
     }
 
     private async Task ConnectAsync()
@@ -69,18 +95,17 @@ public class NetworkManager : MonoBehaviour
             socket = new ClientWebSocket();
             cancellationTokenSource = new CancellationTokenSource();
 
-            ThreadSafeEventQueue.Enqueue(() => Debug.Log("[NetworkManager] Connecting to: " + wsUrl));
+            Enqueue(() => Debug.Log("[NetworkManager] Connecting to: " + wsUrl));
 
             await socket.ConnectAsync(new Uri(wsUrl), cancellationTokenSource.Token).ConfigureAwait(false);
 
             isConnected = true;
-            ThreadSafeEventQueue.Enqueue(() =>
+            Enqueue(() =>
             {
                 OnConnected.Invoke("Connected to server");
                 Debug.Log("[NetworkManager] WebSocket connected");
+                StartCoroutine(ReceiveLoop());
             });
-
-            receiveTask = ReceiveLoopAsync(cancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -89,7 +114,7 @@ public class NetworkManager : MonoBehaviour
         catch (Exception ex)
         {
             isConnected = false;
-            ThreadSafeEventQueue.Enqueue(() =>
+            Enqueue(() =>
             {
                 Debug.LogError("[NetworkManager] Failed to connect: " + ex.Message);
                 OnConnectionError.Invoke("Connection failed: " + ex.Message);
@@ -97,50 +122,66 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    private async Task ReceiveLoopAsync(CancellationToken token)
+    private IEnumerator ReceiveLoop()
     {
         var buffer = new byte[4096];
 
-        try
+        while (isConnected && socket != null && socket.State == WebSocketState.Open)
         {
-            while (!token.IsCancellationRequested && socket != null && socket.State == WebSocketState.Open)
+            Task<WebSocketReceiveResult> receiveTask = null;
+            try
             {
-                WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), token)
-                    .ConfigureAwait(false);
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", token)
-                        .ConfigureAwait(false);
-
-                    isConnected = false;
-                    ThreadSafeEventQueue.Enqueue(() =>
-                    {
-                        OnDisconnected.Invoke("Server closed connection");
-                        Debug.Log("[NetworkManager] WebSocket disconnected: server closed connection");
-                    });
-                    break;
-                }
-
-                if (result.MessageType == WebSocketMessageType.Text)
-                {
-                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    ThreadSafeEventQueue.Enqueue(() => ProcessMessage(message));
-                }
+                receiveTask = socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationTokenSource.Token);
             }
-        }
-        catch (OperationCanceledException)
-        {
-            // expected
-        }
-        catch (Exception ex)
-        {
-            isConnected = false;
-            ThreadSafeEventQueue.Enqueue(() =>
+            catch (Exception ex)
             {
-                Debug.LogError("[NetworkManager] WebSocket receive error: " + ex.Message);
-                OnConnectionError.Invoke("Connection error: " + ex.Message);
-            });
+                isConnected = false;
+                ThreadSafeEventQueue.Enqueue(() =>
+                {
+                    Debug.LogError("[NetworkManager] WebSocket receive error: " + ex.Message);
+                    OnConnectionError.Invoke("Connection error: " + ex.Message);
+                });
+                yield break;
+            }
+
+            while (!receiveTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (receiveTask.IsFaulted || receiveTask.IsCanceled)
+            {
+                isConnected = false;
+                Exception ex = receiveTask.Exception?.InnerException ?? new Exception("WebSocket receive failed");
+                ThreadSafeEventQueue.Enqueue(() =>
+                {
+                    Debug.LogError("[NetworkManager] WebSocket receive error: " + ex.Message);
+                    OnConnectionError.Invoke("Connection error: " + ex.Message);
+                });
+                yield break;
+            }
+
+            WebSocketReceiveResult result = receiveTask.Result;
+
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                var closeTask = socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationTokenSource.Token);
+                while (!closeTask.IsCompleted) yield return null;
+
+                isConnected = false;
+                ThreadSafeEventQueue.Enqueue(() =>
+                {
+                    OnDisconnected.Invoke("Server closed connection");
+                    Debug.Log("[NetworkManager] WebSocket disconnected: server closed connection");
+                });
+                yield break;
+            }
+
+            if (result.MessageType == WebSocketMessageType.Text)
+            {
+                string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                ThreadSafeEventQueue.Enqueue(() => ProcessMessage(message));
+            }
         }
     }
 
@@ -204,7 +245,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (!IsConnected())
         {
-            ThreadSafeEventQueue.Enqueue(() => Debug.LogError("[NetworkManager] Not connected to server"));
+            Enqueue(() => Debug.LogError("[NetworkManager] Not connected to server"));
             return;
         }
 
@@ -220,7 +261,7 @@ public class NetworkManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ThreadSafeEventQueue.Enqueue(() => Debug.LogError("[NetworkManager] Failed to send message: " + ex.Message));
+            Enqueue(() => Debug.LogError("[NetworkManager] Failed to send message: " + ex.Message));
         }
     }
 
