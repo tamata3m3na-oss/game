@@ -220,10 +220,65 @@ If managers are not being found:
 
 ---
 
-**Last Updated**: Phase 3 Implementation  
+## Phase 5: Script Execution Order & Scene Validation
+
+### Script Execution Order
+
+This repo uses `DefaultExecutionOrder` attributes to enforce deterministic initialization:
+
+- **Order -100**: `ThreadSafeEventQueue`
+- **Order -100**: `BootstrapRunner`
+- **Order -50**: `NetworkManager`, `AuthManager`
+- **Order 0 (Default)**: `GameManager`, `GameStateManager`, `InputController`, and all UI managers/controllers
+
+> Note: A reference summary is also recorded at the bottom of `unity-client/ProjectSettings/ProjectSettings.asset`.
+
+### Scene Setup Requirements (Validated)
+
+#### LoginScene
+- ✅ `_Bootstrap` (global managers root)
+  - `ThreadSafeEventQueue`
+  - `BootstrapRunner`
+  - `NetworkManager`
+  - `AuthManager`
+  - `InputController`
+  - `GameManager`
+  - `NetworkEventManager`
+  - `GameStateRepository`, `GameTickManager`, `SnapshotProcessor`
+  - UI managers: `AnimationController`, `ParticleController`, `TransitionManager`
+- ✅ `LoginUIController`
+- ❌ Must NOT include `GameStateManager` or GameScene-specific scripts
+
+#### LobbyScene
+- ✅ `LobbyUIController`
+- ❌ Must NOT include `_Bootstrap` (created in LoginScene and persists via `DontDestroyOnLoad`)
+
+#### GameScene
+- ✅ `GameStateManager`
+- ✅ `PlayerSpawnPoint` + `OpponentSpawnPoint`
+- ✅ Ship template/prefab available for spawning (`ShipTemplate`)
+- ❌ Must NOT include `_Bootstrap`
+
+#### ResultScene
+- ✅ `ResultScreenController`
+- ❌ Must NOT include `GameStateManager`
+
+### Manager Prefabs
+
+Prefabs were added under:
+- `unity-client/Assets/Prefabs/Managers/GlobalManagers.prefab`
+- `unity-client/Assets/Prefabs/Managers/GameStateManager.prefab`
+
+---
+
+**Last Updated**: Phase 5 Implementation  
 **Related Files**: 
-- `Assets/Scripts/Managers/GameManager.cs`
-- `Assets/Scripts/Bootstrap/Bootstrap.cs`
-- `Assets/Scripts/Auth/AuthManager.cs`
-- `Assets/Scripts/Network/NetworkManager.cs`
-- `Assets/Scripts/Input/InputController.cs`
+- `unity-client/Assets/Scripts/Bootstrap/ThreadSafeEventQueue.cs`
+- `unity-client/Assets/Scripts/Bootstrap/Bootstrap.cs`
+- `unity-client/Assets/Scripts/Network/NetworkManager.cs`
+- `unity-client/Assets/Scripts/Auth/AuthManager.cs`
+- `unity-client/Assets/Scripts/Input/InputController.cs`
+- `unity-client/Assets/Scenes/LoginScene.unity`
+- `unity-client/Assets/Scenes/LobbyScene.unity`
+- `unity-client/Assets/Scenes/GameScene.unity`
+- `unity-client/Assets/Scenes/ResultScene.unity`

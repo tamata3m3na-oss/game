@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 
+[DefaultExecutionOrder(-50)]
 public class AuthManager : MonoBehaviour
 {
     public static AuthManager Instance { get; private set; }

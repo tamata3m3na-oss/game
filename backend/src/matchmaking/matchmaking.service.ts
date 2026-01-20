@@ -87,7 +87,8 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
 
     const queueKey = this.queueKey(bracket);
 
-    await this.redis.multi()
+    await this.redis
+      .multi()
       .set(this.waitingPlayerKey(playerId), JSON.stringify(waitingPlayer), { EX: 60 * 30 })
       .zAdd(queueKey, { score: joinedAt, value: playerId.toString() })
       .sAdd(this.bracketsKey, bracket.toString())
@@ -146,7 +147,9 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
           await this.rankingService.processMatchResult(matchId);
           this.logger.log(`Successfully processed ELO ranking for disconnected match ${matchId}`);
         } catch (error) {
-          this.logger.error(`Failed to process ELO ranking for disconnected match ${matchId}: ${error}`);
+          this.logger.error(
+            `Failed to process ELO ranking for disconnected match ${matchId}: ${error}`,
+          );
         }
       }
 
@@ -296,7 +299,10 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    const bracketEntries: Array<{ bracket: number; entries: Array<{ playerId: number; joinedAt: number }> }> = [];
+    const bracketEntries: Array<{
+      bracket: number;
+      entries: Array<{ playerId: number; joinedAt: number }>;
+    }> = [];
 
     for (const b of brackets) {
       const bracket = parseInt(b, 10);
@@ -310,7 +316,7 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
 
       bracketEntries.push({
         bracket,
-        entries: entries.map(e => ({ playerId: parseInt(e.value, 10), joinedAt: e.score })),
+        entries: entries.map((e) => ({ playerId: parseInt(e.value, 10), joinedAt: e.score })),
       });
     }
 
@@ -328,7 +334,7 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    const waitingKeys = allPlayerIds.map(id => this.waitingPlayerKey(id));
+    const waitingKeys = allPlayerIds.map((id) => this.waitingPlayerKey(id));
     const rawPlayers = await this.redis.mGet(waitingKeys);
 
     const players: Array<WaitingPlayer & { bracket: number }> = [];
@@ -428,7 +434,8 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
       this.broadcastQueueStatusForBracket(p2.bracket),
     ]);
 
-    await this.redis.multi()
+    await this.redis
+      .multi()
       .hSet(this.matchKey(match.id), {
         player1Id: p1.playerId.toString(),
         player2Id: p2.playerId.toString(),
@@ -439,8 +446,12 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
       .expire(this.matchKey(match.id), 60 * 10)
       .set(this.playerMatchKey(p1.playerId), match.id.toString(), { EX: 60 * 10 })
       .set(this.playerMatchKey(p2.playerId), match.id.toString(), { EX: 60 * 10 })
-      .set(this.recentOpponentKey(p1.playerId), p2.playerId.toString(), { EX: this.recentOpponentTtlSeconds })
-      .set(this.recentOpponentKey(p2.playerId), p1.playerId.toString(), { EX: this.recentOpponentTtlSeconds })
+      .set(this.recentOpponentKey(p1.playerId), p2.playerId.toString(), {
+        EX: this.recentOpponentTtlSeconds,
+      })
+      .set(this.recentOpponentKey(p2.playerId), p1.playerId.toString(), {
+        EX: this.recentOpponentTtlSeconds,
+      })
       .exec();
 
     const [u1, u2] = await Promise.all([
@@ -501,7 +512,10 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     for (const b of brackets) {
       const bracket = parseInt(b, 10);
       const queueKey = this.queueKey(bracket);
-      await this.redis.zRem(queueKey, playerIds.map(id => id.toString()));
+      await this.redis.zRem(
+        queueKey,
+        playerIds.map((id) => id.toString()),
+      );
 
       const len = await this.redis.zCard(queueKey);
       if (len === 0) {
@@ -530,10 +544,15 @@ export class MatchmakingService implements OnModuleInit, OnModuleDestroy {
     await multi.exec();
   }
 
-  private async removeFromQueue(playerId: number, bracket: number, broadcast: boolean): Promise<void> {
+  private async removeFromQueue(
+    playerId: number,
+    bracket: number,
+    broadcast: boolean,
+  ): Promise<void> {
     const queueKey = this.queueKey(bracket);
 
-    await this.redis.multi()
+    await this.redis
+      .multi()
       .del(this.waitingPlayerKey(playerId))
       .zRem(queueKey, playerId.toString())
       .exec();

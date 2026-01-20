@@ -78,7 +78,6 @@ export class RankingService {
       };
 
       await this.processMatchResultInternal(matchResult, match);
-
     } catch (error) {
       this.logger.error(`Error processing match result for match ${matchId}: ${error}`);
       throw error;
@@ -101,7 +100,7 @@ export class RankingService {
       loserChange = changes.loserChange;
       winnerPlayer = player1;
       loserPlayer = player2;
-      
+
       this.logger.log(`Tie match: both players get +${winnerChange} rating points`);
     } else if (isDisconnection) {
       // Handle disconnection
@@ -114,8 +113,10 @@ export class RankingService {
       loserChange = changes.loserChange;
       winnerPlayer = opponent;
       loserPlayer = disconnectedPlayer;
-      
-      this.logger.log(`Disconnection: winner ${winnerPlayer.id} gets +${winnerChange}, loser ${loserPlayer.id} gets ${loserChange}`);
+
+      this.logger.log(
+        `Disconnection: winner ${winnerPlayer.id} gets +${winnerChange}, loser ${loserPlayer.id} gets ${loserChange}`,
+      );
     } else if (winnerId) {
       // Normal win/loss
       winnerPlayer = winnerId === player1.id ? player1 : player2;
@@ -124,8 +125,10 @@ export class RankingService {
       const changes = this.eloHelper.calculateELOChange(winnerPlayer, loserPlayer);
       winnerChange = changes.winnerChange;
       loserChange = changes.loserChange;
-      
-      this.logger.log(`Normal match: winner ${winnerPlayer.id} gets +${winnerChange}, loser ${loserPlayer.id} gets ${loserChange}`);
+
+      this.logger.log(
+        `Normal match: winner ${winnerPlayer.id} gets +${winnerChange}, loser ${loserPlayer.id} gets ${loserChange}`,
+      );
     } else {
       this.logger.warn(`Unknown match result type for match ${matchResult.matchId}`);
       return;
@@ -136,13 +139,15 @@ export class RankingService {
     const player2RatingBefore = player2.rating;
 
     // Update player ratings and stats
-    const player1RatingAfter = player1.id === winnerPlayer.id 
-      ? this.eloHelper.applyRatingChange(player1.rating, winnerChange)
-      : this.eloHelper.applyRatingChange(player1.rating, loserChange);
+    const player1RatingAfter =
+      player1.id === winnerPlayer.id
+        ? this.eloHelper.applyRatingChange(player1.rating, winnerChange)
+        : this.eloHelper.applyRatingChange(player1.rating, loserChange);
 
-    const player2RatingAfter = player2.id === winnerPlayer.id 
-      ? this.eloHelper.applyRatingChange(player2.rating, winnerChange)
-      : this.eloHelper.applyRatingChange(player2.rating, loserChange);
+    const player2RatingAfter =
+      player2.id === winnerPlayer.id
+        ? this.eloHelper.applyRatingChange(player2.rating, winnerChange)
+        : this.eloHelper.applyRatingChange(player2.rating, loserChange);
 
     // Update wins/losses counts
     if (winnerId && !isTie) {
@@ -193,7 +198,7 @@ export class RankingService {
 
   async getLeaderboard(page: number = 1, limit: number = 100): Promise<any[]> {
     const offset = (page - 1) * limit;
-    
+
     try {
       // Try to get from cache first
       const cached = await this.getCachedLeaderboard(page, limit);
@@ -204,13 +209,7 @@ export class RankingService {
       // Query database
       const users = await this.userRepository
         .createQueryBuilder('user')
-        .select([
-          'user.id',
-          'user.username',
-          'user.rating',
-          'user.wins',
-          'user.losses',
-        ])
+        .select(['user.id', 'user.username', 'user.rating', 'user.wins', 'user.losses'])
         .orderBy('user.rating', 'DESC')
         .addOrderBy('user.wins', 'DESC')
         .offset(offset)
@@ -250,10 +249,11 @@ export class RankingService {
       }
 
       // Get player's rank
-      const playerRank = await this.userRepository
-        .createQueryBuilder('user')
-        .where('user.rating > :rating', { rating: user.rating })
-        .getCount() + 1;
+      const playerRank =
+        (await this.userRepository
+          .createQueryBuilder('user')
+          .where('user.rating > :rating', { rating: user.rating })
+          .getCount()) + 1;
 
       // Get next rank player (if exists)
       const nextRankUser = await this.userRepository
@@ -293,7 +293,7 @@ export class RankingService {
         .createQueryBuilder('user')
         .where('(user.wins + user.losses) > 0')
         .getCount();
-      
+
       const topRating = await this.userRepository
         .createQueryBuilder('user')
         .select('MAX(user.rating)', 'maxRating')
@@ -334,13 +334,7 @@ export class RankingService {
       // Get top 100 players
       const topUsers = await this.userRepository
         .createQueryBuilder('user')
-        .select([
-          'user.id',
-          'user.username',
-          'user.rating',
-          'user.wins',
-          'user.losses',
-        ])
+        .select(['user.id', 'user.username', 'user.rating', 'user.wins', 'user.losses'])
         .orderBy('user.rating', 'DESC')
         .limit(100)
         .getMany();
@@ -350,7 +344,10 @@ export class RankingService {
       await this.redis.del(this.LEADERBOARD_GLOBAL_KEY);
 
       for (const user of topUsers) {
-        pipeline.zAdd(this.LEADERBOARD_GLOBAL_KEY, { score: user.rating, value: user.id.toString() });
+        pipeline.zAdd(this.LEADERBOARD_GLOBAL_KEY, {
+          score: user.rating,
+          value: user.id.toString(),
+        });
       }
       pipeline.expire(this.LEADERBOARD_GLOBAL_KEY, this.LEADERBOARD_CACHE_TTL);
       await pipeline.exec();
@@ -383,7 +380,7 @@ export class RankingService {
       if (page === 1 && limit <= 100) {
         const cached = await this.redis.hGetAll(this.LEADERBOARD_TOP100_KEY);
         if (cached && Object.keys(cached).length > 0) {
-          return Object.values(cached).map(item => JSON.parse(item));
+          return Object.values(cached).map((item) => JSON.parse(item));
         }
       }
       return null;

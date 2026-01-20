@@ -203,3 +203,8 @@ PlayerSettings:
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   virtualTexturingSupportEnabled: 0
+
+# Phase 5 - Script Execution Order (reference)
+# Order -100: ThreadSafeEventQueue, BootstrapRunner
+# Order -50: NetworkManager, AuthManager
+# Order 0 (Default): GameManager, GameStateManager, InputController, UI managers

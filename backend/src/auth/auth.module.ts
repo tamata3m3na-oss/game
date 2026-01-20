@@ -9,12 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '../database/entities/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    PassportModule,
-    JwtModule.register({}),
-    ConfigModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), PassportModule, JwtModule.register({}), ConfigModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],

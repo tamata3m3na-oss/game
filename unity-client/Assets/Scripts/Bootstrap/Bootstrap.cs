@@ -3,7 +3,7 @@ using UI.Animations;
 
 public static class Bootstrap
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CreateBootstrapObject()
     {
         if (Object.FindObjectOfType<BootstrapRunner>() != null)
@@ -17,7 +17,7 @@ public static class Bootstrap
     }
 }
 
-[DefaultExecutionOrder(-10002)]
+[DefaultExecutionOrder(-100)]
 public sealed class BootstrapRunner : MonoBehaviour
 {
     private void Awake()

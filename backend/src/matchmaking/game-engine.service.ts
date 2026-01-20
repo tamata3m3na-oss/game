@@ -89,10 +89,13 @@ export class GameEngineService {
 
     await this.saveGameState(matchId, initialState);
 
-    this.inputQueues.set(matchId, new Map([
-      [player1Id, []],
-      [player2Id, []],
-    ]));
+    this.inputQueues.set(
+      matchId,
+      new Map([
+        [player1Id, []],
+        [player2Id, []],
+      ]),
+    );
 
     const interval = setInterval(async () => {
       try {
@@ -120,10 +123,10 @@ export class GameEngineService {
   async stopMatchWithResult(matchId: number, endReason: string = 'normal'): Promise<void> {
     // Get the current game state before stopping
     const state = await this.getGameState(matchId);
-    
+
     // Stop the game loop first
     await this.stopMatch(matchId);
-    
+
     // If we have a game state and it's still active, end the match properly
     if (state && state.status === 'active') {
       state.status = 'completed';
@@ -232,7 +235,10 @@ export class GameEngineService {
     this.sessions.emitToPlayer(state.player2.id, 'game:snapshot', state);
   }
 
-  private getLatestInput(matchQueues: Map<number, PlayerInput[]>, playerId: number): PlayerInput | null {
+  private getLatestInput(
+    matchQueues: Map<number, PlayerInput[]>,
+    playerId: number,
+  ): PlayerInput | null {
     const queue = matchQueues.get(playerId);
     if (!queue || queue.length === 0) {
       return null;
@@ -296,7 +302,7 @@ export class GameEngineService {
     }
 
     const distance = Math.sqrt(
-      Math.pow(target.x - shooter.x, 2) + Math.pow(target.y - shooter.y, 2)
+      Math.pow(target.x - shooter.x, 2) + Math.pow(target.y - shooter.y, 2),
     );
 
     if (distance <= this.bulletRange) {
@@ -306,15 +312,15 @@ export class GameEngineService {
       if (hitDetected) {
         // Apply damage to shield first, then health
         if (target.shieldActive && target.shieldHealth > 0) {
-         target.shieldHealth -= this.weaponDamage;
-         if (target.shieldHealth < 0) {
-           const overflowDamage = Math.abs(target.shieldHealth);
-           target.health -= overflowDamage; // Apply overflow damage to health
-           target.shieldActive = false;
-           target.shieldHealth = 0;
-         }
+          target.shieldHealth -= this.weaponDamage;
+          if (target.shieldHealth < 0) {
+            const overflowDamage = Math.abs(target.shieldHealth);
+            target.health -= overflowDamage; // Apply overflow damage to health
+            target.shieldActive = false;
+            target.shieldHealth = 0;
+          }
         } else {
-         target.health -= this.weaponDamage;
+          target.health -= this.weaponDamage;
         }
 
         // Update damage dealt

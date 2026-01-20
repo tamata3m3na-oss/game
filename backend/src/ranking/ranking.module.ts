@@ -8,9 +8,7 @@ import { ELOHelper } from './elo-helper.service';
 import { ELOCalculatorService } from './elo-calculator.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User, Match]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, Match])],
   controllers: [RankingController],
   providers: [RankingService, ELOHelper, ELOCalculatorService],
   exports: [RankingService],

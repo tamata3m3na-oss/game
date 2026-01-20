@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-[DefaultExecutionOrder(-8990)]
 public class NetworkEventManager : MonoBehaviour
 {
     private static NetworkEventManager instance;

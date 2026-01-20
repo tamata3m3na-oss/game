@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
-[DefaultExecutionOrder(-9000)]
+[DefaultExecutionOrder(-50)]
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance { get; private set; }

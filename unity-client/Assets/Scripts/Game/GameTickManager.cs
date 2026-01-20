@@ -7,7 +7,6 @@ using UnityEngine;
 /// - تتبع آخر tick تمت معالجته
 /// - حساب lag وتأخير الشبكة
 /// </summary>
-[DefaultExecutionOrder(-6000)]
 public class GameTickManager : MonoBehaviour
 {
     private static GameTickManager instance;
