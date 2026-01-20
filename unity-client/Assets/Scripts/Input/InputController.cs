@@ -138,9 +138,12 @@ public class InputController : MonoBehaviour
     {
         if (OnInputEvent == null) return;
         
+        int playerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;
+        if (playerId <= 0) return;
+
         var inputData = new GameInputData
         {
-            playerId = AuthManager.Instance.GetUserId(),
+            playerId = playerId,
             timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             moveX = moveInput.x,
             moveY = moveInput.y,

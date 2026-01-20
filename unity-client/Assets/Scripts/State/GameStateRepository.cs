@@ -28,16 +28,14 @@ public class GameStateRepository : MonoBehaviour
     {
         get
         {
-            if (instance == null)
+            if (instance != null) return instance;
+
+            if (!UnityMainThread.IsMainThread)
             {
-                instance = FindObjectOfType<GameStateRepository>();
-                if (instance == null)
-                {
-                    GameObject go = new GameObject("GameStateRepository");
-                    instance = go.AddComponent<GameStateRepository>();
-                    DontDestroyOnLoad(go);
-                }
+                return null;
             }
+
+            instance = FindObjectOfType<GameStateRepository>();
             return instance;
         }
     }

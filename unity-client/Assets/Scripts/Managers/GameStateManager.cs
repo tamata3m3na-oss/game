@@ -2,10 +2,12 @@ using System;
 using UnityEngine;
 using UnityEngine.Events;
 
+/// <summary>
+/// Scene-local runtime view/controller for the current match.
+/// Subscribes to network events on enable and updates scene objects (ships/UI).
+/// </summary>
 public class GameStateManager : MonoBehaviour
 {
-    public static GameStateManager Instance { get; private set; }
-    
     [Header("References")]
     public ShipController playerShip;
     public ShipController opponentShip;
@@ -13,51 +15,59 @@ public class GameStateManager : MonoBehaviour
     public GameObject opponentShipPrefab;
     public Transform playerSpawnPoint;
     public Transform opponentSpawnPoint;
-    
+
     [Header("Game Settings")]
     public int localPlayerId = -1;
     public int opponentPlayerId = -1;
     public int currentMatchId = -1;
-    
-    // Game state
-    private NetworkManager.NetworkGameState currentGameState;
+
+    private NetworkGameState currentGameState;
     private int lastProcessedTick = -1;
-    private float snapshotDelay = 0f;
-    private int fpsCounter = 0;
-    private float fpsTimer = 0f;
-    private int currentFPS = 0;
-    
-    // Events
+    private float snapshotDelay;
+
+    private int fpsCounter;
+    private float fpsTimer;
+    private int currentFPS;
+
     public UnityEvent<int> OnGameEnded = new UnityEvent<int>();
-    
-    private void Awake()
+
+    private void OnEnable()
     {
-        if (Instance == null)
+        var nem = NetworkEventManager.Instance;
+        if (nem != null)
         {
-            Instance = this;
+            nem.OnMatchStartReceived += HandleMatchStart;
+            nem.OnGameSnapshotReceived += HandleGameSnapshot;
+            nem.OnGameEndReceived += HandleGameEnd;
         }
-        else
+
+        if (InputController.Instance != null)
         {
-            Destroy(gameObject);
+            InputController.Instance.OnInputEvent += HandleInputEvent;
         }
     }
-    
-    private void Start()
+
+    private void OnDisable()
     {
-        // Subscribe to network events
-        NetworkManager.Instance.OnGameSnapshot.AddListener(HandleGameSnapshot);
-        NetworkManager.Instance.OnGameEnd.AddListener(HandleGameEnd);
-        
-        // Initialize ships
-        InitializeShips();
+        var nem = NetworkEventManager.Instance;
+        if (nem != null)
+        {
+            nem.OnMatchStartReceived -= HandleMatchStart;
+            nem.OnGameSnapshotReceived -= HandleGameSnapshot;
+            nem.OnGameEndReceived -= HandleGameEnd;
+        }
+
+        if (InputController.Instance != null)
+        {
+            InputController.Instance.OnInputEvent -= HandleInputEvent;
+        }
     }
-    
+
     private void Update()
     {
-        // Calculate FPS
         fpsCounter++;
         fpsTimer += Time.deltaTime;
-        
+
         if (fpsTimer >= 1.0f)
         {
             currentFPS = fpsCounter;
@@ -65,145 +75,116 @@ public class GameStateManager : MonoBehaviour
             fpsTimer = 0f;
         }
     }
-    
+
+    private void HandleInputEvent(GameInputData input)
+    {
+        var network = NetworkManager.Instance;
+        if (network != null && network.IsConnected())
+        {
+            network.SendGameInput(input);
+        }
+    }
+
+    private void HandleMatchStart(MatchStartData data)
+    {
+        if (data == null) return;
+
+        currentMatchId = data.matchId;
+
+        localPlayerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;
+        opponentPlayerId = data.opponent != null ? data.opponent.id : -1;
+
+        InitializeShips();
+
+        Debug.Log($"[GameStateManager] Match start: {currentMatchId} local={localPlayerId} opponent={opponentPlayerId}");
+    }
+
     private void InitializeShips()
     {
-        // Create player ship
+        if (playerShip != null)
+        {
+            Destroy(playerShip.gameObject);
+            playerShip = null;
+        }
+
+        if (opponentShip != null)
+        {
+            Destroy(opponentShip.gameObject);
+            opponentShip = null;
+        }
+
         if (playerShipPrefab != null && playerSpawnPoint != null)
         {
             GameObject playerObj = Instantiate(playerShipPrefab, playerSpawnPoint.position, playerSpawnPoint.rotation);
             playerShip = playerObj.GetComponent<ShipController>();
-            if (playerShip != null)
-            {
-                playerShip.Initialize(localPlayerId, true);
-            }
+            playerShip?.Initialize(localPlayerId, true);
         }
-        
-        // Create opponent ship
+
         if (opponentShipPrefab != null && opponentSpawnPoint != null)
         {
             GameObject opponentObj = Instantiate(opponentShipPrefab, opponentSpawnPoint.position, opponentSpawnPoint.rotation);
             opponentShip = opponentObj.GetComponent<ShipController>();
-            if (opponentShip != null)
-            {
-                opponentShip.Initialize(opponentPlayerId, false);
-            }
+            opponentShip?.Initialize(opponentPlayerId, false);
         }
     }
-    
-    public void StartGame(int matchId, int playerId, int opponentId)
-    {
-        currentMatchId = matchId;
-        localPlayerId = playerId;
-        opponentPlayerId = opponentId;
-        
-        Debug.Log("Game started: Match " + matchId + " Player " + playerId + " vs " + opponentId);
-    }
-    
-    private void HandleGameSnapshot(NetworkManager.NetworkGameState state)
+
+    private void HandleGameSnapshot(NetworkGameState state)
     {
         if (state == null) return;
 
-        // Calculate snapshot delay
         float currentTime = Time.time;
-        float serverTime = state.timestamp / 1000f; // Convert milliseconds to seconds
+        float serverTime = state.timestamp / 1000f;
         snapshotDelay = currentTime - serverTime;
-        
-        // Check for lag
-        if (snapshotDelay > 0.2f) // 200ms
-        {
-            Debug.LogWarning("High latency detected: " + snapshotDelay + " seconds");
-        }
-        
-        // Store current state
+
         currentGameState = state;
-        
-        // Update ships based on game state
-        UpdateShipsFromState(state);
-        
-        // Check for anti-cheat violations
-        CheckForAntiCheatViolations(state);
-        
         lastProcessedTick = state.tick;
+
+        UpdateShipsFromState(state);
     }
-    
-    private void UpdateShipsFromState(NetworkManager.NetworkGameState state)
+
+    private void UpdateShipsFromState(NetworkGameState state)
     {
-        if (playerShip != null && opponentShip != null)
+        if (playerShip == null || opponentShip == null) return;
+        if (state.player1 == null || state.player2 == null) return;
+
+        if (state.player1.id == localPlayerId)
         {
-            // Determine which player is which
-            if (state.player1.id == localPlayerId)
-            {
-                playerShip.UpdateFromSnapshot(state.player1);
-                opponentShip.UpdateFromSnapshot(state.player2);
-            }
-            else
-            {
-                playerShip.UpdateFromSnapshot(state.player2);
-                opponentShip.UpdateFromSnapshot(state.player1);
-            }
+            playerShip.UpdateFromSnapshot(state.player1);
+            opponentShip.UpdateFromSnapshot(state.player2);
+        }
+        else
+        {
+            playerShip.UpdateFromSnapshot(state.player2);
+            opponentShip.UpdateFromSnapshot(state.player1);
         }
     }
-    
-    private void CheckForAntiCheatViolations(NetworkManager.NetworkGameState state)
+
+    private void HandleGameEnd(GameEndData data)
     {
-        // Check for position jumps
-        if (playerShip != null)
-        {
-            Vector3 currentPos = playerShip.transform.position;
-            Vector3 targetPos = new Vector3(state.player1.x, 0f, state.player1.y);
-            
-            float distance = Vector3.Distance(currentPos, targetPos);
-            if (distance > 5f) // 5 units jump threshold
-            {
-                Debug.LogWarning("Position jump detected: " + distance + " units");
-            }
-        }
-    }
-    
-    private void HandleGameEnd(NetworkManager.GameEndData data)
-    {
-        Debug.Log("Game ended. Winner: " + (data.winner == localPlayerId ? "Local Player" : "Opponent"));
+        if (data == null) return;
+
+        Debug.Log($"[GameStateManager] Game ended. Winner: {data.winner}");
         OnGameEnded.Invoke(data.winner);
+
+        if (data.finalState != null)
+        {
+            currentGameState = data.finalState;
+        }
     }
-    
-    public NetworkManager.NetworkGameState GetCurrentGameState()
-    {
-        return currentGameState;
-    }
-    
-    public int GetCurrentMatchId()
-    {
-        return currentMatchId;
-    }
-    
-    public int GetLocalPlayerId()
-    {
-        return localPlayerId;
-    }
-    
-    public int GetOpponentPlayerId()
-    {
-        return opponentPlayerId;
-    }
-    
-    public int GetCurrentFPS()
-    {
-        return currentFPS;
-    }
-    
-    public float GetSnapshotDelay()
-    {
-        return snapshotDelay;
-    }
-    
-    public ShipController GetPlayerShip()
-    {
-        return playerShip;
-    }
-    
-    public ShipController GetOpponentShip()
-    {
-        return opponentShip;
-    }
+
+    public NetworkGameState GetCurrentGameState() => currentGameState;
+
+    public int GetCurrentMatchId() => currentMatchId;
+
+    public int GetLocalPlayerId() => localPlayerId;
+
+    public int GetOpponentPlayerId() => opponentPlayerId;
+
+    public int GetCurrentFPS() => currentFPS;
+
+    public float GetSnapshotDelay() => snapshotDelay;
+
+    public ShipController GetPlayerShip() => playerShip;
+
+    public ShipController GetOpponentShip() => opponentShip;
 }

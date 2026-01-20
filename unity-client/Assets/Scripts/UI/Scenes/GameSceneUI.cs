@@ -59,6 +59,7 @@ namespace UI.Scenes
         [SerializeField] private Color shieldColor = new Color(0f, 0.83f, 1f, 1f); // Cyan
         [SerializeField] private Color abilityReadyColor = new Color(1f, 0f, 0.43f, 1f); // Magenta
         
+        private GameStateManager gameStateManager;
         private ShipController playerShip;
         private ShipController opponentShip;
         private float matchStartTime;
@@ -70,13 +71,29 @@ namespace UI.Scenes
             // Initialize managers
             InitializeManagers();
             
+            gameStateManager = FindObjectOfType<GameStateManager>();
+
             // Get references to ships
-            playerShip = GameStateManager.Instance.GetPlayerShip();
-            opponentShip = GameStateManager.Instance.GetOpponentShip();
-            
+            if (gameStateManager != null)
+            {
+                playerShip = gameStateManager.GetPlayerShip();
+                opponentShip = gameStateManager.GetOpponentShip();
+            }
+            else
+            {
+                Debug.LogWarning("[GameSceneUI] No GameStateManager found in scene.");
+            }
+
             // Set player names
-            playerNameText.text = AuthManager.Instance.GetUsername();
-            opponentNameText.text = "Opponent";
+            if (playerNameText != null && AuthManager.Instance != null)
+            {
+                playerNameText.text = AuthManager.Instance.GetUsername();
+            }
+
+            if (opponentNameText != null)
+            {
+                opponentNameText.text = NetworkEventManager.Instance?.LastMatchStart?.opponent?.username ?? "Opponent";
+            }
             
             matchStartTime = Time.time;
             
@@ -95,22 +112,10 @@ namespace UI.Scenes
 
         private void InitializeManagers()
         {
-            if (AnimationController.Instance == null)
+            // Managed by BootstrapRunner to avoid runtime instantiation from scene scripts.
+            if (AnimationController.Instance == null || ParticleController.Instance == null || TransitionManager.Instance == null)
             {
-                GameObject animControllerObj = new GameObject("AnimationController");
-                animControllerObj.AddComponent<AnimationController>();
-            }
-
-            if (ParticleController.Instance == null)
-            {
-                GameObject particleControllerObj = new GameObject("ParticleController");
-                particleControllerObj.AddComponent<ParticleController>();
-            }
-
-            if (TransitionManager.Instance == null)
-            {
-                GameObject transitionManagerObj = new GameObject("TransitionManager");
-                transitionManagerObj.AddComponent<TransitionManager>();
+                Debug.LogWarning("[GameSceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
             }
         }
 
@@ -454,12 +459,17 @@ namespace UI.Scenes
 
         private void UpdateDebugInfo()
         {
+            if (gameStateManager == null)
+            {
+                gameStateManager = FindObjectOfType<GameStateManager>();
+                if (gameStateManager == null) return;
+            }
+
             if (fpsText != null)
             {
-                int fps = GameStateManager.Instance.GetCurrentFPS();
+                int fps = gameStateManager.GetCurrentFPS();
                 fpsText.text = "FPS: " + fps;
-                
-                // Color code FPS
+
                 if (fps >= 55)
                 {
                     fpsText.color = healthHighColor;
@@ -473,13 +483,12 @@ namespace UI.Scenes
                     fpsText.color = healthLowColor;
                 }
             }
-            
+
             if (pingText != null)
             {
-                float ping = GameStateManager.Instance.GetSnapshotDelay() * 1000;
+                float ping = gameStateManager.GetSnapshotDelay() * 1000;
                 pingText.text = "Ping: " + ping.ToString("F0") + "ms";
-                
-                // Color code ping
+
                 if (ping < 50f)
                 {
                     pingText.color = healthHighColor;

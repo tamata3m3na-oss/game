@@ -86,22 +86,10 @@ namespace UI.Scenes
 
         private void InitializeManagers()
         {
-            if (AnimationController.Instance == null)
+            // Managed by BootstrapRunner.
+            if (AnimationController.Instance == null || ParticleController.Instance == null || TransitionManager.Instance == null)
             {
-                GameObject animControllerObj = new GameObject("AnimationController");
-                animControllerObj.AddComponent<AnimationController>();
-            }
-
-            if (ParticleController.Instance == null)
-            {
-                GameObject particleControllerObj = new GameObject("ParticleController");
-                particleControllerObj.AddComponent<ParticleController>();
-            }
-
-            if (TransitionManager.Instance == null)
-            {
-                GameObject transitionManagerObj = new GameObject("TransitionManager");
-                transitionManagerObj.AddComponent<TransitionManager>();
+                Debug.LogWarning("[LobbySceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
             }
         }
 
@@ -535,9 +523,9 @@ namespace UI.Scenes
             }
         }
 
-        private void HandleQueueStatus(NetworkManager.QueueStatus status)
+        private void HandleQueueStatus(QueueStatusData status)
         {
-            if (queueStatusText != null)
+            if (queueStatusText != null && status != null)
             {
                 if (status.position > 0)
                 {
@@ -550,7 +538,7 @@ namespace UI.Scenes
             }
         }
 
-        private void HandleMatchFound(NetworkManager.MatchFoundData data)
+        private void HandleMatchFound(MatchFoundData data)
         {
             Debug.Log($"Match found! Match ID: {data.matchId} Opponent: {data.opponent.username}");
             
@@ -645,8 +633,12 @@ namespace UI.Scenes
 
         private void SubscribeToEvents()
         {
-            NetworkManager.Instance.OnQueueStatus.AddListener(HandleQueueStatus);
-            NetworkManager.Instance.OnMatchFound.AddListener(HandleMatchFound);
+            var nem = NetworkEventManager.Instance;
+            if (nem != null)
+            {
+                nem.OnQueueStatusReceived += HandleQueueStatus;
+                nem.OnMatchFoundReceived += HandleMatchFound;
+            }
         }
 
         #region Easing Functions
@@ -658,10 +650,11 @@ namespace UI.Scenes
 
         private void OnDestroy()
         {
-            if (NetworkManager.Instance != null)
+            var nem = NetworkEventManager.Instance;
+            if (nem != null)
             {
-                NetworkManager.Instance.OnQueueStatus.RemoveListener(HandleQueueStatus);
-                NetworkManager.Instance.OnMatchFound.RemoveListener(HandleMatchFound);
+                nem.OnQueueStatusReceived -= HandleQueueStatus;
+                nem.OnMatchFoundReceived -= HandleMatchFound;
             }
 
             ParticleController.Instance?.StopBackgroundParticles();

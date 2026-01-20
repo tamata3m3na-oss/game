@@ -77,22 +77,10 @@ namespace UI.Scenes
 
         private void InitializeManagers()
         {
-            if (AnimationController.Instance == null)
+            // Managed by BootstrapRunner.
+            if (AnimationController.Instance == null || ParticleController.Instance == null || TransitionManager.Instance == null)
             {
-                GameObject animControllerObj = new GameObject("AnimationController");
-                animControllerObj.AddComponent<AnimationController>();
-            }
-
-            if (ParticleController.Instance == null)
-            {
-                GameObject particleControllerObj = new GameObject("ParticleController");
-                particleControllerObj.AddComponent<ParticleController>();
-            }
-
-            if (TransitionManager.Instance == null)
-            {
-                GameObject transitionManagerObj = new GameObject("TransitionManager");
-                transitionManagerObj.AddComponent<TransitionManager>();
+                Debug.LogWarning("[ResultSceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
             }
         }
 
@@ -138,29 +126,32 @@ namespace UI.Scenes
 
         private void SubscribeToEvents()
         {
-            GameStateManager.Instance.OnGameEnded.AddListener(ShowResultScreen);
+            var nem = NetworkEventManager.Instance;
+            if (nem != null)
+            {
+                nem.OnGameEndReceived += HandleGameEnd;
+
+                if (nem.LastGameEnd != null)
+                {
+                    HandleGameEnd(nem.LastGameEnd);
+                }
+            }
         }
 
-        public void ShowResultScreen(int winnerId)
+        private void HandleGameEnd(GameEndData endData)
         {
+            if (endData == null) return;
+
             gameObject.SetActive(true);
-            
-            // Get game end data from GameStateManager
-            var gameState = GameStateManager.Instance.GetCurrentGameState();
-            
+
+            NetworkGameState gameState = endData.finalState ?? GameStateRepository.Instance?.GetCurrentState();
             if (gameState == null) return;
-            
-            // Determine if local player won
-            int localPlayerId = AuthManager.Instance.GetUserId();
-            isVictory = winnerId == localPlayerId;
-            
-            // Apply victory/defeat theme
+
+            int localPlayerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;
+            isVictory = endData.winner == localPlayerId;
+
             ApplyTheme(isVictory);
-            
-            // Play entrance animations
             StartCoroutine(PlayEntranceAnimations());
-            
-            // Calculate and display stats
             DisplayStats(gameState, localPlayerId);
         }
 
@@ -316,7 +307,7 @@ namespace UI.Scenes
             text.color = originalColor;
         }
 
-        private void DisplayStats(NetworkManager.NetworkGameState gameState, int localPlayerId)
+        private void DisplayStats(NetworkGameState gameState, int localPlayerId)
         {
             // Calculate stats
             int yourHealth = gameState.player1.id == localPlayerId ? gameState.player1.health : gameState.player2.health;
@@ -485,9 +476,10 @@ namespace UI.Scenes
 
         private void OnDestroy()
         {
-            if (GameStateManager.Instance != null)
+            var nem = NetworkEventManager.Instance;
+            if (nem != null)
             {
-                GameStateManager.Instance.OnGameEnded.RemoveListener(ShowResultScreen);
+                nem.OnGameEndReceived -= HandleGameEnd;
             }
         }
     }

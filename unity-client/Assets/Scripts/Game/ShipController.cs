@@ -64,14 +64,14 @@ public class ShipController : MonoBehaviour
         isLocalPlayer = isLocal;
     }
     
-    public void UpdateFromSnapshot(NetworkManager.PlayerState state)
+    public void UpdateFromSnapshot(PlayerStateData state)
     {
         if (state == null) return;
-        
+
         // Update position and rotation
         targetPosition = new Vector3(state.x, 0f, state.y); // Assuming 2D movement on XZ plane
         targetRotation = Quaternion.Euler(0f, state.rotation, 0f);
-        
+
         // Update health and shield
         currentHealth = state.health;
         currentShieldHealth = state.shieldHealth;
