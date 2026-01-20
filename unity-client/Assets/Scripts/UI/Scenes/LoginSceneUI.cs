@@ -45,12 +45,42 @@ namespace UI.Scenes
 
         private void Start()
         {
-            // Managed by BootstrapRunner.
-            if (AnimationController.Instance == null || ParticleController.Instance == null)
-            {
-                Debug.LogWarning("[LoginSceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
-            }
+            // CRITICAL: Wait for managers to be ready
+            StartCoroutine(InitializeWhenReady());
+        }
 
+        private IEnumerator InitializeWhenReady()
+        {
+            // Wait max 5 seconds for managers
+            float timeout = 5f;
+            float elapsed = 0f;
+            
+            while (elapsed < timeout)
+            {
+                if (AnimationController.Instance != null && ParticleController.Instance != null)
+                {
+                    // Managers ready - proceed
+                    InitializeUI();
+                    break;
+                }
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            
+            if (AnimationController.Instance == null)
+            {
+                Debug.LogError("[LoginSceneUI] AnimationController not initialized after timeout");
+            }
+            
+            if (ParticleController.Instance == null)
+            {
+                Debug.LogError("[LoginSceneUI] ParticleController not initialized after timeout");
+            }
+        }
+
+        private void InitializeUI()
+        {
             // Set up button listeners
             SetupButtons();
             

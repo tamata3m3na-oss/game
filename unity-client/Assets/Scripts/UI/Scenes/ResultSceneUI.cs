@@ -62,9 +62,47 @@ namespace UI.Scenes
 
         private void Start()
         {
-            // Initialize managers
-            InitializeManagers();
+            // CRITICAL: Wait for managers to be ready
+            StartCoroutine(InitializeWhenReady());
+        }
+
+        private IEnumerator InitializeWhenReady()
+        {
+            // Wait max 5 seconds for managers
+            float timeout = 5f;
+            float elapsed = 0f;
             
+            while (elapsed < timeout)
+            {
+                if (AnimationController.Instance != null && ParticleController.Instance != null && TransitionManager.Instance != null)
+                {
+                    // Managers ready - proceed
+                    InitializeUI();
+                    break;
+                }
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+            
+            if (AnimationController.Instance == null)
+            {
+                Debug.LogError("[ResultSceneUI] AnimationController not initialized after timeout");
+            }
+            
+            if (ParticleController.Instance == null)
+            {
+                Debug.LogError("[ResultSceneUI] ParticleController not initialized after timeout");
+            }
+            
+            if (TransitionManager.Instance == null)
+            {
+                Debug.LogError("[ResultSceneUI] TransitionManager not initialized after timeout");
+            }
+        }
+
+        private void InitializeUI()
+        {
             // Setup buttons
             SetupButtons();
             
@@ -73,15 +111,6 @@ namespace UI.Scenes
             
             // Hide initially
             gameObject.SetActive(false);
-        }
-
-        private void InitializeManagers()
-        {
-            // Managed by BootstrapRunner.
-            if (AnimationController.Instance == null || ParticleController.Instance == null || TransitionManager.Instance == null)
-            {
-                Debug.LogWarning("[ResultSceneUI] UI managers are missing. Ensure BootstrapRunner is enabled.");
-            }
         }
 
         private void SetupButtons()
