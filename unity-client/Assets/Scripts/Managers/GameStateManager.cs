@@ -5,6 +5,7 @@ using UnityEngine.Events;
 /// <summary>
 /// Scene-local runtime view/controller for the current match.
 /// Subscribes to network events on enable and updates scene objects (ships/UI).
+/// This manager is scene-specific and should not persist across scene loads.
 /// </summary>
 public class GameStateManager : MonoBehaviour
 {
@@ -31,25 +32,46 @@ public class GameStateManager : MonoBehaviour
 
     public UnityEvent<int> OnGameEnded = new UnityEvent<int>();
 
+    private void Awake()
+    {
+        // Validate that GameStateManager is in the scene
+        if (GetComponent<GameStateManager>() == null)
+        {
+            Debug.LogError("GameStateManager component validation failed");
+        }
+    }
+
     private void OnEnable()
     {
-        var nem = NetworkEventManager.Instance;
+        // Find NetworkEventManager from scene (scene-local pattern)
+        var nem = FindObjectOfType<NetworkEventManager>();
         if (nem != null)
         {
             nem.OnMatchStartReceived += HandleMatchStart;
             nem.OnGameSnapshotReceived += HandleGameSnapshot;
             nem.OnGameEndReceived += HandleGameEnd;
         }
-
-        if (InputController.Instance != null)
+        else
         {
-            InputController.Instance.OnInputEvent += HandleInputEvent;
+            Debug.LogWarning("[GameStateManager] NetworkEventManager not found in scene");
+        }
+
+        // Find InputController from scene (scene-local pattern)
+        var inputController = FindObjectOfType<InputController>();
+        if (inputController != null)
+        {
+            inputController.OnInputEvent += HandleInputEvent;
+        }
+        else
+        {
+            Debug.LogWarning("[GameStateManager] InputController not found in scene");
         }
     }
 
     private void OnDisable()
     {
-        var nem = NetworkEventManager.Instance;
+        // Find NetworkEventManager from scene (scene-local pattern)
+        var nem = FindObjectOfType<NetworkEventManager>();
         if (nem != null)
         {
             nem.OnMatchStartReceived -= HandleMatchStart;
@@ -57,9 +79,11 @@ public class GameStateManager : MonoBehaviour
             nem.OnGameEndReceived -= HandleGameEnd;
         }
 
-        if (InputController.Instance != null)
+        // Find InputController from scene (scene-local pattern)
+        var inputController = FindObjectOfType<InputController>();
+        if (inputController != null)
         {
-            InputController.Instance.OnInputEvent -= HandleInputEvent;
+            inputController.OnInputEvent -= HandleInputEvent;
         }
     }
 
@@ -78,10 +102,15 @@ public class GameStateManager : MonoBehaviour
 
     private void HandleInputEvent(GameInputData input)
     {
-        var network = NetworkManager.Instance;
+        // Find NetworkManager from scene (scene-local pattern)
+        var network = FindObjectOfType<NetworkManager>();
         if (network != null && network.IsConnected())
         {
             network.SendGameInput(input);
+        }
+        else
+        {
+            Debug.LogWarning("[GameStateManager] NetworkManager not found or not connected");
         }
     }
 
@@ -91,7 +120,9 @@ public class GameStateManager : MonoBehaviour
 
         currentMatchId = data.matchId;
 
-        localPlayerId = AuthManager.Instance != null ? AuthManager.Instance.GetUserId() : -1;
+        // Find AuthManager from scene (scene-local pattern)
+        var authManager = FindObjectOfType<AuthManager>();
+        localPlayerId = authManager != null ? authManager.GetUserId() : -1;
         opponentPlayerId = data.opponent != null ? data.opponent.id : -1;
 
         InitializeShips();
