@@ -145,6 +145,13 @@ Window → Package Manager → Input System → Install
 Window → TextMeshPro → Import TMP Essential Resources
 ```
 
+### "Input System Not Working / Backend Not Enabled"
+```
+Edit → Project Settings → Player → Other Settings
+→ Active Input Handling: Set to "Both" or "Input System Package (New)"
+→ Restart Unity Editor after changing this setting
+```
+
 ### "Scene Not Found"
 ```
 File → Build Settings → Add Open Scenes (while scene is open)

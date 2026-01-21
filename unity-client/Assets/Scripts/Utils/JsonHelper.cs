@@ -1,23 +1,24 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace PvpGame.Utils
 {
     public static class JsonHelper
     {
-        private static readonly JsonSerializerOptions defaultOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerSettings defaultSettings = new JsonSerializerSettings
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore,
+            Formatting = Formatting.None
         };
 
         public static string Serialize<T>(T obj)
         {
             try
             {
-                return JsonSerializer.Serialize(obj, defaultOptions);
+                return JsonConvert.SerializeObject(obj, defaultSettings);
             }
             catch (Exception ex)
             {
@@ -30,7 +31,7 @@ namespace PvpGame.Utils
         {
             try
             {
-                return JsonSerializer.Deserialize<T>(json, defaultOptions);
+                return JsonConvert.DeserializeObject<T>(json, defaultSettings);
             }
             catch (Exception ex)
             {
@@ -43,7 +44,7 @@ namespace PvpGame.Utils
         {
             try
             {
-                result = JsonSerializer.Deserialize<T>(json, defaultOptions);
+                result = JsonConvert.DeserializeObject<T>(json, defaultSettings);
                 return true;
             }
             catch

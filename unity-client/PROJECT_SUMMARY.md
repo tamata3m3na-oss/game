@@ -25,7 +25,7 @@ A complete Unity 2022.3.62f3 client for real-time PvP ship battles, fully integr
 **Game State Management:**
 - ✅ `GameState.cs` - Enum for scene states
 - ✅ `GameStateData.cs` - Data models for server snapshots
-- ✅ Serialization/deserialization with System.Text.Json
+- ✅ Serialization/deserialization with Newtonsoft.Json
 
 #### 2. Gameplay Systems (100% Complete)
 
