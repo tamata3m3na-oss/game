@@ -151,6 +151,9 @@ public class SnapshotProcessor : MonoBehaviour
                 return;
             }
 
+            // تأكد من إنشاء الطائرات والـ UI فوراً
+            EnsureGameObjectsExist(snapshotData);
+
             tickManager.UpdateServerTick(snapshotData.tick, snapshotData.timestamp);
             stateRepository.UpdateGameState(snapshotData);
         }
@@ -215,5 +218,36 @@ public class SnapshotProcessor : MonoBehaviour
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// التأكد من إنشاء الطائرات والـ GameObjects فوراً عند أول snapshot
+    /// </summary>
+    private void EnsureGameObjectsExist(NetworkGameState snapshotData)
+    {
+        try
+        {
+            // البحث عن GameStateManager في المشهد الحالي
+            var gameStateManager = FindObjectOfType<GameStateManager>();
+            
+            if (gameStateManager == null)
+            {
+                Debug.LogWarning("[SnapshotProcessor] GameStateManager not found in scene");
+                return;
+            }
+
+            // التأكد من إنشاء الطائرات إذا لم تكن موجودة
+            if (gameStateManager.GetPlayerShip() == null || gameStateManager.GetOpponentShip() == null)
+            {
+                Debug.Log("[SnapshotProcessor] Initializing ships from snapshot data");
+                
+                // استدعاء الدالة الجديدة مباشرة
+                gameStateManager.InitializeShipsFromSnapshot(snapshotData);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SnapshotProcessor] Error ensuring game objects exist: {e.Message}");
+        }
     }
 }
