@@ -8,22 +8,30 @@ public static class Bootstrap
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CreateBootstrapObject()
     {
-        // Try Enhanced Bootstrap first, fallback to standard
-        if (Object.FindObjectOfType<BootstrapRunnerEnhanced>() != null)
+        try
         {
-            return;
-        }
+            // Try Enhanced Bootstrap first, fallback to standard
+            if (Object.FindObjectOfType<BootstrapRunnerEnhanced>() != null)
+            {
+                return;
+            }
 
-        if (Object.FindObjectOfType<BootstrapRunner>() != null)
+            if (Object.FindObjectOfType<BootstrapRunner>() != null)
+            {
+                return;
+            }
+
+            var go = new GameObject("_Bootstrap");
+            Object.DontDestroyOnLoad(go);
+            
+            // Use enhanced bootstrap if available, otherwise standard
+            go.AddComponent<BootstrapRunnerEnhanced>();
+            Debug.Log("[Bootstrap] Created _Bootstrap object with BootstrapRunnerEnhanced.");
+        }
+        catch (System.Exception ex)
         {
-            return;
+            Debug.LogError($"[Bootstrap] Critical error during CreateBootstrapObject: {ex.Message}");
         }
-
-        var go = new GameObject("_Bootstrap");
-        Object.DontDestroyOnLoad(go);
-        
-        // Use enhanced bootstrap if available, otherwise standard
-        go.AddComponent<BootstrapRunnerEnhanced>();
     }
 }
 

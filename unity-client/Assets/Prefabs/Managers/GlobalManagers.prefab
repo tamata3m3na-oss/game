@@ -12,17 +12,16 @@ GameObject:
   - component: {fileID: 11400000}
   - component: {fileID: 11400001}
   - component: {fileID: 11400002}
-  - component: {fileID: 11400003}
   - component: {fileID: 11400004}
   - component: {fileID: 11400005}
-  - component: {fileID: 11400006}
   - component: {fileID: 11400007}
   - component: {fileID: 11400008}
-  - component: {fileID: 11400009}
   - component: {fileID: 11400010}
   - component: {fileID: 11400011}
-  - component: {fileID: 11400012}
   - component: {fileID: 11400013}
+  - component: {fileID: 11400014}
+  - component: {fileID: 11400015}
+  - component: {fileID: 11400016}
   m_Layer: 0
   m_Name: GlobalManagers
   m_TagString: Untagged
@@ -57,7 +56,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0000000000001000, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxActionsPerFrame: 256
 --- !u!114 &11400001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83,33 +81,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ServerUrl: ws://localhost:3000
-  PvpNamespace: /pvp
---- !u!114 &11400003
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000001003, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ServerUrl: http://localhost:3000
 --- !u!114 &11400004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000001006, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &11400005
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -121,10 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0000000000001004, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSensitivity: 1
-  touchDeadZone: 50
-  useTouchInput: 1
---- !u!114 &11400006
+--- !u!114 &11400005
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -136,9 +105,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0000000000001005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  authManager: {fileID: 0}
-  networkManager: {fileID: 0}
-  inputController: {fileID: 0}
 --- !u!114 &11400007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -161,19 +127,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0000000000001008, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  delaySmoothingFactor: 0.1
---- !u!114 &11400009
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000001009, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &11400010
@@ -200,23 +153,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0000000000001011, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultFadeDuration: 0.3
-  defaultScaleDuration: 0.4
-  defaultSlideDuration: 0.5
-  defaultBounceDuration: 0.5
---- !u!114 &11400012
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0000000000001012, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  poolSize: 50
 --- !u!114 &11400013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,12 +165,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0000000000001013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  transitionCanvas: {fileID: 0}
-  overlayImage: {fileID: 0}
-  vignetteImage: {fileID: 0}
-  fadeColor: {r: 0, g: 0, b: 0, a: 1}
-  winColor: {r: 0, g: 1, b: 0.53, a: 1}
-  lossColor: {r: 1, g: 0, b: 0.27, a: 1}
-  fadeOutDuration: 0.3
-  fadeInDuration: 0.4
-  zoomDuration: 0.5
+--- !u!114 &11400014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0000000000001014, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11400015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0000000000001015, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11400016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0000000000001016, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
