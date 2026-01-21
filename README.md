@@ -1,6 +1,6 @@
-# Chess Game - Full Stack Application
+# PvP Ship Battle - Full Stack Application
 
-This project contains a chess game backend built with NestJS, PostgreSQL, and Redis.
+Real-time multiplayer PvP game with NestJS backend and Unity client.
 
 ## Project Structure
 
@@ -10,11 +10,23 @@ This project contains a chess game backend built with NestJS, PostgreSQL, and Re
 │   ├── src/
 │   │   ├── auth/        # Authentication module (JWT, registration, login)
 │   │   ├── player/      # Player profile module
+│   │   ├── matchmaking/ # WebSocket matchmaking system
+│   │   ├── ranking/     # ELO ranking system
 │   │   ├── database/    # Database entities and configuration
 │   │   └── main.ts      # Application entry point
 │   ├── docker-compose.yml
 │   ├── .env
 │   └── package.json
+├── unity-client/         # Unity 2022.3.62f3 client
+│   ├── Assets/
+│   │   ├── Scripts/     # C# game scripts
+│   │   └── Scenes/      # Game scenes (Login, Lobby, Game, Result)
+│   ├── Packages/
+│   │   └── manifest.json
+│   ├── README.md
+│   ├── QUICK_START.md
+│   ├── SCENE_SETUP_GUIDE.md
+│   └── TESTING_GUIDE.md
 └── README.md
 ```
 
@@ -27,10 +39,29 @@ This project contains a chess game backend built with NestJS, PostgreSQL, and Re
 - ✅ Protected routes with JWT guard
 - ✅ Player profile endpoints
 - ✅ PostgreSQL database with TypeORM
-- ✅ Redis setup for caching
+- ✅ Redis for caching and matchmaking queues
+- ✅ WebSocket real-time PvP (Socket.IO on /pvp namespace)
+- ✅ Rating-based matchmaking system
+- ✅ Server-authoritative game loop (20Hz tick rate)
+- ✅ ELO ranking system with leaderboards
+- ✅ Match result persistence
 - ✅ Input validation with class-validator
 - ✅ CORS enabled for frontend
 - ✅ Password hashing with bcrypt
+
+### Unity Client (2022.3.62f3)
+- ✅ Complete authentication system (Login/Register/Auto-login)
+- ✅ WebSocket integration (System.Net.WebSockets)
+- ✅ 4 scenes: Login → Lobby → Game → Result
+- ✅ Real-time matchmaking with queue system
+- ✅ Server snapshot processing (20Hz)
+- ✅ Client input system (60 FPS keyboard + touch)
+- ✅ Ship movement with interpolation
+- ✅ Health/shield/weapon systems
+- ✅ Match result display with ELO changes
+- ✅ Token persistence and refresh
+- ✅ Windows + Android support
+- ✅ No external dependencies (only Unity packages)
 
 ### Database Schema
 - ✅ Users table with email, username, passwordHash, rating, wins, losses
@@ -43,8 +74,9 @@ This project contains a chess game backend built with NestJS, PostgreSQL, and Re
 ### Prerequisites
 - Node.js 18+
 - Docker and Docker Compose
+- Unity Hub + Unity 2022.3.62f3 LTS (for client)
 
-### Setup Instructions
+### Backend Setup
 
 1. Navigate to backend directory:
 ```bash
@@ -67,6 +99,20 @@ npm run start:dev
 ```
 
 The server will be available at http://localhost:3000
+
+### Unity Client Setup
+
+1. Open Unity Hub
+2. Add project from `unity-client` folder
+3. Open with Unity 2022.3.62f3
+4. Follow `unity-client/QUICK_START.md` for scene setup
+5. Play and test!
+
+**Quick Links:**
+- [Unity Client README](unity-client/README.md) - Complete client documentation
+- [Quick Start Guide](unity-client/QUICK_START.md) - 10-minute setup
+- [Scene Setup Guide](unity-client/SCENE_SETUP_GUIDE.md) - Detailed scene creation
+- [Testing Guide](unity-client/TESTING_GUIDE.md) - Comprehensive testing
 
 ## API Endpoints
 
@@ -233,6 +279,7 @@ The `.env` file contains all configuration:
 
 ## Acceptance Criteria Status
 
+### Backend
 ✅ Server runs on port 3000  
 ✅ Database synced automatically  
 ✅ Registration/Login works with validation  
@@ -241,15 +288,101 @@ The `.env` file contains all configuration:
 ✅ Player profile endpoints functional  
 ✅ CORS enabled for localhost:3000  
 ✅ Docker Compose setup for PostgreSQL + Redis  
-✅ Postman collection included for testing  
+✅ WebSocket /pvp namespace functional  
+✅ Matchmaking queue system working  
+✅ Server-authoritative game loop (20Hz)  
+✅ ELO ranking system implemented  
+✅ Match results persisted to database  
 
-## Next Steps
+### Unity Client
+✅ Unity 2022.3.62f3 project structure created  
+✅ All required packages in manifest.json  
+✅ Authentication system (register/login/auto-login) implemented  
+✅ Token management (save/load/refresh) working  
+✅ WebSocket connection to /pvp namespace functional  
+✅ Queue join/leave functionality working  
+✅ Match found and ready system implemented  
+✅ 60 FPS input sending system  
+✅ 20Hz snapshot processing  
+✅ Ship movement interpolation  
+✅ Health/weapon/ability systems complete  
+✅ 4 scene architecture (Login/Lobby/Game/Result)  
+✅ Touch + keyboard input support  
+✅ No external dependencies (only Unity packages)  
+⚠️ Scenes must be created manually in Unity Editor  
 
-This implementation provides the foundation for:
-- Real-time chess game functionality (WebSockets)
-- Match-making system
-- Game state management
-- Move validation
-- Rating calculation (ELO system)
-- Leaderboards
-- Game history and replay
+## Documentation
+
+### Backend Docs
+- [MATCHMAKING.md](backend/MATCHMAKING.md) - WebSocket matchmaking system
+- [GAME_LOOP.md](backend/GAME_LOOP.md) - Server-authoritative game loop
+- [ELO_RANKING_IMPLEMENTATION.md](backend/ELO_RANKING_IMPLEMENTATION.md) - Ranking system
+
+### Unity Client Docs
+- [README.md](unity-client/README.md) - Complete feature overview
+- [QUICK_START.md](unity-client/QUICK_START.md) - 10-minute setup guide
+- [SCENE_SETUP_GUIDE.md](unity-client/SCENE_SETUP_GUIDE.md) - Detailed scene creation
+- [TESTING_GUIDE.md](unity-client/TESTING_GUIDE.md) - Comprehensive testing
+
+## Architecture Overview
+
+```
+┌─────────────────┐         WebSocket         ┌──────────────────┐
+│  Unity Client   │◄─────── /pvp ns ──────────►│  NestJS Backend  │
+│  (2022.3.62f3)  │         Socket.IO          │   (Node 18)      │
+└─────────────────┘                            └──────────────────┘
+        │                                              │
+        │ 60 FPS Input                                 │
+        │ (movement, fire, ability)                    │
+        │                                              │
+        ▼                                              ▼
+┌─────────────────┐                            ┌──────────────────┐
+│  Input System   │                            │  Game Engine     │
+│  Keyboard/Touch │                            │  20Hz Tick Loop  │
+└─────────────────┘                            └──────────────────┘
+                                                       │
+                   20Hz Game Snapshots                 │
+        ┌──────────────────────────────────────────────┤
+        │                                              │
+        ▼                                              ▼
+┌─────────────────┐                            ┌──────────────────┐
+│  Interpolation  │                            │  Redis Queue     │
+│  Ship Rendering │                            │  Matchmaking     │
+└─────────────────┘                            └──────────────────┘
+                                                       │
+                                                       ▼
+                                               ┌──────────────────┐
+                                               │   PostgreSQL     │
+                                               │   Match Results  │
+                                               │   ELO Rankings   │
+                                               └──────────────────┘
+```
+
+## Technology Stack
+
+### Backend
+- **Framework:** NestJS (TypeScript)
+- **Database:** PostgreSQL (TypeORM)
+- **Cache/Queue:** Redis
+- **WebSocket:** Socket.IO
+- **Auth:** JWT + bcrypt
+- **Container:** Docker Compose
+
+### Unity Client
+- **Engine:** Unity 2022.3.62f3 LTS
+- **Language:** C# (.NET Standard 2.1)
+- **Networking:** System.Net.WebSockets.ClientWebSocket
+- **Serialization:** System.Text.Json
+- **UI:** TextMeshPro + Unity UI
+- **Input:** Unity Input System
+- **Platforms:** Windows, Android
+
+## Game Flow
+
+1. **Login** - User authenticates via REST API
+2. **Lobby** - WebSocket connects, player joins queue
+3. **Matchmaking** - Server finds opponent based on rating
+4. **Match Start** - Both players ready, game loop begins
+5. **Gameplay** - Client sends input at 60 FPS, receives snapshots at 20Hz
+6. **Match End** - Winner determined, ELO updated, results shown
+7. **Repeat** - Return to lobby for next match
