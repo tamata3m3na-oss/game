@@ -65,7 +65,7 @@ namespace PvpGame.Auth
 
         public async Task<(bool success, string error)> RegisterAsync(string email, string username, string password)
         {
-            Logger.LogAuth($"Registering user: {email}");
+            AppLogger.LogAuth($"Registering user: {email}");
 
             var request = new RegisterRequest
             {
@@ -95,19 +95,19 @@ namespace PvpGame.Auth
                     tokenManager.AccessToken = response.accessToken;
                     tokenManager.RefreshToken = response.refreshToken;
                     CurrentUser = response.user;
-                    Logger.LogSuccess($"Registration successful: {response.user.username}");
+                    AppLogger.LogSuccess($"Registration successful: {response.user.username}");
                     return (true, null);
                 }
             }
 
             string error = webRequest.downloadHandler.text;
-            Logger.LogError($"Registration failed: {error}");
+            AppLogger.LogError($"Registration failed: {error}");
             return (false, error);
         }
 
         public async Task<(bool success, string error)> LoginAsync(string email, string password)
         {
-            Logger.LogAuth($"Logging in user: {email}");
+            AppLogger.LogAuth($"Logging in user: {email}");
 
             var request = new LoginRequest
             {
@@ -136,13 +136,13 @@ namespace PvpGame.Auth
                     tokenManager.AccessToken = response.accessToken;
                     tokenManager.RefreshToken = response.refreshToken;
                     CurrentUser = response.user;
-                    Logger.LogSuccess($"Login successful: {response.user.username}");
+                    AppLogger.LogSuccess($"Login successful: {response.user.username}");
                     return (true, null);
                 }
             }
 
             string error = webRequest.downloadHandler.text;
-            Logger.LogError($"Login failed: {error}");
+            AppLogger.LogError($"Login failed: {error}");
             return (false, error);
         }
 
@@ -150,11 +150,11 @@ namespace PvpGame.Auth
         {
             if (!tokenManager.HasTokens())
             {
-                Logger.LogAuth("No saved tokens found");
+                AppLogger.LogAuth("No saved tokens found");
                 return false;
             }
 
-            Logger.LogAuth("Attempting auto-login with saved tokens");
+            AppLogger.LogAuth("Attempting auto-login with saved tokens");
             return await RefreshTokenAsync();
         }
 
@@ -162,11 +162,11 @@ namespace PvpGame.Auth
         {
             if (string.IsNullOrEmpty(tokenManager.RefreshToken))
             {
-                Logger.LogWarning("No refresh token available");
+                AppLogger.LogWarning("No refresh token available");
                 return false;
             }
 
-            Logger.LogAuth("Refreshing access token");
+            AppLogger.LogAuth("Refreshing access token");
 
             var request = new RefreshRequest
             {
@@ -194,19 +194,19 @@ namespace PvpGame.Auth
                     tokenManager.AccessToken = response.accessToken;
                     tokenManager.RefreshToken = response.refreshToken;
                     CurrentUser = response.user;
-                    Logger.LogSuccess("Token refresh successful");
+                    AppLogger.LogSuccess("Token refresh successful");
                     return true;
                 }
             }
 
-            Logger.LogError("Token refresh failed");
+            AppLogger.LogError("Token refresh failed");
             tokenManager.ClearTokens();
             return false;
         }
 
         public async Task<bool> GetProfileAsync()
         {
-            Logger.LogAuth("Fetching user profile");
+            AppLogger.LogAuth("Fetching user profile");
 
             var webRequest = UnityWebRequest.Get($"{config.restApiUrl}/player/me");
             webRequest.SetRequestHeader("Authorization", $"Bearer {tokenManager.AccessToken}");
@@ -223,18 +223,18 @@ namespace PvpGame.Auth
                 if (user != null)
                 {
                     CurrentUser = user;
-                    Logger.LogSuccess($"Profile loaded: {user.username}");
+                    AppLogger.LogSuccess($"Profile loaded: {user.username}");
                     return true;
                 }
             }
 
-            Logger.LogError("Failed to fetch profile");
+            AppLogger.LogError("Failed to fetch profile");
             return false;
         }
 
         public void Logout()
         {
-            Logger.LogAuth("Logging out");
+            AppLogger.LogAuth("Logging out");
             tokenManager.ClearTokens();
             CurrentUser = null;
         }

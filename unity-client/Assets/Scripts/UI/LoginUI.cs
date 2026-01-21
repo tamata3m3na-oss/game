@@ -36,7 +36,7 @@ namespace PvpGame.UI
                 registerPanel.SetActive(false);
             }
 
-            Logger.LogAuth("Attempting auto-login");
+            AppLogger.LogAuth("Attempting auto-login");
             SetLoading(true);
 
             bool autoLoginSuccess = await authManager.AutoLoginAsync();
@@ -45,12 +45,12 @@ namespace PvpGame.UI
 
             if (autoLoginSuccess)
             {
-                Logger.LogSuccess("Auto-login successful");
+                AppLogger.LogSuccess("Auto-login successful");
                 LoadLobbyScene();
             }
             else
             {
-                Logger.Log("No saved session, showing login screen");
+                AppLogger.Log("No saved session, showing login screen");
             }
         }
 
@@ -74,7 +74,7 @@ namespace PvpGame.UI
 
             if (result.success)
             {
-                Logger.LogSuccess("Login successful");
+                AppLogger.LogSuccess("Login successful");
                 LoadLobbyScene();
             }
             else
@@ -115,7 +115,7 @@ namespace PvpGame.UI
 
             if (result.success)
             {
-                Logger.LogSuccess("Registration successful");
+                AppLogger.LogSuccess("Registration successful");
                 LoadLobbyScene();
             }
             else

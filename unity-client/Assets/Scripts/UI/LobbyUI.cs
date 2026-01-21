@@ -52,7 +52,7 @@ namespace PvpGame.UI
 
             if (!connected)
             {
-                Logger.LogError("Failed to connect to game server");
+                AppLogger.LogError("Failed to connect to game server");
                 return;
             }
 
@@ -137,7 +137,7 @@ namespace PvpGame.UI
 
         private async void OnJoinQueue()
         {
-            Logger.Log("Joining matchmaking queue");
+            AppLogger.Log("Joining matchmaking queue");
             await networkManager.SendEventAsync("queue:join");
 
             isInQueue = true;
@@ -160,7 +160,7 @@ namespace PvpGame.UI
 
         private async void OnLeaveQueue()
         {
-            Logger.Log("Leaving matchmaking queue");
+            AppLogger.Log("Leaving matchmaking queue");
             await networkManager.SendEventAsync("queue:leave");
 
             isInQueue = false;
@@ -198,7 +198,7 @@ namespace PvpGame.UI
 
         private async void HandleMatchFound(MatchFoundData data)
         {
-            Logger.LogSuccess($"Match found! Opponent: {data.opponent.username}");
+            AppLogger.LogSuccess($"Match found! Opponent: {data.opponent.username}");
 
             currentMatchId = data.matchId;
             isInQueue = false;
@@ -228,7 +228,7 @@ namespace PvpGame.UI
 
         private void HandleMatchStart(MatchStartData data)
         {
-            Logger.LogSuccess($"Match starting! You are {data.color}");
+            AppLogger.LogSuccess($"Match starting! You are {data.color}");
 
             PlayerPrefs.SetInt("CurrentMatchId", data.matchId);
             PlayerPrefs.SetInt("LocalPlayerId", authManager.CurrentUser.id);

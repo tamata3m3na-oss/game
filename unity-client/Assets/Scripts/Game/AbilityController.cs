@@ -37,14 +37,14 @@ namespace PvpGame.Game
         {
             if (!isReady)
             {
-                Logger.LogWarning("Ability on cooldown");
+                AppLogger.LogWarning("Ability on cooldown");
                 return false;
             }
 
             lastAbilityTime = Time.time;
             isReady = false;
             PlayAbilityEffect();
-            Logger.LogGame("Ability used");
+            AppLogger.LogGame("Ability used");
             return true;
         }
 

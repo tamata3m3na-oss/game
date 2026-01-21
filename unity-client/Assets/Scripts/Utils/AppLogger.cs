@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace PvpGame.Utils
 {
-    public static class Logger
+    public static class AppLogger
     {
         public static void Log(string message, Object context = null)
         {
@@ -14,10 +14,14 @@ namespace PvpGame.Utils
             Debug.LogWarning($"<color=yellow>[WARNING] {message}</color>", context);
         }
 
+        public static void Warning(string message, Object context = null) => LogWarning(message, context);
+
         public static void LogError(string message, Object context = null)
         {
             Debug.LogError($"<color=red>[ERROR] {message}</color>", context);
         }
+
+        public static void Error(string message, Object context = null) => LogError(message, context);
 
         public static void LogSuccess(string message, Object context = null)
         {

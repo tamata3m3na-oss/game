@@ -100,13 +100,13 @@ namespace PvpGame.Network
         {
             if (isConnected)
             {
-                Logger.LogWarning("Already connected to WebSocket");
+                AppLogger.LogWarning("Already connected to WebSocket");
                 return true;
             }
 
             try
             {
-                Logger.LogNetwork($"Connecting to WebSocket: {config.websocketUrl}");
+                AppLogger.LogNetwork($"Connecting to WebSocket: {config.websocketUrl}");
 
                 webSocket = new ClientWebSocket();
                 cancellationTokenSource = new CancellationTokenSource();
@@ -118,7 +118,7 @@ namespace PvpGame.Network
                 await webSocket.ConnectAsync(serverUri, cancellationTokenSource.Token);
 
                 isConnected = true;
-                Logger.LogSuccess("WebSocket connected");
+                AppLogger.LogSuccess("WebSocket connected");
 
                 EnqueueMainThreadAction(() => OnConnected?.Invoke());
 
@@ -128,7 +128,7 @@ namespace PvpGame.Network
             }
             catch (Exception ex)
             {
-                Logger.LogError($"WebSocket connection failed: {ex.Message}");
+                AppLogger.LogError($"WebSocket connection failed: {ex.Message}");
                 return false;
             }
         }
@@ -150,7 +150,7 @@ namespace PvpGame.Network
                     }
                     else if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        Logger.LogNetwork("WebSocket closed by server");
+                        AppLogger.LogNetwork("WebSocket closed by server");
                         await DisconnectAsync();
                         break;
                     }
@@ -158,7 +158,7 @@ namespace PvpGame.Network
             }
             catch (Exception ex)
             {
-                Logger.LogError($"WebSocket receive error: {ex.Message}");
+                AppLogger.LogError($"WebSocket receive error: {ex.Message}");
                 await DisconnectAsync();
             }
         }
@@ -170,11 +170,11 @@ namespace PvpGame.Network
                 var wsMessage = JsonHelper.Deserialize<WebSocketMessage>(message);
                 if (wsMessage == null)
                 {
-                    Logger.LogError($"Failed to parse WebSocket message: {message}");
+                    AppLogger.LogError($"Failed to parse WebSocket message: {message}");
                     return;
                 }
 
-                Logger.LogNetwork($"Received event: {wsMessage.eventName}");
+                AppLogger.LogNetwork($"Received event: {wsMessage.eventName}");
 
                 switch (wsMessage.eventName)
                 {
@@ -204,13 +204,13 @@ namespace PvpGame.Network
                         break;
 
                     default:
-                        Logger.LogWarning($"Unknown event: {wsMessage.eventName}");
+                        AppLogger.LogWarning($"Unknown event: {wsMessage.eventName}");
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error processing message: {ex.Message}");
+                AppLogger.LogError($"Error processing message: {ex.Message}");
             }
         }
 
@@ -218,7 +218,7 @@ namespace PvpGame.Network
         {
             if (!isConnected || webSocket.State != WebSocketState.Open)
             {
-                Logger.LogError("Cannot send event: WebSocket not connected");
+                AppLogger.LogError("Cannot send event: WebSocket not connected");
                 return;
             }
 
@@ -235,11 +235,11 @@ namespace PvpGame.Network
 
                 await webSocket.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, cancellationTokenSource.Token);
 
-                Logger.LogNetwork($"Sent event: {eventName}");
+                AppLogger.LogNetwork($"Sent event: {eventName}");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to send event: {ex.Message}");
+                AppLogger.LogError($"Failed to send event: {ex.Message}");
             }
         }
 
@@ -252,7 +252,7 @@ namespace PvpGame.Network
 
             try
             {
-                Logger.LogNetwork("Disconnecting WebSocket");
+                AppLogger.LogNetwork("Disconnecting WebSocket");
 
                 isConnected = false;
                 cancellationTokenSource?.Cancel();
@@ -267,11 +267,11 @@ namespace PvpGame.Network
 
                 EnqueueMainThreadAction(() => OnDisconnected?.Invoke());
 
-                Logger.LogNetwork("WebSocket disconnected");
+                AppLogger.LogNetwork("WebSocket disconnected");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Error during disconnect: {ex.Message}");
+                AppLogger.LogError($"Error during disconnect: {ex.Message}");
             }
         }
 

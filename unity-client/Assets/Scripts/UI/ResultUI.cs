@@ -66,7 +66,7 @@ namespace PvpGame.UI
                 eloChangeText.color = won ? winColor : loseColor;
             }
 
-            Logger.LogGame($"Match result: {(won ? "Victory" : "Defeat")}");
+            AppLogger.LogGame($"Match result: {(won ? "Victory" : "Defeat")}");
         }
 
         private void UpdatePlayerStats()

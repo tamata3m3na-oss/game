@@ -21,7 +21,7 @@ namespace PvpGame.Game
 
             lastFireTime = Time.time;
             PlayFireEffect();
-            Logger.LogGame("Weapon fired");
+            AppLogger.LogGame("Weapon fired");
             return true;
         }
 

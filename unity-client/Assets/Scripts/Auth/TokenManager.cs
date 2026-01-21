@@ -51,7 +51,7 @@ namespace PvpGame.Auth
         {
             AccessToken = null;
             RefreshToken = null;
-            Logger.LogAuth("Tokens cleared");
+            AppLogger.LogAuth("Tokens cleared");
         }
     }
 }

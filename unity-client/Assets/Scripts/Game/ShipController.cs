@@ -31,7 +31,7 @@ namespace PvpGame.Game
         {
             playerId = id;
             spriteRenderer.color = isLocalPlayer ? playerColor : opponentColor;
-            Logger.LogGame($"Ship initialized for player {id} (Local: {isLocalPlayer})");
+            AppLogger.LogGame($"Ship initialized for player {id} (Local: {isLocalPlayer})");
         }
 
         public void UpdateFromState(PlayerState state)

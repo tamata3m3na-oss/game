@@ -22,7 +22,7 @@ namespace PvpGame.Utils
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to serialize object: {ex.Message}");
+                AppLogger.LogError($"Failed to serialize object: {ex.Message}");
                 return null;
             }
         }
@@ -35,7 +35,7 @@ namespace PvpGame.Utils
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to deserialize JSON: {ex.Message}");
+                AppLogger.LogError($"Failed to deserialize JSON: {ex.Message}");
                 return default;
             }
         }
