@@ -14,7 +14,7 @@ namespace PvpGame.Utils
             {
                 if (applicationIsQuitting)
                 {
-                    Logger.LogWarning($"[Singleton] Instance '{typeof(T)}' already destroyed on application quit. Won't create again.");
+                    AppLogger.LogWarning($"[Singleton] Instance '{typeof(T)}' already destroyed on application quit. Won't create again.");
                     return null;
                 }
 
@@ -29,7 +29,7 @@ namespace PvpGame.Utils
                             GameObject singleton = new GameObject($"{typeof(T).Name} (Singleton)");
                             instance = singleton.AddComponent<T>();
                             DontDestroyOnLoad(singleton);
-                            Logger.Log($"[Singleton] An instance of {typeof(T)} was created with DontDestroyOnLoad.");
+                            AppLogger.Log($"[Singleton] An instance of {typeof(T)} was created with DontDestroyOnLoad.");
                         }
                     }
 

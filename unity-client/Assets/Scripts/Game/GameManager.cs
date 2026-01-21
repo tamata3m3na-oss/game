@@ -60,7 +60,7 @@ namespace PvpGame.Game
             localPlayerId = playerId;
             isGameActive = true;
 
-            Logger.LogGame($"Match started: {matchId}, LocalPlayer: {playerId}");
+            AppLogger.LogGame($"Match started: {matchId}, LocalPlayer: {playerId}");
 
             playerShip.Initialize(playerId, true);
             opponentShip.Initialize(opponentId, false);
@@ -150,14 +150,14 @@ namespace PvpGame.Game
                 return;
             }
 
-            Logger.LogGame($"Game ended. Winner: {gameEndData.winner}, ELO Change: {gameEndData.eloChange}");
+            AppLogger.LogGame($"Game ended. Winner: {gameEndData.winner}, ELO Change: {gameEndData.eloChange}");
             EndMatch(gameEndData.winner);
         }
 
         private void EndMatch(int winnerId)
         {
             isGameActive = false;
-            Logger.LogGame($"Match ended. Winner: {winnerId}");
+            AppLogger.LogGame($"Match ended. Winner: {winnerId}");
 
             bool didWin = winnerId == localPlayerId;
             StartCoroutine(TransitionToResultScene(didWin));
