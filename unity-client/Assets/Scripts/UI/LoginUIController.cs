@@ -38,16 +38,23 @@ public class LoginUIController : MonoBehaviour
         }
         
         // Subscribe to auth events
-        AuthManager.Instance.OnLoginSuccess.AddListener(HandleLoginSuccess);
-        AuthManager.Instance.OnLoginFailed.AddListener(HandleLoginFailed);
-        AuthManager.Instance.OnRegisterSuccess.AddListener(HandleRegisterSuccess);
-        AuthManager.Instance.OnRegisterFailed.AddListener(HandleRegisterFailed);
-        
-        // Check if already logged in
-        if (AuthManager.Instance.IsLoggedIn())
+        if (AuthManager.Instance != null)
         {
-            // Auto-login
-            SceneManager.LoadScene("LobbyScene");
+            AuthManager.Instance.OnLoginSuccess.AddListener(HandleLoginSuccess);
+            AuthManager.Instance.OnLoginFailed.AddListener(HandleLoginFailed);
+            AuthManager.Instance.OnRegisterSuccess.AddListener(HandleRegisterSuccess);
+            AuthManager.Instance.OnRegisterFailed.AddListener(HandleRegisterFailed);
+            
+            // Check if already logged in
+            if (AuthManager.Instance.IsLoggedIn())
+            {
+                // Auto-login
+                SceneManager.LoadScene("LobbyScene");
+            }
+        }
+        else
+        {
+            Debug.LogError("[LoginUIController] AuthManager.Instance is null. Bootstrap may have failed.");
         }
     }
     

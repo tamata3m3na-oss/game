@@ -10,7 +10,9 @@
     "com.unity.modules.physics": "1.0.0",
     "com.unity.modules.physics2d": "1.0.0",
     "com.unity.modules.particlesystem": "1.0.0",
-    "com.unity.modules.ui": "1.0.0"
+    "com.unity.modules.ui": "1.0.0",
+    "com.unity.editorcoroutines": "1.0.0",
+    "com.endel.nativewebsocket": "https://github.com/endel/NativeWebSocket.git#master"
   },
   "scopedRegistries": []
 }
