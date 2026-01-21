@@ -9,6 +9,11 @@ namespace PvpGame.Config
         public string restApiUrl = "http://localhost:3000";
         public string websocketUrl = "ws://localhost:3000/pvp";
 
+        [Header("REST API Endpoints")]
+        public string authEndpoint = "/auth";
+        public string playerEndpoint = "/player";
+        public string rankingEndpoint = "/ranking";
+
         [Header("Game Settings")]
         public int targetInputFps = 60;
         public int serverTickRate = 20;
