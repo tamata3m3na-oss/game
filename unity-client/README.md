@@ -262,6 +262,18 @@ All logs are color-coded:
 
 Enable detailed logs in Unity Console.
 
+### Common Issues:
+
+**Input Not Working:**
+- Go to Edit → Project Settings → Player → Other Settings
+- Set "Active Input Handling" to "Both" or "Input System Package (New)"
+- Restart Unity Editor after changing
+
+**Compilation Errors:**
+- Verify all Unity packages are installed (Window → Package Manager)
+- Check that Input System package (1.7.0) is installed
+- Ensure Newtonsoft.Json package is present
+
 ## 📱 Building for Android
 
 1. File → Build Settings → Android
@@ -331,6 +343,7 @@ If you encounter issues:
 ## 📝 Notes
 
 - This client uses `System.Net.WebSockets.ClientWebSocket` (built into Unity)
+- JSON serialization uses `Newtonsoft.Json` (official Unity package)
 - No external packages required beyond official Unity ones
 - All scripts use async/await for clean async code
 - Thread-safe event queue for WebSocket callbacks
