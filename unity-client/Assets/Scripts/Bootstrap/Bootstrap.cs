@@ -1,11 +1,19 @@
 using UnityEngine;
 using UI.Animations;
+using System.Collections;
+using System.Linq;
 
 public static class Bootstrap
 {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void CreateBootstrapObject()
     {
+        // Try Enhanced Bootstrap first, fallback to standard
+        if (Object.FindObjectOfType<BootstrapRunnerEnhanced>() != null)
+        {
+            return;
+        }
+
         if (Object.FindObjectOfType<BootstrapRunner>() != null)
         {
             return;
@@ -13,7 +21,9 @@ public static class Bootstrap
 
         var go = new GameObject("_Bootstrap");
         Object.DontDestroyOnLoad(go);
-        go.AddComponent<BootstrapRunner>();
+        
+        // Use enhanced bootstrap if available, otherwise standard
+        go.AddComponent<BootstrapRunnerEnhanced>();
     }
 }
 
