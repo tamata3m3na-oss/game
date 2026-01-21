@@ -1,5 +1,5 @@
 {
-    "name": "Assembly-CSharp",
+    "name": "GameProject",
     "rootNamespace": "",
     "references": [
         "Unity.InputSystem",

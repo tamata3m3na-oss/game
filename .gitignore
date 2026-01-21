@@ -43,6 +43,7 @@ tmp/
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
+[Uu]ser[Ss]ettings/*.asset
 
 # Unity generated files
 *.pidb
@@ -87,9 +88,6 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
-
-# Unity3D generated file on crash reports
-sysinfo.txt
 
 # Rider
 .idea/
