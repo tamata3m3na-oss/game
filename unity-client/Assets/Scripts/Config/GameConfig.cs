@@ -35,13 +35,31 @@ namespace PvpGame.Config
         public float bulletScale = 0.5f;
         public float interpolationSpeed = 10f;
 
-        public static GameConfig Instance { get; private set; }
+        private static GameConfig instance;
+
+        public static GameConfig Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = Resources.Load<GameConfig>("GameConfig");
+                    if (instance == null)
+                    {
+                        instance = CreateInstance<GameConfig>();
+                        instance.hideFlags = HideFlags.DontSave;
+                    }
+                }
+
+                return instance;
+            }
+        }
 
         private void OnEnable()
         {
-            if (Instance == null)
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
             }
         }
     }
