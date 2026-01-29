@@ -27,6 +27,11 @@ namespace ShipBattle.Network
             }
         }
 
+        public static AuthService GetInstance()
+        {
+            return Instance;
+        }
+
         private const string BASE_URL = "http://localhost:3000";
         private string accessToken;
         private string refreshToken;

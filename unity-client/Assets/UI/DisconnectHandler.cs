@@ -34,7 +34,7 @@ namespace ShipBattle.UI
         private void Start()
         {
             socketClient = GameManager.Instance.SocketClient;
-            authService = new AuthService();
+            authService = AuthService.Instance;
             authService.LoadTokens();
 
             // Subscribe to disconnect event
