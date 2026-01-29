@@ -1,12 +1,7 @@
-using System;
-
-namespace ShipBattle.Network.Models
+[System.Serializable]
+public class MatchEndEvent
 {
-    [Serializable]
-    public class MatchEndEvent
-    {
-        public string matchId;
-        public string winnerId;
-        public int ratingChange;
-    }
+    public string matchId;
+    public string winnerId;
+    public int ratingChange;
 }

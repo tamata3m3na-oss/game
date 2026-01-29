@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using ShipBattle.Network;
-using ShipBattle.Network.Models;
 using System.Threading.Tasks;
 
 namespace ShipBattle.Core

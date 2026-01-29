@@ -4,7 +4,6 @@ using TMPro;
 using ShipBattle.Network;
 using ShipBattle.Core;
 using ShipBattle.Gameplay;
-using ShipBattle.Network.Models;
 using System.Collections.Generic;
 
 namespace ShipBattle.UI
