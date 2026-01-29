@@ -190,12 +190,4 @@ namespace ShipBattle.Network
         public int losses { get; set; }
     }
 
-    [Serializable]
-    public class PlayerProfile
-    {
-        public string username { get; set; }
-        public int rating { get; set; }
-        public int wins { get; set; }
-        public int losses { get; set; }
-    }
 }
