@@ -1,9 +1,9 @@
 using System;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using Newtonsoft.Json;
 
 namespace ShipBattle.Network
 {
@@ -61,7 +61,7 @@ namespace ShipBattle.Network
 
         private async Task<AuthResponse> PostAuthRequestAsync(string url, object data)
         {
-            string json = JsonSerializer.Serialize(data);
+            string json = JsonConvert.SerializeObject(data);
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
             using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
@@ -80,7 +80,7 @@ namespace ShipBattle.Network
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     string responseText = request.downloadHandler.text;
-                    AuthResponse response = JsonSerializer.Deserialize<AuthResponse>(responseText);
+                    AuthResponse response = JsonConvert.DeserializeObject<AuthResponse>(responseText);
                     
                     accessToken = response.accessToken;
                     refreshToken = response.refreshToken;

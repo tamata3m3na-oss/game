@@ -642,6 +642,7 @@ PlayerSettings:
   projectName: 
   organizationId: 
   cloudEnabled: 0
+  activeInputHandler: 2
   enableNativePlatformBackendsForNewInputSystem: 1
   disableOldInputManagerSupport: 0
   legacyClampBlendShapeWeights: 0
