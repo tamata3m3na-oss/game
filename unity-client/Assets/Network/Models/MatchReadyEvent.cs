@@ -1,10 +1,13 @@
 using System;
 
-[Serializable]
-public class MatchReadyEvent
+namespace ShipBattle.Network.Models
 {
-    public string matchId;
-    public string opponentId;
-    public string opponentUsername;
-    public int opponentRating;
+    [Serializable]
+    public class MatchReadyEvent
+    {
+        public string matchId;
+        public string opponentId;
+        public string opponentUsername;
+        public int opponentRating;
+    }
 }

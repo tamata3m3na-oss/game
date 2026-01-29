@@ -4,6 +4,8 @@ using TMPro;
 using ShipBattle.Network;
 using ShipBattle.Core;
 using ShipBattle.Gameplay;
+using ShipBattle.Network.Models;
+using System.Collections.Generic;
 
 namespace ShipBattle.UI
 {
@@ -98,17 +100,17 @@ namespace ShipBattle.UI
             inputSender = FindObjectOfType<InputSender>();
         }
 
-        private void OnSnapshotReceived(GameSnapshot snapshot)
+        private void OnSnapshotReceived(GameStateSnapshot snapshot)
         {
-            if (snapshot?.ships == null || snapshot.ships.Length < 2)
+            if (snapshot?.ships == null || snapshot.ships.Count < 2)
             {
                 return;
             }
 
             // Assuming ships[0] is player, ships[1] is opponent
             // (This should be determined by matching ship IDs with player IDs)
-            ShipData playerShip = snapshot.ships[0];
-            ShipData opponentShip = snapshot.ships[1];
+            ShipState playerShip = snapshot.ships[0];
+            ShipState opponentShip = snapshot.ships[1];
 
             UpdatePlayerStats(playerShip.health, playerShip.shield);
             UpdateOpponentStats(opponentShip.health, opponentShip.shield);

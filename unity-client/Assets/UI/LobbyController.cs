@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using ShipBattle.Network;
+using ShipBattle.Network.Models;
 
 public class LobbyController : MonoBehaviour
 {

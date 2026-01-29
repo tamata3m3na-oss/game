@@ -7,6 +7,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using ShipBattle.Network.Models;
 
 namespace ShipBattle.Network
 {
@@ -146,11 +147,13 @@ namespace ShipBattle.Network
                     case "match:ready":
                         var matchReady = JsonConvert.DeserializeObject<MatchReadyEvent>(dataJson);
                         OnMatchReady?.Invoke(matchReady);
+                        Debug.Log($"[WS] match:ready received: {matchReady.opponentUsername}");
                         break;
                         
                     case "match:end":
                         var matchEnd = JsonConvert.DeserializeObject<MatchEndEvent>(dataJson);
                         OnMatchEnd?.Invoke(matchEnd);
+                        Debug.Log($"[WS] match:end received: winner={matchEnd.winnerId}");
                         break;
                         
                     case "state:snapshot":
@@ -159,11 +162,14 @@ namespace ShipBattle.Network
                         break;
 
                     case "error":
-                        OnError?.Invoke(dataJson);
+                        var error = dataJson;
+                        OnError?.Invoke(error);
+                        Debug.LogError($"[WS] Socket error: {error}");
                         break;
                         
                     default:
                         // Ignore unknown events or handle legacy ones if needed
+                        Debug.Log($"[WS] Unknown event type: {eventType}");
                         break;
                 }
             }

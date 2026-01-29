@@ -35,42 +35,42 @@ namespace ShipBattle.Network
         public string GetAccessToken() => accessToken;
         public int GetUserId() => currentUser?.id ?? 0;
 
-        public async Task<UserData> GetPlayerProfileAsync()
+        public async Task<PlayerProfile> GetPlayerProfileAsync()
         {
-             if (currentUser == null)
-             {
-                 // Ideally fetch from server if null, but for now return cached or throw
-                 if (IsAuthenticated)
-                 {
-                      // We could implement a fetch here, but let's assume it was set during login
-                      // Or if we need to fetch: await FetchProfile();
-                 }
-             }
-             return currentUser;
+            if (currentUser != null)
+            {
+                return new PlayerProfile 
+                { 
+                    username = currentUser.username,
+                    rating = currentUser.rating,
+                    wins = currentUser.wins,
+                    losses = currentUser.losses
+                };
+            }
+            return null;
         }
 
-        public async Task<bool> RegisterAsync(string email, string password)
+        public async Task<bool> LoginAsync(string email, string password)
         {
-            // Using email as username for now as per UI limitation
-            try 
+            try
             {
-                var result = await RegisterAsync(email, email, password);
+                var result = await LoginAsyncInternal(email, password);
                 return result != null;
             }
             catch { return false; }
         }
 
-        public async Task<bool> LoginAsyncWrapper(string email, string password)
+        public async Task<bool> RegisterAsync(string email, string password)
         {
-             try
-             {
-                 var result = await LoginAsync(email, password);
-                 return result != null;
-             }
-             catch { return false; }
+            try 
+            {
+                var result = await RegisterAsyncInternal(email, email, password);
+                return result != null;
+            }
+            catch { return false; }
         }
 
-        public async Task<AuthResponse> RegisterAsync(string email, string username, string password)
+        private async Task<AuthResponse> RegisterAsyncInternal(string email, string username, string password)
         {
             var requestData = new
             {
@@ -82,7 +82,7 @@ namespace ShipBattle.Network
             return await PostAuthRequestAsync($"{BASE_URL}/auth/register", requestData);
         }
 
-        public async Task<AuthResponse> LoginAsync(string email, string password)
+        private async Task<AuthResponse> LoginAsyncInternal(string email, string password)
         {
             var requestData = new
             {
@@ -184,6 +184,15 @@ namespace ShipBattle.Network
     {
         public int id { get; set; }
         public string email { get; set; }
+        public string username { get; set; }
+        public int rating { get; set; }
+        public int wins { get; set; }
+        public int losses { get; set; }
+    }
+
+    [Serializable]
+    public class PlayerProfile
+    {
         public string username { get; set; }
         public int rating { get; set; }
         public int wins { get; set; }
