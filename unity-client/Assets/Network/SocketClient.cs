@@ -1,10 +1,11 @@
 using System;
 using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ShipBattle.Network
 {
@@ -124,58 +125,55 @@ namespace ShipBattle.Network
         {
             try
             {
-                using (JsonDocument doc = JsonDocument.Parse(message))
+                JObject doc = JObject.Parse(message);
+                
+                if (!doc.TryGetValue("type", out JToken typeToken))
                 {
-                    JsonElement root = doc.RootElement;
-                    
-                    if (!root.TryGetProperty("type", out JsonElement typeElement))
-                    {
-                        Debug.LogWarning("[SocketClient] Message missing 'type' field");
-                        return;
-                    }
+                    Debug.LogWarning("[SocketClient] Message missing 'type' field");
+                    return;
+                }
 
-                    string eventType = typeElement.GetString();
-                    
-                    if (!root.TryGetProperty("data", out JsonElement dataElement))
-                    {
-                        Debug.LogWarning($"[SocketClient] Message missing 'data' field for type: {eventType}");
-                        return;
-                    }
+                string eventType = typeToken.Value<string>();
+                
+                if (!doc.TryGetValue("data", out JToken dataToken))
+                {
+                    Debug.LogWarning($"[SocketClient] Message missing 'data' field for type: {eventType}");
+                    return;
+                }
 
-                    string dataJson = dataElement.GetRawText();
-                    
-                    // Dispatch based on event type
-                    switch (eventType)
-                    {
-                        case "queue:status":
-                            var queueStatus = JsonSerializer.Deserialize<QueueStatusData>(dataJson);
-                            OnQueueStatus?.Invoke(queueStatus);
-                            break;
-                            
-                        case "match:found":
-                            var matchFound = JsonSerializer.Deserialize<MatchFoundData>(dataJson);
-                            OnMatchFound?.Invoke(matchFound);
-                            break;
-                            
-                        case "match:ready":
-                            var matchReady = JsonSerializer.Deserialize<MatchReadyData>(dataJson);
-                            OnMatchReady?.Invoke(matchReady);
-                            break;
-                            
-                        case "match:end":
-                            var matchEnd = JsonSerializer.Deserialize<MatchEndData>(dataJson);
-                            OnMatchEnd?.Invoke(matchEnd);
-                            break;
-                            
-                        case "state:snapshot":
-                            var snapshot = JsonSerializer.Deserialize<GameSnapshot>(dataJson);
-                            OnStateSnapshot?.Invoke(snapshot);
-                            break;
-                            
-                        default:
-                            Debug.LogWarning($"[SocketClient] Unknown event type: {eventType}");
-                            break;
-                    }
+                string dataJson = dataToken.ToString();
+                
+                // Dispatch based on event type
+                switch (eventType)
+                {
+                    case "queue:status":
+                        var queueStatus = JsonConvert.DeserializeObject<QueueStatusData>(dataJson);
+                        OnQueueStatus?.Invoke(queueStatus);
+                        break;
+                        
+                    case "match:found":
+                        var matchFound = JsonConvert.DeserializeObject<MatchFoundData>(dataJson);
+                        OnMatchFound?.Invoke(matchFound);
+                        break;
+                        
+                    case "match:ready":
+                        var matchReady = JsonConvert.DeserializeObject<MatchReadyData>(dataJson);
+                        OnMatchReady?.Invoke(matchReady);
+                        break;
+                        
+                    case "match:end":
+                        var matchEnd = JsonConvert.DeserializeObject<MatchEndData>(dataJson);
+                        OnMatchEnd?.Invoke(matchEnd);
+                        break;
+                        
+                    case "state:snapshot":
+                        var snapshot = JsonConvert.DeserializeObject<GameSnapshot>(dataJson);
+                        OnStateSnapshot?.Invoke(snapshot);
+                        break;
+                        
+                    default:
+                        Debug.LogWarning($"[SocketClient] Unknown event type: {eventType}");
+                        break;
                 }
             }
             catch (Exception e)
@@ -200,7 +198,7 @@ namespace ShipBattle.Network
                     data = data
                 };
 
-                string json = JsonSerializer.Serialize(message);
+                string json = JsonConvert.SerializeObject(message);
                 byte[] bytes = Encoding.UTF8.GetBytes(json);
 
                 await webSocket.SendAsync(
