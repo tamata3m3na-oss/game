@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using ShipBattle.Network;
+using ShipBattle.Network.Models;
 using System.Threading.Tasks;
 
 namespace ShipBattle.Core
@@ -30,6 +31,10 @@ namespace ShipBattle.Core
         
         // Properties for backward compatibility/access
         public SocketClient SocketClient => SocketClient.Instance;
+        
+        // Properties for opponent info
+        public string OpponentUsername => currentMatch?.opponentUsername ?? "";
+        public int OpponentRating => currentMatch?.opponentRating ?? 0;
         
         private void Awake()
         {
