@@ -103,7 +103,7 @@ public class LoginController : MonoBehaviour
         try
         {
             // Using email as username
-            var response = await AuthService.Instance.RegisterAsync(email, email, password);
+            var response = await AuthService.Instance.RegisterAsync(email, password);
             
             if (response != null)
             {
