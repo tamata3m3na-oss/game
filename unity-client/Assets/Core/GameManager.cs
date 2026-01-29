@@ -81,5 +81,15 @@ namespace ShipBattle.Core
         {
             return matchResult;
         }
+        
+        public void LoadLobby()
+        {
+            // Clear current match data when returning to lobby
+            currentMatch = null;
+            matchResult = null;
+            
+            Debug.Log("[GameManager] Loading Lobby scene");
+            SceneManager.LoadScene("Lobby");
+        }
     }
 }
