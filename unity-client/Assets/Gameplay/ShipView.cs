@@ -42,7 +42,7 @@ namespace ShipBattle.Gameplay
             Debug.Log($"[ShipView] Initialized - ID: {id}, IsPlayer: {isPlayer}");
         }
 
-        public void UpdateFromSnapshot(ShipData data)
+        public void UpdateFromSnapshot(ShipState data)
         {
             if (data == null)
             {
@@ -51,10 +51,7 @@ namespace ShipBattle.Gameplay
             }
 
             // Update position
-            if (data.position != null)
-            {
-                transform.position = new Vector3(data.position.x, data.position.y, 0f);
-            }
+            transform.position = new Vector3(data.position.x, data.position.y, 0f);
 
             // Update rotation
             transform.rotation = Quaternion.Euler(0f, 0f, data.rotation);

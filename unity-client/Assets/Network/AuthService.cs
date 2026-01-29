@@ -13,13 +13,62 @@ namespace ShipBattle.Network
     /// </summary>
     public class AuthService
     {
+        private static AuthService instance;
+        public static AuthService Instance
+        {
+            get
+            {
+                if (instance == null) instance = new AuthService();
+                return instance;
+            }
+        }
+
         private const string BASE_URL = "http://localhost:3000";
         private string accessToken;
         private string refreshToken;
+        private UserData currentUser;
 
         public string AccessToken => accessToken;
         public string RefreshToken => refreshToken;
         public bool IsAuthenticated => !string.IsNullOrEmpty(accessToken);
+
+        public string GetAccessToken() => accessToken;
+        public int GetUserId() => currentUser?.id ?? 0;
+
+        public async Task<UserData> GetPlayerProfileAsync()
+        {
+             if (currentUser == null)
+             {
+                 // Ideally fetch from server if null, but for now return cached or throw
+                 if (IsAuthenticated)
+                 {
+                      // We could implement a fetch here, but let's assume it was set during login
+                      // Or if we need to fetch: await FetchProfile();
+                 }
+             }
+             return currentUser;
+        }
+
+        public async Task<bool> RegisterAsync(string email, string password)
+        {
+            // Using email as username for now as per UI limitation
+            try 
+            {
+                var result = await RegisterAsync(email, email, password);
+                return result != null;
+            }
+            catch { return false; }
+        }
+
+        public async Task<bool> LoginAsyncWrapper(string email, string password)
+        {
+             try
+             {
+                 var result = await LoginAsync(email, password);
+                 return result != null;
+             }
+             catch { return false; }
+        }
 
         public async Task<AuthResponse> RegisterAsync(string email, string username, string password)
         {
@@ -84,6 +133,7 @@ namespace ShipBattle.Network
                     
                     accessToken = response.accessToken;
                     refreshToken = response.refreshToken;
+                    currentUser = response.user;
                     
                     SaveTokens();
                     

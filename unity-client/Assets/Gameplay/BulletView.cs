@@ -51,7 +51,7 @@ namespace ShipBattle.Gameplay
             }
         }
 
-        public void UpdateFromSnapshot(BulletData data)
+        public void UpdateFromSnapshot(BulletState data)
         {
             if (data == null)
             {
@@ -60,17 +60,11 @@ namespace ShipBattle.Gameplay
             }
 
             // Update position
-            if (data.position != null)
-            {
-                transform.position = new Vector3(data.position.x, data.position.y, 0f);
-            }
+            transform.position = new Vector3(data.position.x, data.position.y, 0f);
 
             // Update rotation based on direction
-            if (data.direction != null)
-            {
-                float angle = Mathf.Atan2(data.direction.y, data.direction.x) * Mathf.Rad2Deg;
-                transform.rotation = Quaternion.Euler(0f, 0f, angle);
-            }
+            float angle = Mathf.Atan2(data.direction.y, data.direction.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0f, 0f, angle);
 
             // Check if off-screen and destroy
             CheckOffScreen();
