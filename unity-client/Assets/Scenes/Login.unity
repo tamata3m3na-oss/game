@@ -202,7 +202,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 200001}
-  - component: {fileID: 200002}
   m_Layer: 0
   m_Name: AuthManager
   m_TagString: Untagged
@@ -224,26 +223,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &200002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 200000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bcaf2ba6381149df0cdccd4f4cc5800, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  emailInput: {fileID: 400003}
-  usernameInput: {fileID: 400045}
-  passwordInput: {fileID: 400040}
-  loginButton: {fileID: 400004}
-  registerButton: {fileID: 400008}
-  errorText: {fileID: 600013}
-  loadingPanel: {fileID: 400013}
-  registerPanel: {fileID: 400009}
 --- !u!1 &300000
 GameObject:
   m_ObjectHideFlags: 0
@@ -254,6 +233,8 @@ GameObject:
   m_Component:
   - component: {fileID: 300002}
   - component: {fileID: 300001}
+  - component: {fileID: 300003}
+  - component: {fileID: 300004}
   - component: {fileID: 600020}
   m_Layer: 5
   m_Name: Canvas
@@ -337,11 +318,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bcaf2ba6381149df0cdccd4f4cc5800, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  emailInput: {fileID: 400003}
-  usernameInput: {fileID: 400045}
-  passwordInput: {fileID: 400040}
-  loginButton: {fileID: 400004}
-  registerButton: {fileID: 400008}
+  emailInput: {fileID: 400017}
+  usernameInput: {fileID: 400048}
+  passwordInput: {fileID: 400043}
+  loginButton: {fileID: 400020}
+  registerButton: {fileID: 400024}
   errorText: {fileID: 600013}
   loadingPanel: {fileID: 400013}
   registerPanel: {fileID: 400009}
@@ -357,12 +338,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 600000}
-  - {fileID: 400000}
-  - {fileID: 400005}
+  - {fileID: 600001}
+  - {fileID: 400001}
+  - {fileID: 400006}
   - {fileID: 400044}
-  - {fileID: 400012}
-  - {fileID: 400013}
+  - {fileID: 400026}
+  - {fileID: 400028}
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -381,6 +362,7 @@ GameObject:
   m_Component:
   - component: {fileID: 600001}
   - component: {fileID: 600002}
+  - component: {fileID: 600003}
   m_Layer: 5
   m_Name: Panel_Background
   m_TagString: Untagged
@@ -475,12 +457,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 400014}
-  - {fileID: 400003}
+  - {fileID: 400030}
+  - {fileID: 400015}
   - {fileID: 400041}
-  - {fileID: 400004}
-  - {fileID: 400008}
-  - {fileID: 600010}
+  - {fileID: 400018}
+  - {fileID: 400022}
+  - {fileID: 600011}
   m_Father: {fileID: 300002}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -656,7 +638,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 400021}
+  - {fileID: 400038}
   m_Father: {fileID: 400001}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -787,7 +769,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 400025}
+  - {fileID: 400060}
   m_Father: {fileID: 400001}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1472,6 +1454,7 @@ GameObject:
   m_Component:
   - component: {fileID: 600011}
   - component: {fileID: 600012}
+  - component: {fileID: 600013}
   m_Layer: 5
   m_Name: ErrorMessageText
   m_TagString: Untagged
