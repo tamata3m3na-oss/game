@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using BattleStar.Auth;
+using BattleStar.Core;
 using TMPro;
 
 namespace BattleStar.UI

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using BattleStar.Auth;
@@ -104,7 +105,7 @@ namespace BattleStar.Core
             OnAuthFailed?.Invoke();
         }
 
-        public async void NavigateToLogin()
+        public async Task NavigateToLogin()
         {
             AuthManager.Instance.Logout();
             await SceneController.LoadSceneAsync(loginScene);
