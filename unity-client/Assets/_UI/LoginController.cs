@@ -134,11 +134,11 @@ namespace BattleStar.UI
             }
         }
 
-        private void OnLoginSuccess()
+        private async void OnLoginSuccess()
         {
             ClearError("");
             LoginAnalytics();
-            GameManager.Instance.HandleLoginSuccess();
+            await GameManager.Instance.HandleLoginSuccess();
         }
 
         private void LoginAnalytics()

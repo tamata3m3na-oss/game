@@ -89,7 +89,7 @@ namespace BattleStar.Core
             Debug.Log($"[GameManager] Scene loaded: {scene.name}");
         }
 
-        public async void HandleLoginSuccess()
+        public async Task HandleLoginSuccess()
         {
             Debug.Log("[GameManager] Login successful, transitioning to lobby...");
             
@@ -98,7 +98,7 @@ namespace BattleStar.Core
             await SceneController.LoadSceneAsync(lobbyScene);
         }
 
-        public async void HandleAuthFailure()
+        public async Task HandleAuthFailure()
         {
             Debug.LogWarning("[GameManager] Authentication failed");
             
