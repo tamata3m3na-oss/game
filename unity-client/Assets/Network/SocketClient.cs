@@ -17,7 +17,11 @@ namespace ShipBattle.Network
         {
             get
             {
-                if (instance == null) instance = new SocketClient();
+                if (instance == null) 
+                {
+                    instance = new SocketClient();
+                    Debug.Log("[SocketClient] Instance created");
+                }
                 return instance;
             }
         }
@@ -41,15 +45,22 @@ namespace ShipBattle.Network
         public event Action OnConnected;
         public event Action OnDisconnected;
 
+        private SocketClient()
+        {
+            Debug.Log($"[SocketClient] Initialized with server URL: {serverUrl}");
+        }
+
         public async Task ConnectAsync(string token)
         {
             authToken = token;
+            Debug.Log("[SocketClient] ConnectAsync called");
             
             try
             {
                 // Cancel previous connection if any
                 if (webSocket != null)
                 {
+                    Debug.Log("[SocketClient] Disposing previous connection");
                     cancellationTokenSource?.Cancel();
                     webSocket.Dispose();
                 }
@@ -63,14 +74,15 @@ namespace ShipBattle.Network
                 Debug.Log($"[SocketClient] Connecting to {serverUrl}...");
                 await webSocket.ConnectAsync(uri, cancellationTokenSource.Token);
                 
-                OnConnected?.Invoke();
                 Debug.Log("[SocketClient] Connected successfully");
+                OnConnected?.Invoke();
                 
                 _ = ReceiveLoop();
             }
             catch (Exception e)
             {
                 Debug.LogError($"[SocketClient] Connection failed: {e.Message}");
+                Debug.LogError($"[SocketClient] Stack trace: {e.StackTrace}");
                 OnError?.Invoke(e.Message);
                 throw;
             }
@@ -78,13 +90,18 @@ namespace ShipBattle.Network
 
         public async Task DisconnectAsync()
         {
+            Debug.Log("[SocketClient] DisconnectAsync called");
             try
             {
                 if (webSocket != null && webSocket.State == WebSocketState.Open)
                 {
                     cancellationTokenSource?.Cancel();
                     await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", CancellationToken.None);
-                    Debug.Log("[SocketClient] Disconnected");
+                    Debug.Log("[SocketClient] Disconnected successfully");
+                }
+                else
+                {
+                    Debug.Log("[SocketClient] Already disconnected or not connected");
                 }
             }
             catch (Exception e)
@@ -102,11 +119,13 @@ namespace ShipBattle.Network
         private async Task ReceiveLoop()
         {
             byte[] buffer = new byte[8192];
+            Debug.Log("[SocketClient] Receive loop started");
             
             try
             {
                 while (webSocket.State == WebSocketState.Open && !cancellationTokenSource.Token.IsCancellationRequested)
                 {
+                    Debug.Log("[SocketClient] Waiting for message...");
                     WebSocketReceiveResult result = await webSocket.ReceiveAsync(
                         new ArraySegment<byte>(buffer),
                         cancellationTokenSource.Token
@@ -114,19 +133,27 @@ namespace ShipBattle.Network
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
+                        Debug.Log("[SocketClient] Received close message from server");
                         await DisconnectAsync();
                         break;
                     }
 
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    Debug.Log($"[SocketClient] Message received: {message.Substring(0, Math.Min(200, message.Length))}...");
                     HandleMessage(message);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.Log("[SocketClient] Receive loop cancelled");
             }
             catch (Exception e)
             {
                 Debug.LogError($"[SocketClient] Receive loop error: {e.Message}");
                 OnDisconnected?.Invoke();
             }
+            
+            Debug.Log("[SocketClient] Receive loop ended");
         }
 
         private void HandleMessage(string message)
@@ -135,40 +162,51 @@ namespace ShipBattle.Network
             {
                 JObject doc = JObject.Parse(message);
                 
-                if (!doc.TryGetValue("type", out JToken typeToken)) return;
-                string eventType = typeToken.Value<string>();
+                if (!doc.TryGetValue("type", out JToken typeToken)) 
+                {
+                    Debug.LogWarning("[SocketClient] Message missing 'type' field");
+                    return;
+                }
                 
-                if (!doc.TryGetValue("data", out JToken dataToken)) return;
+                string eventType = typeToken.Value<string>();
+                Debug.Log($"[SocketClient] Handling event type: {eventType}");
+                
+                if (!doc.TryGetValue("data", out JToken dataToken)) 
+                {
+                    Debug.LogWarning("[SocketClient] Message missing 'data' field");
+                    return;
+                }
+                
                 string dataJson = dataToken.ToString();
                 
                 switch (eventType)
                 {
                     case "match:ready":
                         var matchReady = JsonConvert.DeserializeObject<MatchReadyEvent>(dataJson);
+                        Debug.Log($"[SocketClient] Match ready received: Opponent={matchReady.opponentUsername}");
                         OnMatchReady?.Invoke(matchReady);
-                        Debug.Log($"[WS] match:ready received: {matchReady.opponentUsername}");
                         break;
                         
                     case "match:end":
                         var matchEnd = JsonConvert.DeserializeObject<MatchEndEvent>(dataJson);
+                        Debug.Log($"[SocketClient] Match end received: Winner={matchEnd.winnerId}");
                         OnMatchEnd?.Invoke(matchEnd);
-                        Debug.Log($"[WS] match:end received: winner={matchEnd.winnerId}");
                         break;
                         
                     case "state:snapshot":
                         var snapshot = JsonConvert.DeserializeObject<GameStateSnapshot>(dataJson);
+                        Debug.Log($"[SocketClient] State snapshot received: Ships={snapshot?.ships?.Count ?? 0}, Bullets={snapshot?.bullets?.Count ?? 0}");
                         OnStateSnapshot?.Invoke(snapshot);
                         break;
 
                     case "error":
                         var error = dataJson;
+                        Debug.LogError($"[SocketClient] Server error: {error}");
                         OnError?.Invoke(error);
-                        Debug.LogError($"[WS] Socket error: {error}");
                         break;
                         
                     default:
-                        // Ignore unknown events or handle legacy ones if needed
-                        Debug.Log($"[WS] Unknown event type: {eventType}");
+                        Debug.Log($"[SocketClient] Unknown event type: {eventType}");
                         break;
                 }
             }
@@ -187,7 +225,7 @@ namespace ShipBattle.Network
         {
             if (webSocket == null || webSocket.State != WebSocketState.Open)
             {
-                Debug.LogWarning($"[SocketClient] Cannot send message - not connected");
+                Debug.LogWarning($"[SocketClient] Cannot send message - not connected (State: {webSocket?.State})");
                 return;
             }
 
@@ -202,6 +240,7 @@ namespace ShipBattle.Network
                 string json = JsonConvert.SerializeObject(message);
                 byte[] bytes = Encoding.UTF8.GetBytes(json);
 
+                Debug.Log($"[SocketClient] Sending event: {eventType}");
                 await webSocket.SendAsync(
                     new ArraySegment<byte>(bytes),
                     WebSocketMessageType.Text,

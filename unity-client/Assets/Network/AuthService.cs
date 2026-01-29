@@ -9,7 +9,7 @@ namespace ShipBattle.Network
 {
     /// <summary>
     /// Handles authentication with the backend REST API.
-    /// Do not modify - Phase 1 completed code.
+    /// Enhanced with detailed logging.
     /// </summary>
     public class AuthService
     {
@@ -18,7 +18,11 @@ namespace ShipBattle.Network
         {
             get
             {
-                if (instance == null) instance = new AuthService();
+                if (instance == null) 
+                {
+                    instance = new AuthService();
+                    Debug.Log("[AuthService] Instance created");
+                }
                 return instance;
             }
         }
@@ -35,10 +39,17 @@ namespace ShipBattle.Network
         public string GetAccessToken() => accessToken;
         public int GetUserId() => currentUser?.id ?? 0;
 
+        private AuthService()
+        {
+            Debug.Log($"[AuthService] Initialized with BASE_URL: {BASE_URL}");
+        }
+
         public async Task<PlayerProfile> GetPlayerProfileAsync()
         {
+            Debug.Log("[AuthService] Getting player profile...");
             if (currentUser != null)
             {
+                Debug.Log($"[AuthService] Returning cached profile for: {currentUser.username}");
                 return new PlayerProfile 
                 { 
                     username = currentUser.username,
@@ -47,31 +58,45 @@ namespace ShipBattle.Network
                     losses = currentUser.losses
                 };
             }
+            Debug.LogWarning("[AuthService] No current user data available");
             return null;
         }
 
         public async Task<bool> LoginAsync(string email, string password)
         {
+            Debug.Log($"[AuthService] LoginAsync called for: {email}");
             try
             {
                 var result = await LoginAsyncInternal(email, password);
+                Debug.Log($"[AuthService] Login result: {(result != null ? "Success" : "Failed")}");
                 return result != null;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[AuthService] LoginAsync exception: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> RegisterAsync(string email, string password)
         {
+            Debug.Log($"[AuthService] RegisterAsync called for: {email}");
             try 
             {
                 var result = await RegisterAsyncInternal(email, email, password);
+                Debug.Log($"[AuthService] Register result: {(result != null ? "Success" : "Failed")}");
                 return result != null;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[AuthService] RegisterAsync exception: {ex.Message}");
+                return false;
+            }
         }
 
         private async Task<AuthResponse> RegisterAsyncInternal(string email, string username, string password)
         {
+            Debug.Log($"[AuthService] RegisterAsyncInternal called");
             var requestData = new
             {
                 email = email,
@@ -84,6 +109,7 @@ namespace ShipBattle.Network
 
         private async Task<AuthResponse> LoginAsyncInternal(string email, string password)
         {
+            Debug.Log($"[AuthService] LoginAsyncInternal called");
             var requestData = new
             {
                 email = email,
@@ -95,8 +121,10 @@ namespace ShipBattle.Network
 
         public async Task<AuthResponse> RefreshTokenAsync()
         {
+            Debug.Log("[AuthService] RefreshTokenAsync called");
             if (string.IsNullOrEmpty(refreshToken))
             {
+                Debug.LogError("[AuthService] No refresh token available");
                 throw new Exception("No refresh token available");
             }
 
@@ -110,6 +138,7 @@ namespace ShipBattle.Network
 
         private async Task<AuthResponse> PostAuthRequestAsync(string url, object data)
         {
+            Debug.Log($"[AuthService] POST {url}");
             string json = JsonConvert.SerializeObject(data);
             byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
 
@@ -119,6 +148,7 @@ namespace ShipBattle.Network
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
 
+                Debug.Log($"[AuthService] Sending request...");
                 var operation = request.SendWebRequest();
                 
                 while (!operation.isDone)
@@ -129,12 +159,14 @@ namespace ShipBattle.Network
                 if (request.result == UnityWebRequest.Result.Success)
                 {
                     string responseText = request.downloadHandler.text;
+                    Debug.Log($"[AuthService] Response received: {responseText}");
                     AuthResponse response = JsonConvert.DeserializeObject<AuthResponse>(responseText);
                     
                     accessToken = response.accessToken;
                     refreshToken = response.refreshToken;
                     currentUser = response.user;
                     
+                    Debug.Log($"[AuthService] User authenticated: {currentUser?.username} (ID: {currentUser?.id})");
                     SaveTokens();
                     
                     return response;
@@ -150,24 +182,32 @@ namespace ShipBattle.Network
 
         private void SaveTokens()
         {
+            Debug.Log("[AuthService] Saving tokens to PlayerPrefs");
             PlayerPrefs.SetString("AccessToken", accessToken);
             PlayerPrefs.SetString("RefreshToken", refreshToken);
             PlayerPrefs.Save();
+            Debug.Log("[AuthService] Tokens saved successfully");
         }
 
         public void LoadTokens()
         {
+            Debug.Log("[AuthService] Loading tokens from PlayerPrefs");
             accessToken = PlayerPrefs.GetString("AccessToken", "");
             refreshToken = PlayerPrefs.GetString("RefreshToken", "");
+            bool hasToken = !string.IsNullOrEmpty(accessToken);
+            Debug.Log($"[AuthService] Tokens loaded. Has access token: {hasToken}");
         }
 
         public void ClearTokens()
         {
+            Debug.Log("[AuthService] Clearing tokens");
             accessToken = "";
             refreshToken = "";
+            currentUser = null;
             PlayerPrefs.DeleteKey("AccessToken");
             PlayerPrefs.DeleteKey("RefreshToken");
             PlayerPrefs.Save();
+            Debug.Log("[AuthService] Tokens cleared");
         }
     }
 
@@ -189,5 +229,4 @@ namespace ShipBattle.Network
         public int wins { get; set; }
         public int losses { get; set; }
     }
-
 }

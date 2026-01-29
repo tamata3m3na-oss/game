@@ -15,6 +15,7 @@ namespace ShipBattle.Core
             {
                 if (instance == null)
                 {
+                    Debug.Log("[GameManager] Creating new GameManager instance");
                     var go = new GameObject("GameManager");
                     instance = go.AddComponent<GameManager>();
                     DontDestroyOnLoad(go);
@@ -37,33 +38,42 @@ namespace ShipBattle.Core
         
         private void Awake()
         {
+            Debug.Log("[GameManager] Awake");
+            
             if (instance != null && instance != this)
             {
+                Debug.Log("[GameManager] Duplicate instance found - destroying");
                 Destroy(gameObject);
                 return;
             }
             
             instance = this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log("[GameManager] Instance set and marked as DontDestroyOnLoad");
         }
         
         public void Initialize()
         {
-            // Initialize state machine if needed
-            if (stateMachine == null) stateMachine = new AppStateMachine();
+            Debug.Log("[GameManager] Initialize called");
             
-            Debug.Log("[GameManager] Initialized");
+            // Initialize state machine if needed
+            if (stateMachine == null) 
+            {
+                stateMachine = new AppStateMachine();
+                Debug.Log("[GameManager] State machine created");
+            }
+            
+            Debug.Log("[GameManager] Initialization complete");
         }
         
         private void Start()
         {
-            // Logic from ticket: ensure we start at Splash if not already
-            // This might cause loop if Splash loads GameManager which loads Splash.
-            // Assuming this script is on a persistent object created in Splash.
+            Debug.Log("[GameManager] Start");
         }
         
         public void SetCurrentMatch(MatchReadyEvent match)
         {
+            Debug.Log($"[GameManager] Setting current match: Opponent={match?.opponentUsername}");
             currentMatch = match;
         }
         
@@ -74,6 +84,7 @@ namespace ShipBattle.Core
         
         public void SetMatchResult(MatchEndEvent result)
         {
+            Debug.Log($"[GameManager] Setting match result: Winner={result?.winnerId}, RatingChange={result?.ratingChange}");
             matchResult = result;
         }
         
@@ -84,12 +95,28 @@ namespace ShipBattle.Core
         
         public void LoadLobby()
         {
+            Debug.Log("[GameManager] Loading Lobby scene");
+            
             // Clear current match data when returning to lobby
             currentMatch = null;
             matchResult = null;
             
-            Debug.Log("[GameManager] Loading Lobby scene");
+            Debug.Log("[GameManager] Match data cleared");
             SceneManager.LoadScene("Lobby");
+        }
+        
+        private void OnApplicationQuit()
+        {
+            Debug.Log("[GameManager] Application quitting");
+        }
+        
+        private void OnDestroy()
+        {
+            Debug.Log("[GameManager] OnDestroy");
+            if (instance == this)
+            {
+                instance = null;
+            }
         }
     }
 }
