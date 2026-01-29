@@ -49,15 +49,19 @@ Real-time multiplayer PvP game with NestJS backend and Unity client.
 - ✅ CORS enabled for frontend
 - ✅ Password hashing with bcrypt
 
-### Unity Client (2022.3.62f3)
+### Unity Client (2022.3.62f3) - Phase 2 Complete ✅
 - ✅ Complete authentication system (Login/Register/Auto-login)
 - ✅ WebSocket integration (System.Net.WebSockets)
-- ✅ 4 scenes: Login → Lobby → Game → Result
+- ✅ 5 scenes: Splash → Login → Lobby → Game → Result
 - ✅ Real-time matchmaking with queue system
+- ✅ Server-authoritative gameplay (Phase 2)
 - ✅ Server snapshot processing (20Hz)
-- ✅ Client input system (60 FPS keyboard + touch)
-- ✅ Ship movement with interpolation
-- ✅ Health/shield/weapon systems
+- ✅ Client input system (20Hz keyboard + touch)
+- ✅ Ship and bullet rendering from server snapshots
+- ✅ Client-side prediction (movement only)
+- ✅ Health/shield HUD with real-time updates
+- ✅ Match timer and opponent info display
+- ✅ Disconnect handling with auto-reconnect
 - ✅ Match result display with ELO changes
 - ✅ Token persistence and refresh
 - ✅ Windows + Android support
