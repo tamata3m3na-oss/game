@@ -15,51 +15,111 @@ public class LobbyController : MonoBehaviour
     
     private bool inQueue = false;
     
+    private void Awake()
+    {
+        Debug.Log("[LOBBY] LobbyController Awake");
+    }
+    
     private void Start()
     {
+        Debug.Log("[LOBBY] LobbyController Start");
+        
         // Subscribe to SocketClient events
-        SocketClient.Instance.OnMatchReady += OnMatchReady;
-        SocketClient.Instance.OnError += OnSocketError;
+        if (SocketClient.Instance != null)
+        {
+            SocketClient.Instance.OnMatchReady += OnMatchReady;
+            SocketClient.Instance.OnError += OnSocketError;
+            Debug.Log("[LOBBY] Subscribed to SocketClient events");
+        }
+        else
+        {
+            Debug.LogError("[LOBBY] SocketClient instance is null!");
+        }
         
-        joinQueueButton.onClick.AddListener(OnJoinQueue);
-        leaveQueueButton.onClick.AddListener(OnLeaveQueue);
+        if (joinQueueButton != null)
+        {
+            joinQueueButton.onClick.AddListener(OnJoinQueue);
+            Debug.Log("[LOBBY] Join queue button listener added");
+        }
+        else
+        {
+            Debug.LogError("[LOBBY] Join queue button is not assigned!");
+        }
         
-        if (leaveQueueButton != null) leaveQueueButton.gameObject.SetActive(false);
+        if (leaveQueueButton != null)
+        {
+            leaveQueueButton.onClick.AddListener(OnLeaveQueue);
+            leaveQueueButton.gameObject.SetActive(false);
+            Debug.Log("[LOBBY] Leave queue button listener added");
+        }
+        else
+        {
+            Debug.LogError("[LOBBY] Leave queue button is not assigned!");
+        }
         
         // Load player info
+        Debug.Log("[LOBBY] Loading player info...");
         _ = LoadPlayerInfo();
     }
     
     private void OnDestroy()
     {
+        Debug.Log("[LOBBY] LobbyController OnDestroy - Unsubscribing from events");
         if (SocketClient.Instance != null)
         {
             SocketClient.Instance.OnMatchReady -= OnMatchReady;
             SocketClient.Instance.OnError -= OnSocketError;
         }
+        
+        if (joinQueueButton != null)
+            joinQueueButton.onClick.RemoveListener(OnJoinQueue);
+        if (leaveQueueButton != null)
+            leaveQueueButton.onClick.RemoveListener(OnLeaveQueue);
     }
     
     private async Task LoadPlayerInfo()
     {
         try
         {
+            Debug.Log("[LOBBY] Fetching player profile...");
             var player = await AuthService.Instance.GetPlayerProfileAsync();
             if (player != null)
             {
-                if (usernameText != null) usernameText.text = $"Welcome, {player.username}";
-                if (ratingText != null) ratingText.text = $"Rating: {player.rating}";
+                Debug.Log($"[LOBBY] Player profile loaded: {player.username}, Rating: {player.rating}");
+                if (usernameText != null) 
+                {
+                    usernameText.text = $"Welcome, {player.username}";
+                    Debug.Log("[LOBBY] Username text updated");
+                }
+                if (ratingText != null) 
+                {
+                    ratingText.text = $"Rating: {player.rating}";
+                    Debug.Log("[LOBBY] Rating text updated");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[LOBBY] Player profile is null");
+                if (statusText != null) statusText.text = "Error loading profile";
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[LOBBY] Error loading player: {ex}");
+            Debug.LogError($"[LOBBY] Error loading player: {ex.Message}");
+            Debug.LogError($"[LOBBY] Stack trace: {ex.StackTrace}");
             if (statusText != null) statusText.text = "Error loading profile";
         }
     }
     
     private void OnJoinQueue()
     {
-        if (inQueue) return;
+        Debug.Log("[LOBBY] Join queue button clicked");
+        
+        if (inQueue) 
+        {
+            Debug.Log("[LOBBY] Already in queue, ignoring");
+            return;
+        }
         
         inQueue = true;
         if (joinQueueButton != null) joinQueueButton.gameObject.SetActive(false);
@@ -70,13 +130,20 @@ public class LobbyController : MonoBehaviour
             statusText.color = Color.yellow;
         }
         
+        Debug.Log("[LOBBY] Sending queue:join event");
         SocketClient.Instance.SendEvent("queue:join", new { });
         Debug.Log("[LOBBY] Joined queue");
     }
     
     private void OnLeaveQueue()
     {
-        if (!inQueue) return;
+        Debug.Log("[LOBBY] Leave queue button clicked");
+        
+        if (!inQueue) 
+        {
+            Debug.Log("[LOBBY] Not in queue, ignoring");
+            return;
+        }
         
         inQueue = false;
         if (joinQueueButton != null) joinQueueButton.gameObject.SetActive(true);
@@ -87,22 +154,33 @@ public class LobbyController : MonoBehaviour
             statusText.color = Color.white;
         }
         
+        Debug.Log("[LOBBY] Sending queue:leave event");
         SocketClient.Instance.SendEvent("queue:leave", new { });
         Debug.Log("[LOBBY] Left queue");
     }
     
     private void OnMatchReady(MatchReadyEvent matchData)
     {
-        Debug.Log($"[LOBBY] Match ready! Loading Game scene...");
+        Debug.Log($"[LOBBY] Match ready event received! Opponent: {matchData.opponentUsername}");
         
         // Store match data for Game scene
-        GameManager.Instance.SetCurrentMatch(matchData);
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetCurrentMatch(matchData);
+            Debug.Log("[LOBBY] Match data stored in GameManager");
+        }
+        else
+        {
+            Debug.LogError("[LOBBY] GameManager instance is null!");
+        }
         
+        Debug.Log("[LOBBY] Loading Game scene...");
         SceneManager.LoadScene("Game");
     }
     
     private void OnSocketError(string error)
     {
+        Debug.LogError($"[LOBBY] Socket error: {error}");
         if (statusText != null) 
         {
             statusText.text = $"Error: {error}";

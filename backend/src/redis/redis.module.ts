@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from 'redis';
 
@@ -11,20 +11,37 @@ export const REDIS_CLIENT = Symbol('REDIS_CLIENT');
       provide: REDIS_CLIENT,
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
+        const logger = new Logger('RedisModule');
         const host = configService.get<string>('REDIS_HOST') || 'localhost';
         const port = configService.get<string>('REDIS_PORT') || '6379';
+        const url = `redis://${host}:${port}`;
+
+        logger.log(`[REDIS] Connecting to Redis at ${host}:${port}...`);
 
         const client = createClient({
-          url: `redis://${host}:${port}`,
+          url,
         });
 
-        client.on('error', () => {
-          // Swallow to prevent unhandled errors from crashing the process;
-          // connection issues will be surfaced via failed commands.
+        client.on('error', (err) => {
+          logger.error(`[REDIS] Connection error: ${err.message}`);
         });
 
-        if (!client.isOpen) {
-          await client.connect();
+        client.on('connect', () => {
+          logger.log(`[REDIS] Connected successfully`);
+        });
+
+        client.on('reconnecting', () => {
+          logger.warn(`[REDIS] Reconnecting...`);
+        });
+
+        try {
+          if (!client.isOpen) {
+            await client.connect();
+            logger.log(`[REDIS] Client ready and connected`);
+          }
+        } catch (error) {
+          logger.error(`[REDIS] Failed to connect: ${error.message}`);
+          throw error;
         }
 
         return client;
