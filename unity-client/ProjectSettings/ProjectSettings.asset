@@ -1,0 +1,957 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 18
+  productGUID:
+    i0: 1234567890
+    i1: 1234567890
+    i2: 1234567890
+    i3: 1234567890
+    i4: 1234567890
+    i5: 1234567890
+  AndroidProfiler: 0
+  AndroidFilterTouchesWhenObscured: 0
+  AndroidEnableSustainedPerformanceMode: 0
+  defaultScreenOrientation: 3
+  targetDevice: 2
+  useOnDemandResources: 0
+  accelerometerFrequency: 60
+  companyName: BattleStar
+  productName: BattleStar PvP
+  defaultCursor:
+  cursorHotSpot: {x: 0, y: 0}
+  m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
+  m_ShowUnitySplashScreen: 1
+  m_ShowUnitySplashLogo: 1
+  m_SplashScreenOverlayOpacity: 1
+  m_SplashScreenAnimation: 1
+  m_SplashScreenLogoStyle: 1
+  m_SplashScreenDrawMode: 0
+  m_SplashScreenBackgroundAnimationZoom: 1
+  m_SplashScreenLogoAnimationZoom: 1
+  m_SplashScreenBackgroundLandscapeAspect: 1
+  m_SplashScreenBackgroundPortraitAspect: 1
+  m_SplashScreenBackgroundLandscapeUvs:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  m_SplashScreenBackgroundPortraitUvs:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  m_SplashScreenLogos:
+  - logo: {instanceID: 0}
+    duration: 2
+  - logo: {instanceID: 0}
+    duration: 2
+  m_VirtualRealitySDKs:
+  - None
+  m_BuildTargetIcons:
+  - m_BuildTarget: 
+    m_Icons:
+    - m_Icon: {instanceID: 0}
+      m_Width: 128
+      m_Height: 128
+  m_BuildTargetPlatformIcons:
+  - m_BuildTarget: Android
+    m_Icons:
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 432
+      m_Height: 432
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 324
+      m_Height: 324
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 216
+      m_Height: 216
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 162
+      m_Height: 162
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 108
+      m_Height: 108
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 81
+      m_Height: 81
+      m_SubKind: mipmap
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 192
+      m_Height: 192
+      m_SubKind: tv
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 144
+      m_Height: 144
+      m_SubKind: tv
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 96
+      m_Height: 96
+      m_SubKind: tv
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 72
+      m_Height: 72
+      m_SubKind: tv
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 48
+      m_Height: 48
+      m_SubKind: tv
+    - m_Textures:
+      - {instanceID: 0}
+      m_Width: 36
+      m_Height: 36
+      m_SubKind: tv
+  - m_BuildTarget: iPhone
+    m_Icons:
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 180
+      m_Height: 180
+      m_SubKind: iphone
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 120
+      m_Height: 120
+      m_SubKind: iphone
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 167
+      m_Height: 167
+      m_SubKind: ipad
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 152
+      m_Height: 152
+      m_SubKind: ipad
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 76
+      m_Height: 76
+      m_SubKind: ipad
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 152
+      m_Height: 152
+      m_SubKind: ipad
+    - m_Textures:
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      - {instanceID: 0}
+      m_Width: 167
+      m_Height: 167
+      m_SubKind: ipad
+  m_BuildTargetBatching:
+  - m_BuildTarget: Embedded
+    m_StaticBatching: 1
+    m_DynamicBatching: 0
+  m_BuildTargetSelectionIcons:
+  - m_BuildTarget: Embedded
+    m_Icons:
+    - m_Icon: {instanceID: 0}
+      m_Width: 128
+      m_Height: 128
+  m_BuildTargetDisableVAT:
+  - m_BuildTarget: Android
+    m_DisableVAT: 1
+  m_BuildTargetNormalMapEncoding:
+  - m_BuildTarget: Android
+    m_NormalMapEncoding: 0
+  m_BuildTargetDefaultTextureCompressionFormat: []
+  playModeTestRunnerEnabled: 0
+  runPlayModeTestAsEditModeTest: 0
+  actionOnDotNetUnhandledException: 1
+  logObjCUncaughtExceptions: 1
+  enableCrashReportAPI: 0
+  cameraUsageDescription: 
+  locationUsageDescription: 
+  microphoneUsageDescription: 
+  switchScreenResolutionBehavior: 2
+  switchNVNShaderPoolsGranularity: 33554432
+  switchNVNDefaultPoolsGranularity: 16777216
+  switchNVNJitWarmupTexturePoolsGranularity: 33554432
+  switchNVNJitWarmupTextureHardwareMemory: 50331648
+  switchShaderCompilerEnvironment: 2
+  switchShaderCompilerOptions:
+    i0: 4294967295
+    i1: 4294967295
+    i2: 4294967295
+    i3: 4294967295
+    i4: 4294967295
+    i5: 4294967295
+  switchNVNJitSwCacheCompression: 1
+  switchNVNJitSwCacheCompressionLevel: 2
+  switchFastSwitchTime: 10
+  switchAllowGpuScratch: 0
+  switchNVNJitSwDsRenderer: -1
+  switchNVNJitSwDs2Renderer: -1
+  switchNVNJitSwDs3Renderer: -1
+  switchNVNJitSwDs4Renderer: -1
+  switchNVNJitSwDs5Renderer: -1
+  switchNVNJitSwDs6Renderer: -1
+  switchNVNJitBufferedCommandMemorySize: 16777216
+  switchNVNJitBufferedCommandMemoryPoolGranularity: 16777216
+  switchJitRenderDebug: 0
+  switchUseFastGpuReadback: 0
+  switchShaderRenderQualityTier: 1
+  switchShaderEmulationQualityTier: 1
+  switchShaderDebug: 0
+  switchBufferedOpcodeMemoryPoolGranularity: 33554432
+  switchBufferedOpcodeMemorySize: 33554432
+  switchBufferStorageDefaultMode: 0
+  switchBufferStorageOptionValue: 1
+  switchNVNJitEmulationMemSplit: 1
+  switchJitLateExpandMemSize: 134217728
+  switchNVNJitCodeMemoryPoolGranularity: 33554432
+  switchNVNCodeMemoryPoolGranularity: 33554432
+  switchNVNZeroStrideRingEnabled: 1
+  switchNVNDsmEnabled: 1
+  switchNVNDsmSensitivity: 2
+  switchNVNMaxClientMemUtilization: 0
+  switchNVNDummyFragmentBufferEnabled: 0
+  switchMaximumDiffCapacityMB: 1024
+  switchMaximumScratchCapacityMB: 1024
+  switchShaderCompilerThreadControl: 1
+  switchJitLateExpandMemSizeDs1: 134217728
+  switchJitLateExpandMemSizeDs2: 0
+  switchJitLateExpandMemSizeDs3: 0
+  switchJitLateExpandMemSizeDs4: 0
+  switchJitLateExpandMemSizeDs5: 0
+  switchJitLateExpandMemSizeDs6: 0
+  switchNVNTextureCompression: 1
+  switchExportShaderFrequency: 1
+  switchRuntimeThreadPriority:
+    tidBg: 1
+    tidFmt: 1
+    tidSpd: 1
+    tidRdp: 1
+    tidVtx: 1
+    tidGfd: 1
+  switchIKMode: 0
+  switchSeparableShaderCompileMode: 0
+  switchMaximumShaderCompilers: 32
+  switchMaxUniformBufferSize: 33554432
+  switchMaxAttributeBufferSize: 33554432
+  switchMaxTransformFeedbackBufferSize: 33554432
+  switchMaxStorageBufferSize: 33554432
+  switchShaderGenerationFlags: 0
+  switchNVJNTextureCompressionLevel: 1
+  switchMultiThreadShaderCompile: 1
+  switchUseFastSRgbBehavior: 0
+  switchMaximumTouchSampleRate: 0
+  switchScreenBrightnessMode: 1
+  switchScreenBrightness: -1
+  switchVSyncCount: -1
+  switchMaximumWorkerThreads: -1
+  switchUseNewStyleBlit: 1
+  switchUseLegacyBlit: 0
+  switchMaxViewsTier: 1
+  switchMaxOpacityLayersPerView: -1
+  switchMaxBuffersPerView: -1
+  switchMaxTextureBufferSize: -1
+  switchMaxUntiledTextureBufferSize: -1
+  switchMaxBytesPerPixel: -1
+  switchTileMemorySize: -1
+  switchMaxAllowedStreamingMemory: 0
+  switchUseLegacyDebugLabel: 0
+  switchServiceEntry: 65535
+  switchProfilerInfo: 1
+  switchGpuScreenshotCompression: 1
+  switchShaderCompilerTraceLevel: 0
+  switchMaximumSamplerAnisotropy: 16
+  switchPreservedUniformBufferCount: 0
+  switchEnableResourceChecker: 0
+  switchEnableGpuProfiler: 0
+  switchAgxBookmarkInjection: 0
+  switchAgxDebugProfiling: 0
+  switchGpuBufferMemoryOptions: 0
+  switchGpuTextureMemoryOptions: 0
+  switchShaderMemoryResizeMode: 2
+  switchTextureMemoryResizeMode: 0
+  switchEnableSharedImagePool: 0
+  switchImagePoolSize: 0
+  switchAgxTextureCompressionMode: 0
+  switchUseResolveUserBuffer: 0
+  switchResourceRecreationMode: 0
+  switchCacheAdrenoGraphics: 0
+  switchFmaEmulation: 0
+  switchTextureBarrierMode: 0
+  switchNVNBufferMemZero: 1
+  switchUseDCache: 1
+  switchCacheTextureGraphics: -1
+  switchFastScratch: 1
+  switchInternalStorage: ''
+  m_RenderingPath: 1
+  m_MobileRenderingPath: 1
+  metroPackageName: BattleStarPvP
+  metroPackageVersion: 1.0.0.0
+  metroCertificatePath: 
+  metroCertificatePassword: 
+  metroCertificateSubject: 
+  metroCertificateIssuer: 
+  metroCertificateNotBefore: 
+  metroCertificateNotAfter: 
+  metroLockboxPath: 
+  metroUseDefaultAppxManifest: 1
+  metroUseNewStyleBlit: 1
+  metroUseLegacyBlit: 0
+  metroDefaultTileSize: 1
+  metroTileForegroundText: 2
+  metroTileBackgroundColor: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
+  metroWarningCode: -1
+  metroDesktopArchitecture: 
+  metroARM64ExeSize: 27344
+  metroIntel: 0
+  metroARM64Execute: 1
+  metroIntelExecute: 1
+  metroOverrideInAppSettingsScreen: 0
+  metroEnableLogging: 0
+  metroCompanionAppXbox: 0
+  metroAppStoreUri: 
+  metroShowHideOnLaunch: 0
+  metroCompanionAppScreen: 0
+  metroUsePseudoNewStyleBlit: 1
+  metroUsePseudoLegacyBlit: 0
+  vrEditorTarget: 4
+  vrTestMode: 2
+  linuxEnableALSADevice: 1
+  linuxEnableOSSDevice: 0
+  linuxEnablePulseAudioDevice: 0
+  linuxEnableJackDevice: 0
+  linuxAggregate: 1
+  linuxUseLttngProfiler: 0
+  linuxUseSystemNDK: 0
+  linuxUseDefaultEnvironment: 0
+  linuxStandaloneAccount: ''
+  ps4NPAgeRating: 12
+  ps4NPAgeRatingForJapan: 12
+  ps4NPAgeRatingForChina: 12
+  ps4NPAgeRatingForGermany: 12
+  ps4NPAgeRatingForKorea: 12
+  ps4NPAgeRatingForTaiwan: 12
+  ps4NPAgeRatingForGlobal: -1
+  ps4NPAgeRatingForKoreanToNorth: 12
+  ps4NPAgeRatingForKoreanToSouth: 12
+  ps4DatabaseCategory: 0
+  ps4LateExperation: 0
+  ps4Passcode: 1
+  ps4UseSPWaitDialog: 0
+  ps4UseSPWaitDialogAllowing: 0
+  PS4installDirectory: 0
+  ps4UseOSMode: 1
+  ps4UseNewStyleBlit: 1
+  ps4UseLegacyBlit: 0
+  ps4EnselectRecording: 0
+  ps4Authentication: 0
+  ps4PolicyType: 1
+  ps4PronunciationPolicy: 0
+  ps4ApplicationParameter: 0
+  ps4RatingsUI: 1
+  ps4ShareOverlayMode: 1
+  ps4RemotePlay: 1
+  ps4RemotePlayDownload: 1
+  ps4RemotePlayStorage: 1
+  ps4RemotePlayScreenSync: 1
+  ps4Recording: 1
+  ps4RecordingUI: 1
+  ps4TrackingMode: 1
+  ps4TrackingUI: 1
+  ps4SupportGPUTracking: 1
+  ps4NetworkService: 1
+  ps4Streaming: 1
+  ps4WelcomeScreen: 1
+  ps4CorporateLogo: 1
+  ps4BootstrapperScript: 1
+  ps4ShareFactoryReset: 0
+  ps4DrcDetail: 0
+  ps4UseSystemFonts: 1
+  ps4SystemServiceUI: 1
+  ps4UseDebugSession: 0
+  ps4UseDebugSessionUI: 1
+  ps4ReplayKit: 1
+  ps4ReplayKitUI: 1
+  ps4UseSpWaitDialog: 0
+  ps4AllowFriendsonFriends: 1
+  ps4UseSharePlay: 1
+  ps4GDPR: 0
+  ps4UseDebugMetadata: 0
+  ps4UseX86Blit: 1
+  ps4forceReprojection: 0
+  ps4UseNewStyleBlit: 1
+  ps4UseLegacyBlit: 0
+  ps4resaveToDiscInventory: !uv5a0'KI64h'TCf
+  ps4OverrideStreaming: 0
+  ps4RegionalStreaming: 0
+  ps4featureStreamingLayout: 0
+  ps4RegionalShareButton: 0
+  ps4MigrationBackupSongdevice: 0
+  ps4UseRemasterButton: 0
+  ps4WavPackSong: 0
+  ps4ShareDiscovery: 0
+  ps4PrivacyControl: 0
+  ps4UseLatestRecording: 1
+  ps4RecordStream: 0
+  ps4TraceUI: 1
+  ps4GranularAudio: 0
+  ps4LibNFS: 0
+  ps4OverrideHDCP: 1
+  ps4HDCP: 0
+  ps4Purify: 0
+  ps4RecordingUI: 1
+  ps4BroadcastUI: 1
+  ps4recordingFRC: 0
+  ps4HDCP: 1
+  ps4Purify: 0
+  ps4BootstrapperScript: 1
+  ps4recordingFRC: 1
+  ps4recordingFRC: 0
+  ps4UseManuallySelectHDCP: 0
+  ps4AllowRawHDCP: 0
+  ps4UseHDCP: 1
+  ps4HDCP: 1
+  ps4RecordingFRC: 0
+  ps4HDCP: 1
+  ps4Purify: 0
+  ps4RecordingUI: 1
+  ps4BoostTrap: 0
+  ps4fontPPR: 0
+  ps4recordingFRC: 0
+  ps4HDCP: 1
+  ps4Purify: 0
+  ps4recordingFRC: 0
+  ps4RecordingUI: 1
+  ps4ShareFactoryReset: 0
+  ps4DrcDetail: 0
+  ps4SystemServiceUI: 1
+  ps4UseDebugSession: 0
+  ps4UseDebugSessionUI: 1
+  ps4ReplayKit: 1
+  ps4TBSystemServiceUI: 1
+  ps4TBSystemServiceUIDetail: 1
+  ps4TBNetSelect: 1
+  ps4TBFaceRecognition: 1
+  ps4FaceRecognition: 1
+  ps4SaveImageFilter: 1
+  ps4UseDebugRecording: 1
+  ps4EncoderThis: 0
+  ps4testUI: 1
+  ps4TestFullScreen: 0
+  ps4PauseText: 1
+  ps4tracking: 0
+  ps4UseOSMode: 1
+  ps4LateEXPERATION: 0
+  ps4GPUBenchmark: 0
+  ps4GlobalRecordingUI: 1
+  ps4Kratos: 1
+  ps4GlobalGameDataUI: 1
+  ps4TemporaryWhiteList: 0
+  ps4UseTempWhiteList: 0
+  ps4UseSystemFontsEx: 0
+  ps4HeuristicAutoNew: 1
+  ps4UseLibFSOL8: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4KratosBench: 1
+  ps4GameDataTransfer: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4GlobalRecordingUI: 1
+  ps4Kratos: 1
+  ps4NewAudio: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4GlobalRecordingUI: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4GlobalRecordingUI: 1
+  ps4Kratos: 1
+  ps4VirtualScreenSize: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4RecordingUI: 1
+  ps4Kratos: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4GlobalRecordingUI: 1
+  ps4Kratos: 1
+  ps4UseDebugSession: 0
+  ps4LargeFile: 1
+  ps4RecordingUI: 1
+  ps4Kratos: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4GlobalRecordingUI: 1
+  ps4Kratos: 1
+  ps4KratosBench: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4PushNotifications: 1
+  ps4HDCP: 0
+  ps4UseDebugSwitch: 0
+  ps4UseDebugSwitchRemoteControl: 0
+  ps4Kratos: 1
+  m_BuildTargetGraphicsAPIs:
+  - m_BuildTarget: Android
+    m_APIs:
+      150269836032: 1
+      150269836032: 0
+    m_Automatic: 0
+  - m_BuildTarget: iOS
+    m_APIs:
+      100: 1
+      100: 0
+    m_Automatic: 1
+  - m_BuildTarget: OSX
+    m_APIs:
+      201: 1
+      201: 0
+    m_Automatic: 0
+  - m_BuildTarget: Windows
+    m_APIs:
+      201: 1
+      201: 0
+    m_Automatic: 0
+  - m_BuildTarget: Linux64
+    m_APIs:
+      201: 1
+      201: 0
+    m_Automatic: 0
+  m_BuildTargetVRSettings:
+  - m_BuildTarget: Android
+    m_Enabled: 0
+    m_Devices:
+    - OpenVR
+    - Oculus
+  - m_BuildTarget: iOS
+    m_Enabled: 0
+    m_Devices:
+    - OpenVR
+  - m_BuildTarget: OSX
+    m_Enabled: 0
+    m_Devices:
+    - OpenVR
+  - m_BuildTarget: Windows
+    m_Enabled: 0
+    m_Devices:
+    - OpenVR
+  - m_BuildTarget: Linux64
+    m_Enabled: 0
+    m_Devices:
+    - OpenVR
+  openGLRequireES31: 0
+  openGLRequireES31AEP: 0
+  openGLRequireES32: 0
+  m_TemplateCustomTags:
+    disableMutithreadedRendering: 0
+    ENABLE_MULTITHREADED_RENDERER: 0
+    SINGLE_GPU_TARGET: 0
+  m_BuildTargetEnableVuforiaSettings: []
+  playModeTestRunnerEnabled: 0
+  runPlayModeTestAsEditModeTest: 0
+  actionOnDotNetUnhandledException: 1
+  logObjCUncaughtExceptions: 1
+  enableCrashReportAPI: 0
+  cameraUsageDescription: 
+  locationUsageDescription: 
+  microphoneUsageDescription: 
+  switchScreenResolutionBehavior: 2
+  ps4NPAgeRating: 12
+  ps4NPAgeRatingForJapan: 12
+  ps4NPAgeRatingForChina: 12
+  ps4NPAgeRatingForGermany: 12
+  ps4NPAgeRatingForKorea: 12
+  ps4NPAgeRatingForTaiwan: 12
+  ps4NPAgeRatingForGlobal: -1
+  ps4NPAgeRatingForKoreanToNorth: 12
+  ps4NPAgeRatingForKoreanToSouth: 12
+  ps4DatabaseCategory: 0
+  ps4LateExperation: 0
+  ps4Passcode: 1
+  ps4UseSPWaitDialog: 0
+  ps4UseSPWaitDialogAllowing: 0
+  PS4installDirectory: 0
+  ps4UseOSMode: 1
+  ps4ScriptOptimizationLevel: 2
+  ps4UseDebugUserAndNtTitleId: 0
+  ps4UseRtmSpiDivert: 1
+  ps4UseRtmSpiSpinFire: 1
+  ps4UseDualSenseVibration: 1
+  ps4UseDualSenseVibrationHeavy: 1
+  ps4UseRemasterConfirmationWaitDialog: 0
+  ps4UseRemasterConfirmation: 0
+  ps4UseHDCP: 0
+  ps4HDCP: 0
+  ps4AllowHDCP: 1
+  ps4UseFreeSync: 0
+  ps4UseGnmShader: 0
+  ps4UseElfInspection: 0
+  ps4SocialScreenEnabled: 0
+  ps4ScriptOptimizationLevel: 2
+  ps4UseDebugUserAndNtTitleId: 0
+  ps4UseRtmSpiDivert: 1
+  ps4UseRtmSpiSpinFire: 1
+  ps4UseDualSenseVibration: 1
+  ps4UseDualSenseVibrationHeavy: 1
+  ps4UseRemasterConfirmationWaitDialog: 0
+  ps4UseRemasterConfirmation: 0
+  ps4UseHDCP: 0
+  ps4HDCP: 0
+  ps4AllowHDCP: 1
+  ps4UseFreeSync: 0
+  ps4UseGnmShader: 0
+  ps4UseElfInspection: 0
+  spritePreview
+    sprites: []
+    spritesOutsideRadius: []
+  spriteAtlasPath: 
+  spritePayoutPath: 
+  spritePretestEnabled: 0
+  InternalPS4Config
+    ps4AllowGraphics?: 0
+    ps4RCLO?: 0
+    ps4SoftwareDelay: 0
+    ps4ShaderOptimizations: 0
+    ps4ConanLibrariesHash: 
+    ps4SDKConfigPath: 
+    ps4AdditionalOutput: 
+    ps4SoftwareOptimization: 0
+    ps4MonoEnabled: 0
+    monoPublishAOT: 0
+    ps4AdditionalOutput: 
+    ps4UseRZM: 0
+    ps4UseRZMOverride: 0
+    ps4UseZLib: 0
+    ps4UseZLibOverride
+      m_FileName: 
+      m_FileName: 
+    ps4UseSharedShaderConfig: 0
+    ps4BuildAdditionalArgs: 
+    ps4UseStraga: 1
+    ps4UseStragaDebug: 0
+    ps4UseSharedShaderConfig: 0
+    ps4BuildAdditionalArgs: 
+    ps4ControlsConfig: 
+    ps4UseUniversalMediaEngine: 1
+    ps4UseTargetLargeFile: 0
+    ps4TargetLargeFileSize: 0
+    ps4UseDataCallbackDriven: 0
+    ps4MainThreadStackSize: 3072
+    ps4UseClassicUdevSerial: 0
+    ps4UsePS5CompatibilityMode: 0
+    ps4UseAdaptiveHCSR: 0
+    switchScreenResolutionBehavior: 2
+    switchNVNShaderPoolsGranularity: 33554432
+    switchNVNDefaultPoolsGranularity: 16777216
+    switchNVNJitWarmupTexturePoolsGranularity: 33554432
+    switchVSyncCount: -1
+    switchNVNJitWarmupTextureHardwareMemory: 50331648
+    switchShaderCompilerEnvironment: 2
+    switchShaderCompilerOptions:
+      i0: 4294967295
+      i1: 4294967295
+      i2: 4294967295
+      i3: 4294967295
+      i4: 4294967295
+      i5: 4294967295
+    switchNVNJitSwCacheCompression: 1
+    switchNVNJitSwCacheCompressionLevel: 2
+    switchNVNJitCodeMemoryPoolGranularity: 33554432
+    switchNVNCodeMemoryPoolGranularity: 33554432
+    switchNVNBufferMemZero: 1
+    switchNVNDsmEnabled: 1
+    switchNVNDsmSensitivity: 2
+    switchNVNMaxClientMemUtilization: 0
+    switchNVNDummyFragmentBufferEnabled: 0
+    switchShaderRenderQualityTier: 1
+    switchShaderEmulationQualityTier: 1
+    switchShaderDebug: 0
+    switchNVNJitSwDsRenderer: -1
+    switchNVNJitSwDs2Renderer: -1
+    switchNVNJitSwDs3Renderer: -1
+    switchNVNJitSwDs4Renderer: -1
+    switchNVNJitSwDs5Renderer: -1
+    switchNVNJitSwDs6Renderer: -1
+    switchNVNJitBufferedCommandMemorySize: 16777216
+    switchNVNJitBufferedCommandMemoryPoolGranularity: 16777216
+    switchNVNZeroStrideRingEnabled: 1
+    switchNVNTextureCompression: 1
+    switchFastSwitchTime: 10
+    switchNVNJitEmulationMemSplit: 1
+    switchNVJFigureKMBSize: 0
+    switchAgxBookmarkInjection: 0
+    switchAgxDebugProfiling: 0
+    switchGpuBufferMemoryOptions: 0
+    switchGpuTextureMemoryOptions: 0
+    switchShaderMemoryResizeMode: 2
+    switchTextureMemoryResizeMode: 0
+    switchEnableSharedImagePool: 0
+    switchImagePoolSize: 0
+    switchAVDTextureCompressionMode: 0
+    switchNVNDebugShader: 0
+    switchNVNJitLateExpandMemSize: 134217728
+    switchNVNJitLateExpandMemSizeDs1: 134217728
+    switchNVNJitLateExpandMemSizeDs2: 0
+    switchNVNJitLateExpandMemSizeDs3: 0
+    switchNVNJitLateExpandMemSizeDs4: 0
+    switchNVNJitLateExpandMemSizeDs5: 0
+    switchNVNJitLateExpandMemSizeDs6: 0
+    switchNVNJitSwDsRenderer: -1
+    switchNVNDebugShader: 0
+    switchNVNTextureCompression: 1
+    switchExportShaderFrequency: 1
+    switchMaximumClaimableMBytes: -1
+    switchProfilerInfo: 1
+    switchGPUValidation: 0
+    switchHardwareGPUProfiler: 0
+    switchEnableGPUValidation: 0
+    switchGPUDebugger: 0
+    switchMaximumSamplerAnisotropy: 16
+    switchPreservedUniformBufferCount: 0
+    switchEnableResourceChecker: 0
+    switchEnableGpuProfiler: 0
+    switchQuickBoot: 0
+    switchInternalStorage: ''
+    switchCRT12: 0
+    switchResumeOnApplicationState: 1
+    switchMainThreadStackSize: 1572864
+    switchThreadStackSize: 1048576
+    switchEventSettingsNo: 0
+    switchEventSettingDataSet0: 1
+    switchEventSettingDataSet1: 1
+    switchEventSettingDataSet2: 1
+    switchEventSettingDataSet3: 1
+    switchEventSettingDataSet4: 1
+    switchEventSettingDataSet5: 1
+    switchEventSettingDataSet6: 1
+    switchNVNDebugShader: 0
+    switchMaximumTouchSampleRate: 0
+    switchScreenBrightnessMode: 1
+    switchScreenBrightness: -1
+    switchMaximumClaimableMBytes: -1
+    switchMaximumWorkerThreads: -1
+    switchUseFastSRgbBehavior: 0
+    switchMaxViewsTier: 1
+    switchMaxOpacityLayersPerView: -1
+    switchMaxBuffersPerView: -1
+    switchMaxTextureBufferSize: -1
+    switchMaxUntiledTextureBufferSize: -1
+    switchMaxBytesPerPixel: -1
+    switchTileMemorySize: -1
+    switchMaxAllowedStreamingMemory: 0
+    switchUseLegacyDebugLabel: 0
+    switchServiceEntry: 65535
+    switchUseDebugSwitchRemoteControl: 0
+    switchMemoryPoolSize: -1
+    switchMaxViewsSample: 1
+    switchMaximumShaderCompilers: 32
+    switchMaxUniformBufferSize: 33554432
+    switchMaxAttributeBufferSize: 33554432
+    switchMaxTransformFeedbackBufferSize: 33554432
+    switchMaxStorageBufferSize: 33554432
+    switchShaderGenerationFlags: 0
+    switchNVJNTextureCompressionLevel: 1
+    switchNTS: "NoTimestamp"
+    switchShaderCompilerThreadControl: 1
+    switchMaxTextureBufferSize: -1
+    switchMaxUntiledTextureBufferSize: -1
+    switchMaxBytesPerPixel: -1
+    switchTileMemorySize: -1
+    switchMaxAllowedStreamingMemory: 0
+    switchMultiThreadShaderCompile: 1
+    switchEnableGPUParameterValidation: 1
+  m_BuildTargetHighDefinitionGraphicsAPIs: []
+  webGLSupportEnabled: 1
+  webGLSubtarget: 2
+  webGLCompression: 0
+  webGLExceptionSupport: 1
+  webGLLinkerTarget: 1
+  webGLThreadsSupport: 0
+  webGLWASMStreaming: 1
+  webGLDecompressionFallback: 0
+  scriptingDefineSymbols: {}
+  platformArchitecture: {}
+  scriptingBackend:
+    Android: 1
+  il2cppCompilerConfiguration: {}
+  managedStrippingLevel:
+    Android: 2
+  incrementalIl2cppBuild: {}
+  allowUnsafeCode: 0
+  useDeterministicCompilation: 1
+  enableRoslynAnalyzers: 1
+  selectedPlatform: 0
+  warningLevel: 1
+  suppressCommonWarnings: 1
+  treatWarningsAsErrors: 0
+  useProductBinaries: 0
+  additionalIl2CppArgs: 
+  scriptingRuntimeVersion: 1
+  apiCompatibilityLevelPerPlatform: {}
+  m_RenderingPath: 1
+  m_MobileRenderingPath: 1
+  metroPackageName: BattleStarPvP
+  metroPackageVersion: 1.0.0.0
+  metroCertificatePath: 
+  metroCertificatePassword: 
+  metroCertificateSubject: 
+  metroCertificateIssuer: 
+  metroCertificateNotBefore: 
+  metroCertificateNotAfter: 
+  metroLockboxPath: 
+  metroUseDefaultAppxManifest: 1
+  metroUseNewStyleBlit: 1
+  metroUseLegacyBlit: 0
+  metroDefaultTileSize: 1
+  metroTileForegroundText: 2
+  metroTileBackgroundColor: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
+  metroWarningCode: -1
+  metroDesktopArchitecture: 
+  metroARM64ExeSize: 27344
+  metroIntel: 0
+  metroARM64Execute: 1
+  metroIntelExecute: 1
+  metroOverrideInAppSettingsScreen: 0
+  metroEnableLogging: 0
+  metroCompanionAppXbox: 0
+  metroAppStoreUri: 
+  metroShowHideOnLaunch: 0
+  metroCompanionAppScreen: 0
+  metroUsePseudoNewStyleBlit: 1
+  metroUsePseudoLegacyBlit: 0
+  vrEditorTarget: 4
+  vrTestMode: 2
+  linuxEnableALSADevice: 1
+  linuxEnableOSSDevice: 0
+  linuxEnablePulseAudioDevice: 0
+  linuxEnableJackDevice: 0
+  linuxAggregate: 1
+  linuxUseLttngProfiler: 0
+  linuxUseSystemNDK: 0
+  linuxUseDefaultEnvironment: 0
+  linuxStandaloneAccount: ''
+  linuxLaunchSingleInstance: 0
+  ps4NPRCLOverride: -1
+  ps4NPAgeRating: 12
+  ps4NPAgeRatingForJapan: 12
+  ps4NPAgeRatingForChina: 12
+  ps4NPAgeRatingForGermany: 12
+  ps4NPAgeRatingForKorea: 12
+  ps4NPAgeRatingForTaiwan: 12
+  ps4NPAgeRatingForGlobal: -1
+  ps4NPAgeRatingForKoreanToNorth: 12
+  ps4NPAgeRatingForKoreanToSouth: 12
+  ps4NPAgeRatingCountry: 0
+  playVRAndroidBundle: 
+  daydreamIconURL: 
+  daydreamIconBackground: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
+  daydreamIconBackgroundLayout: 1
+  daydreamIconForeground: {instanceID: 0}
+  daydreamIconForegroundLayout: 1
+  daydreamIconCornerRadius: 0.5
+  daydreamIconFit: 2
+  daydreamIconScale: {x: 0, y: 0, z: 0}
+  daydreamIconMipMap: 1
+  cardboardIconURL: 
+  cardboardIconBackground: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
+  cardboardIconBackgroundLayout: 1
+  cardboardIconForeground: {instanceID: 0}
+  cardboardIconForegroundLayout: 1
+  cardboardIconCornerRadius: 0
+  cardboardIconFit: 0
+  cardboardIconScale: {x: 0, y: 0, z: 0}
+  cardboardIconMipMap: 1
+  cardboardIconVersion: 1
+  cardboardVRDebugEnabled: 0
+  cardboardVRDeveloperMode: 0
+  cardboardVRTransition: 0
+  cardboardVRInflation: 0.5
+  cardboardVRSystem: 0
+  cardboardVRTPISystem: 0
+  cardboardVRTouchEnabled: 1
+  cardboardVRMouseEmulationEnabled: 1
+  cardboardVRClickEnabled: 1
+  cardboardVRPointerEnabled: 1
+  cardboardVROverlayEnabled: 0
+  cardboardVROverlayApp: 
+  cardboardVROverlayActivity: 
+  cardboardVROverlayActivity2: 
+  cardboardVROverlayPause: 
+  cardboardVROverlayResume: 
+  cardboardVRStereo: 1
+  cardboardVRModeEnabled: 0
+  cardboardDeprecated: 0
