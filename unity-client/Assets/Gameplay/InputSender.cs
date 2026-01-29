@@ -6,13 +6,10 @@ using ShipBattle.Core;
 
 namespace ShipBattle.Gameplay
 {
-    /// <summary>
-    /// Captures player input and sends it to the server at 20Hz.
-    /// Supports both keyboard (Windows) and touch (Android) input.
-    /// Phase 2 - New implementation.
-    /// </summary>
     public class InputSender : MonoBehaviour
     {
+        public static InputSender Instance { get; private set; }
+
         [Header("Input Configuration")]
         [SerializeField] private float sendRate = 20f; // 20Hz
         [SerializeField] private Joystick virtualJoystick; // For Android
@@ -24,7 +21,6 @@ namespace ShipBattle.Gameplay
         private float sendTimer;
         private float sendInterval;
 
-        // Input System actions (for keyboard)
         private InputAction moveAction;
         private InputAction fireAction;
         private InputAction abilityAction;
@@ -33,24 +29,44 @@ namespace ShipBattle.Gameplay
 
         private void Awake()
         {
-            sendInterval = 1f / sendRate;
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
 
-            // Setup Input System for keyboard/gamepad
-            SetupInputActions();
+            sendInterval = 1f / sendRate;
         }
 
         private void Start()
         {
             socketClient = GameManager.Instance.SocketClient;
+            
+            // Input disabled by default until GameController enables it
+            this.enabled = false;
+        }
 
-            if (socketClient == null)
-            {
-                Debug.LogError("[InputSender] SocketClient not found!");
-            }
+        public void EnableInput()
+        {
+            this.enabled = true;
+            SetupInputActions();
+            Debug.Log("[InputSender] Input enabled");
+        }
+
+        public void DisableInput()
+        {
+            this.enabled = false;
+            moveAction?.Disable();
+            fireAction?.Disable();
+            abilityAction?.Disable();
+            Debug.Log("[InputSender] Input disabled");
         }
 
         private void SetupInputActions()
         {
+            if (moveAction != null) return; // Already setup
+
             // Movement (WASD + Arrows)
             moveAction = new InputAction("Move", InputActionType.Value);
             moveAction.AddCompositeBinding("2DVector")
@@ -92,7 +108,6 @@ namespace ShipBattle.Gameplay
 
         private void ReadInput()
         {
-            // Check platform and read appropriate input
             #if UNITY_ANDROID && !UNITY_EDITOR
             ReadTouchInput();
             #else
@@ -102,25 +117,20 @@ namespace ShipBattle.Gameplay
 
         private void ReadKeyboardInput()
         {
-            // Read movement from Input System
-            currentDirection = moveAction.ReadValue<Vector2>();
+            if (moveAction == null) return;
 
-            // Normalize diagonal movement
+            currentDirection = moveAction.ReadValue<Vector2>();
             if (currentDirection.magnitude > 1f)
             {
                 currentDirection.Normalize();
             }
 
-            // Read fire button
             isFiring = fireAction.IsPressed();
-
-            // Read ability button
             abilityPressed = abilityAction.WasPressedThisFrame();
         }
 
         private void ReadTouchInput()
         {
-            // Read from virtual joystick (if present)
             if (virtualJoystick != null)
             {
                 currentDirection = virtualJoystick.Direction;
@@ -129,9 +139,6 @@ namespace ShipBattle.Gameplay
             {
                 currentDirection = Vector2.zero;
             }
-
-            // Touch fire button is handled by UI button callbacks
-            // (See MatchHUD.cs for fire button implementation)
         }
 
         private void SendInput()
@@ -153,10 +160,9 @@ namespace ShipBattle.Gameplay
                 timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             };
 
-            // Send asynchronously (fire and forget at 20Hz is acceptable)
-            _ = socketClient.SendInputAsync(inputData);
+            socketClient.SendEvent("game:input", inputData);
 
-            // Reset ability after sending
+            // Reset ability after sending (trigger only)
             abilityPressed = false;
         }
 
@@ -178,27 +184,31 @@ namespace ShipBattle.Gameplay
 
         private void OnDestroy()
         {
-            // Clean up Input System actions
             moveAction?.Disable();
             fireAction?.Disable();
             abilityAction?.Disable();
         }
     }
 
-    /// <summary>
-    /// Simple virtual joystick for touch input.
-    /// This is a placeholder - implement full joystick UI as needed.
-    /// </summary>
     public class Joystick : MonoBehaviour
     {
         public Vector2 Direction { get; private set; }
+        private void Update() { Direction = Vector2.zero; }
+    }
 
-        // Implement touch joystick logic here
-        // For Phase 2, this is a basic placeholder
-        private void Update()
-        {
-            // Placeholder - real implementation would track touch input
-            Direction = Vector2.zero;
-        }
+    [Serializable]
+    public class InputData
+    {
+        public Vector2Data direction;
+        public bool isFiring;
+        public bool ability;
+        public long timestamp;
+    }
+
+    [Serializable]
+    public class Vector2Data
+    {
+        public float x;
+        public float y;
     }
 }

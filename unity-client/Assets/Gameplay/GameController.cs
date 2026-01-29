@@ -2,23 +2,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using ShipBattle.Network;
 using ShipBattle.Core;
+using UnityEngine.SceneManagement;
 
 namespace ShipBattle.Gameplay
 {
-    /// <summary>
-    /// Main game controller for the match scene.
-    /// Manages ships, bullets, and game state based on server snapshots.
-    /// Phase 2 - New implementation.
-    /// </summary>
     public class GameController : MonoBehaviour
     {
         [Header("Prefabs")]
         [SerializeField] private GameObject shipPrefab;
         [SerializeField] private GameObject bulletPrefab;
-
-        [Header("Spawn Configuration")]
-        [SerializeField] private Vector2 playerSpawnPosition = new Vector2(-5f, 0f);
-        [SerializeField] private Vector2 opponentSpawnPosition = new Vector2(5f, 0f);
 
         private SocketClient socketClient;
         private SnapshotHandler snapshotHandler;
@@ -26,7 +18,6 @@ namespace ShipBattle.Gameplay
         private Dictionary<string, ShipView> activeShips = new Dictionary<string, ShipView>();
         private Dictionary<string, BulletView> activeBullets = new Dictionary<string, BulletView>();
 
-        private string localPlayerId;
         private bool isInitialized;
 
         private void Start()
@@ -42,29 +33,21 @@ namespace ShipBattle.Gameplay
 
             // Subscribe to snapshots
             socketClient.OnStateSnapshot += OnSnapshotReceived;
+            socketClient.OnMatchEnd += OnMatchEnd;
 
-            // Get local player ID (this should come from authentication)
-            // For now, we'll determine it from the first snapshot
+            // Enable input
+            if (InputSender.Instance != null)
+                InputSender.Instance.EnableInput();
             
             Debug.Log("[GameController] Game initialized, waiting for first snapshot...");
         }
 
-        private void OnSnapshotReceived(GameSnapshot snapshot)
+        private void OnSnapshotReceived(GameStateSnapshot snapshot)
         {
-            if (snapshot == null)
-            {
-                return;
-            }
+            if (snapshot == null) return;
 
             // Process snapshot through handler
             snapshotHandler.ProcessSnapshot(snapshot);
-
-            // Initialize on first snapshot
-            if (!isInitialized && snapshot.ships != null && snapshot.ships.Length > 0)
-            {
-                InitializeGame(snapshot);
-                isInitialized = true;
-            }
 
             // Update ships
             UpdateShips(snapshot);
@@ -73,56 +56,19 @@ namespace ShipBattle.Gameplay
             UpdateBullets(snapshot);
         }
 
-        private void InitializeGame(GameSnapshot snapshot)
+        private void OnMatchEnd(MatchEndEvent result)
         {
-            Debug.Log("[GameController] Initializing game with first snapshot");
-
-            // Create ships based on snapshot
-            if (snapshot.ships != null)
-            {
-                for (int i = 0; i < snapshot.ships.Length; i++)
-                {
-                    ShipData shipData = snapshot.ships[i];
-                    bool isPlayer = i == 0; // First ship is player (convention)
-
-                    CreateShip(shipData, isPlayer);
-                }
-            }
+            Debug.Log($"[GAME] Match ended. Winner: {result.winnerId}");
+            GameManager.Instance.SetMatchResult(result);
+            SceneManager.LoadScene("Result");
         }
 
-        private void CreateShip(ShipData shipData, bool isPlayer)
+        private void UpdateShips(GameStateSnapshot snapshot)
         {
-            if (activeShips.ContainsKey(shipData.id))
-            {
-                return;
-            }
-
-            GameObject shipObj = Instantiate(shipPrefab);
-            shipObj.name = $"Ship_{shipData.id}";
-
-            ShipView shipView = shipObj.GetComponent<ShipView>();
-            if (shipView == null)
-            {
-                shipView = shipObj.AddComponent<ShipView>();
-            }
-
-            shipView.Initialize(shipData.id, isPlayer);
-            shipView.UpdateFromSnapshot(shipData);
-
-            activeShips[shipData.id] = shipView;
-
-            Debug.Log($"[GameController] Created ship - ID: {shipData.id}, IsPlayer: {isPlayer}");
-        }
-
-        private void UpdateShips(GameSnapshot snapshot)
-        {
-            if (snapshot.ships == null)
-            {
-                return;
-            }
+            if (snapshot.ships == null) return;
 
             // Update existing ships
-            foreach (ShipData shipData in snapshot.ships)
+            foreach (ShipState shipData in snapshot.ships)
             {
                 if (activeShips.TryGetValue(shipData.id, out ShipView shipView))
                 {
@@ -130,110 +76,111 @@ namespace ShipBattle.Gameplay
                 }
                 else
                 {
-                    // Ship not found, create it
-                    bool isPlayer = activeShips.Count == 0; // First ship is player
-                    CreateShip(shipData, isPlayer);
+                    CreateShip(shipData);
                 }
             }
 
-            // Remove ships not in snapshot (destroyed)
-            List<string> shipsToRemove = new List<string>();
+            // Remove destroyed ships
+            // (Simplification: if not in snapshot, destroy)
+            List<string> toRemove = new List<string>();
             foreach (var kvp in activeShips)
             {
-                bool foundInSnapshot = false;
-                foreach (ShipData shipData in snapshot.ships)
+                bool found = false;
+                foreach (var s in snapshot.ships)
                 {
-                    if (shipData.id == kvp.Key)
-                    {
-                        foundInSnapshot = true;
-                        break;
-                    }
+                    if (s.id == kvp.Key) { found = true; break; }
                 }
-
-                if (!foundInSnapshot)
-                {
-                    shipsToRemove.Add(kvp.Key);
-                }
+                if (!found) toRemove.Add(kvp.Key);
             }
 
-            foreach (string shipId in shipsToRemove)
+            foreach (var id in toRemove)
             {
-                if (activeShips.TryGetValue(shipId, out ShipView shipView))
+                if (activeShips.TryGetValue(id, out var view))
                 {
-                    Destroy(shipView.gameObject);
-                    activeShips.Remove(shipId);
-                    Debug.Log($"[GameController] Removed ship: {shipId}");
+                    Destroy(view.gameObject);
+                    activeShips.Remove(id);
                 }
             }
         }
 
-        private void UpdateBullets(GameSnapshot snapshot)
+        private void CreateShip(ShipState shipData)
+        {
+            if (activeShips.ContainsKey(shipData.id)) return;
+
+            GameObject shipObj = Instantiate(shipPrefab);
+            shipObj.name = $"Ship_{shipData.id}";
+
+            ShipView shipView = shipObj.GetComponent<ShipView>();
+            if (shipView == null) shipView = shipObj.AddComponent<ShipView>();
+
+            // Determine if local player
+            // Need UserID from AuthService
+            int myId = AuthService.Instance.GetUserId();
+            // Assuming shipData.id matches userId string or logic
+            // The ticket DTO defines ShipState.id as string. 
+            // AuthService UserData.id is int.
+            // Assuming string comparison "123" == 123
+            
+            bool isPlayer = (shipData.id == myId.ToString());
+            
+            shipView.Initialize(shipData.id, isPlayer);
+            shipView.UpdateFromSnapshot(shipData);
+
+            activeShips[shipData.id] = shipView;
+        }
+
+        private void UpdateBullets(GameStateSnapshot snapshot)
         {
             if (snapshot.bullets == null)
             {
-                // Remove all bullets if none in snapshot
-                foreach (var kvp in activeBullets)
-                {
-                    Destroy(kvp.Value.gameObject);
-                }
+                foreach (var b in activeBullets.Values) Destroy(b.gameObject);
                 activeBullets.Clear();
                 return;
             }
 
-            // Track bullets in current snapshot
-            HashSet<string> currentBulletIds = new HashSet<string>();
+            HashSet<string> currentIds = new HashSet<string>();
 
-            // Update or create bullets
-            foreach (BulletData bulletData in snapshot.bullets)
+            foreach (BulletState bulletData in snapshot.bullets)
             {
-                currentBulletIds.Add(bulletData.id);
+                currentIds.Add(bulletData.id);
 
                 if (activeBullets.TryGetValue(bulletData.id, out BulletView bulletView))
                 {
-                    // Update existing bullet
                     bulletView.UpdateFromSnapshot(bulletData);
                 }
                 else
                 {
-                    // Create new bullet
                     CreateBullet(bulletData);
                 }
             }
 
-            // Remove bullets not in snapshot
-            List<string> bulletsToRemove = new List<string>();
+            List<string> toRemove = new List<string>();
             foreach (var kvp in activeBullets)
             {
-                if (!currentBulletIds.Contains(kvp.Key))
-                {
-                    bulletsToRemove.Add(kvp.Key);
-                }
+                if (!currentIds.Contains(kvp.Key)) toRemove.Add(kvp.Key);
             }
 
-            foreach (string bulletId in bulletsToRemove)
+            foreach (var id in toRemove)
             {
-                if (activeBullets.TryGetValue(bulletId, out BulletView bulletView))
+                if (activeBullets.TryGetValue(id, out var view))
                 {
-                    Destroy(bulletView.gameObject);
-                    activeBullets.Remove(bulletId);
+                    Destroy(view.gameObject);
+                    activeBullets.Remove(id);
                 }
             }
         }
 
-        private void CreateBullet(BulletData bulletData)
+        private void CreateBullet(BulletState bulletData)
         {
             GameObject bulletObj = Instantiate(bulletPrefab);
             bulletObj.name = $"Bullet_{bulletData.id}";
 
             BulletView bulletView = bulletObj.GetComponent<BulletView>();
-            if (bulletView == null)
-            {
-                bulletView = bulletObj.AddComponent<BulletView>();
-            }
+            if (bulletView == null) bulletView = bulletObj.AddComponent<BulletView>();
 
-            // Determine if this is a player bullet
-            bool isPlayerBullet = activeShips.ContainsKey(bulletData.ownerId) && 
-                                  activeShips[bulletData.ownerId].IsLocalPlayer;
+            // Check owner
+            int myId = AuthService.Instance.GetUserId();
+            bool isPlayerBullet = (bulletData.ownerId == myId.ToString());
 
             bulletView.Initialize(bulletData.id, bulletData.ownerId, isPlayerBullet);
             bulletView.UpdateFromSnapshot(bulletData);
@@ -246,6 +193,7 @@ namespace ShipBattle.Gameplay
             if (socketClient != null)
             {
                 socketClient.OnStateSnapshot -= OnSnapshotReceived;
+                socketClient.OnMatchEnd -= OnMatchEnd;
             }
         }
     }

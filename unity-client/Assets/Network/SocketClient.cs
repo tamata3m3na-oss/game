@@ -6,33 +6,38 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace ShipBattle.Network
 {
-    /// <summary>
-    /// WebSocket client for real-time communication with backend.
-    /// Handles connection, message sending/receiving, and event dispatching.
-    /// Modified for Phase 2 - Added game:input and state:snapshot handlers.
-    /// </summary>
     public class SocketClient
     {
+        private static SocketClient instance;
+        public static SocketClient Instance
+        {
+            get
+            {
+                if (instance == null) instance = new SocketClient();
+                return instance;
+            }
+        }
+
         private ClientWebSocket webSocket;
         private CancellationTokenSource cancellationTokenSource;
         private string serverUrl = "ws://localhost:3000/pvp";
         private string authToken;
         
-        // Connection state
-        private bool isConnected = false;
-        public bool IsConnected => isConnected;
+        public bool IsConnected => webSocket != null && webSocket.State == WebSocketState.Open;
 
-        // Events for matchmaking (Phase 1)
-        public event Action<QueueStatusData> OnQueueStatus;
-        public event Action<MatchFoundData> OnMatchFound;
-        public event Action<MatchReadyData> OnMatchReady;
-        public event Action<MatchEndData> OnMatchEnd;
-        
-        // Events for gameplay (Phase 2)
-        public event Action<GameSnapshot> OnStateSnapshot;
+        public delegate void MatchReadyHandler(MatchReadyEvent data);
+        public delegate void MatchEndHandler(MatchEndEvent data);
+        public delegate void StateSnapshotHandler(GameStateSnapshot snapshot);
+        public delegate void ErrorHandler(string error);
+
+        public event MatchReadyHandler OnMatchReady;
+        public event MatchEndHandler OnMatchEnd;
+        public event StateSnapshotHandler OnStateSnapshot;
+        public event ErrorHandler OnError;
         public event Action OnConnected;
         public event Action OnDisconnected;
 
@@ -42,6 +47,13 @@ namespace ShipBattle.Network
             
             try
             {
+                // Cancel previous connection if any
+                if (webSocket != null)
+                {
+                    cancellationTokenSource?.Cancel();
+                    webSocket.Dispose();
+                }
+
                 webSocket = new ClientWebSocket();
                 cancellationTokenSource = new CancellationTokenSource();
                 
@@ -51,17 +63,15 @@ namespace ShipBattle.Network
                 Debug.Log($"[SocketClient] Connecting to {serverUrl}...");
                 await webSocket.ConnectAsync(uri, cancellationTokenSource.Token);
                 
-                isConnected = true;
                 OnConnected?.Invoke();
                 Debug.Log("[SocketClient] Connected successfully");
                 
-                // Start receiving messages
                 _ = ReceiveLoop();
             }
             catch (Exception e)
             {
                 Debug.LogError($"[SocketClient] Connection failed: {e.Message}");
-                isConnected = false;
+                OnError?.Invoke(e.Message);
                 throw;
             }
         }
@@ -83,7 +93,6 @@ namespace ShipBattle.Network
             }
             finally
             {
-                isConnected = false;
                 OnDisconnected?.Invoke();
                 webSocket?.Dispose();
                 cancellationTokenSource?.Dispose();
@@ -116,7 +125,6 @@ namespace ShipBattle.Network
             catch (Exception e)
             {
                 Debug.LogError($"[SocketClient] Receive loop error: {e.Message}");
-                isConnected = false;
                 OnDisconnected?.Invoke();
             }
         }
@@ -127,64 +135,52 @@ namespace ShipBattle.Network
             {
                 JObject doc = JObject.Parse(message);
                 
-                if (!doc.TryGetValue("type", out JToken typeToken))
-                {
-                    Debug.LogWarning("[SocketClient] Message missing 'type' field");
-                    return;
-                }
-
+                if (!doc.TryGetValue("type", out JToken typeToken)) return;
                 string eventType = typeToken.Value<string>();
                 
-                if (!doc.TryGetValue("data", out JToken dataToken))
-                {
-                    Debug.LogWarning($"[SocketClient] Message missing 'data' field for type: {eventType}");
-                    return;
-                }
-
+                if (!doc.TryGetValue("data", out JToken dataToken)) return;
                 string dataJson = dataToken.ToString();
                 
-                // Dispatch based on event type
                 switch (eventType)
                 {
-                    case "queue:status":
-                        var queueStatus = JsonConvert.DeserializeObject<QueueStatusData>(dataJson);
-                        OnQueueStatus?.Invoke(queueStatus);
-                        break;
-                        
-                    case "match:found":
-                        var matchFound = JsonConvert.DeserializeObject<MatchFoundData>(dataJson);
-                        OnMatchFound?.Invoke(matchFound);
-                        break;
-                        
                     case "match:ready":
-                        var matchReady = JsonConvert.DeserializeObject<MatchReadyData>(dataJson);
+                        var matchReady = JsonConvert.DeserializeObject<MatchReadyEvent>(dataJson);
                         OnMatchReady?.Invoke(matchReady);
                         break;
                         
                     case "match:end":
-                        var matchEnd = JsonConvert.DeserializeObject<MatchEndData>(dataJson);
+                        var matchEnd = JsonConvert.DeserializeObject<MatchEndEvent>(dataJson);
                         OnMatchEnd?.Invoke(matchEnd);
                         break;
                         
                     case "state:snapshot":
-                        var snapshot = JsonConvert.DeserializeObject<GameSnapshot>(dataJson);
+                        var snapshot = JsonConvert.DeserializeObject<GameStateSnapshot>(dataJson);
                         OnStateSnapshot?.Invoke(snapshot);
+                        break;
+
+                    case "error":
+                        OnError?.Invoke(dataJson);
                         break;
                         
                     default:
-                        Debug.LogWarning($"[SocketClient] Unknown event type: {eventType}");
+                        // Ignore unknown events or handle legacy ones if needed
                         break;
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SocketClient] Message handling error: {e.Message}\nMessage: {message}");
+                Debug.LogError($"[SocketClient] Message handling error: {e.Message}");
             }
+        }
+
+        public async void SendEvent(string eventType, object data)
+        {
+             await SendMessageAsync(eventType, data);
         }
 
         public async Task SendMessageAsync(string eventType, object data)
         {
-            if (!isConnected || webSocket.State != WebSocketState.Open)
+            if (webSocket == null || webSocket.State != WebSocketState.Open)
             {
                 Debug.LogWarning($"[SocketClient] Cannot send message - not connected");
                 return;
@@ -213,121 +209,5 @@ namespace ShipBattle.Network
                 Debug.LogError($"[SocketClient] Send message error: {e.Message}");
             }
         }
-
-        // Matchmaking API
-        public Task JoinQueueAsync()
-        {
-            return SendMessageAsync("queue:join", new { });
-        }
-
-        public Task LeaveQueueAsync()
-        {
-            return SendMessageAsync("queue:leave", new { });
-        }
-
-        public Task AcceptMatchAsync()
-        {
-            return SendMessageAsync("match:accept", new { });
-        }
-
-        // Gameplay API (Phase 2)
-        public Task SendInputAsync(InputData input)
-        {
-            return SendMessageAsync("game:input", input);
-        }
-    }
-
-    // Data structures for Phase 1 (Matchmaking)
-    [Serializable]
-    public class QueueStatusData
-    {
-        public string status { get; set; }
-        public int queueSize { get; set; }
-        public long timestamp { get; set; }
-    }
-
-    [Serializable]
-    public class MatchFoundData
-    {
-        public int matchId { get; set; }
-        public OpponentData opponent { get; set; }
-        public long acceptDeadline { get; set; }
-    }
-
-    [Serializable]
-    public class MatchReadyData
-    {
-        public int matchId { get; set; }
-        public OpponentData opponent { get; set; }
-    }
-
-    [Serializable]
-    public class MatchEndData
-    {
-        public int matchId { get; set; }
-        public int winnerId { get; set; }
-        public string reason { get; set; }
-        public EloChange eloChange { get; set; }
-    }
-
-    [Serializable]
-    public class OpponentData
-    {
-        public int id { get; set; }
-        public string username { get; set; }
-        public int rating { get; set; }
-    }
-
-    [Serializable]
-    public class EloChange
-    {
-        public int oldRating { get; set; }
-        public int newRating { get; set; }
-        public int change { get; set; }
-    }
-
-    // Data structures for Phase 2 (Gameplay)
-    [Serializable]
-    public class InputData
-    {
-        public Vector2Data direction { get; set; }
-        public bool isFiring { get; set; }
-        public bool ability { get; set; }
-        public long timestamp { get; set; }
-    }
-
-    [Serializable]
-    public class Vector2Data
-    {
-        public float x { get; set; }
-        public float y { get; set; }
-    }
-
-    [Serializable]
-    public class GameSnapshot
-    {
-        public int tick { get; set; }
-        public long timestamp { get; set; }
-        public ShipData[] ships { get; set; }
-        public BulletData[] bullets { get; set; }
-    }
-
-    [Serializable]
-    public class ShipData
-    {
-        public string id { get; set; }
-        public Vector2Data position { get; set; }
-        public float rotation { get; set; }
-        public float health { get; set; }
-        public float shield { get; set; }
-    }
-
-    [Serializable]
-    public class BulletData
-    {
-        public string id { get; set; }
-        public Vector2Data position { get; set; }
-        public Vector2Data direction { get; set; }
-        public string ownerId { get; set; }
     }
 }

@@ -1,15 +1,11 @@
-using System;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 using ShipBattle.Network;
+using System.Threading.Tasks;
 
 namespace ShipBattle.Core
 {
-    /// <summary>
-    /// Central game manager handling scene transitions and game flow.
-    /// Integrates with Network layer and manages match lifecycle.
-    /// </summary>
     public class GameManager : MonoBehaviour
     {
         private static GameManager instance;
@@ -19,31 +15,22 @@ namespace ShipBattle.Core
             {
                 if (instance == null)
                 {
-                    GameObject go = new GameObject("GameManager");
+                    var go = new GameObject("GameManager");
                     instance = go.AddComponent<GameManager>();
                     DontDestroyOnLoad(go);
                 }
                 return instance;
             }
         }
-
-        private AppStateMachine stateMachine;
-        private SocketClient socketClient;
-
-        public AppStateMachine StateMachine => stateMachine;
-        public SocketClient SocketClient => socketClient;
-
-        // Match data
-        private int currentMatchId;
-        private string opponentUsername;
-        private int opponentRating;
-        private bool isMatchActive;
-
-        public int CurrentMatchId => currentMatchId;
-        public string OpponentUsername => opponentUsername;
-        public int OpponentRating => opponentRating;
-        public bool IsMatchActive => isMatchActive;
-
+        
+        [SerializeField] private AppStateMachine stateMachine;
+        
+        private MatchReadyEvent currentMatch;
+        private MatchEndEvent matchResult;
+        
+        // Properties for backward compatibility/access
+        public SocketClient SocketClient => SocketClient.Instance;
+        
         private void Awake()
         {
             if (instance != null && instance != this)
@@ -51,110 +38,44 @@ namespace ShipBattle.Core
                 Destroy(gameObject);
                 return;
             }
+            
             instance = this;
             DontDestroyOnLoad(gameObject);
         }
-
+        
         public void Initialize()
         {
-            stateMachine = new AppStateMachine();
-            socketClient = new SocketClient();
+            // Initialize state machine if needed
+            if (stateMachine == null) stateMachine = new AppStateMachine();
             
-            // Subscribe to network events
-            socketClient.OnMatchReady += HandleMatchReady;
-            socketClient.OnMatchEnd += HandleMatchEnd;
-            
-            Debug.Log("[GameManager] Initialized successfully");
+            Debug.Log("[GameManager] Initialized");
         }
-
-        // Called from LoginController after successful authentication
-        public async Task HandleLoginSuccess()
+        
+        private void Start()
         {
-            Debug.Log("[GameManager] Login successful, transitioning to Lobby");
-            stateMachine.ChangeState(AppState.Lobby);
-            await LoadSceneAsync("Lobby");
+            // Logic from ticket: ensure we start at Splash if not already
+            // This might cause loop if Splash loads GameManager which loads Splash.
+            // Assuming this script is on a persistent object created in Splash.
         }
-
-        // Called from LoginController on authentication failure
-        public async Task HandleAuthFailure()
+        
+        public void SetCurrentMatch(MatchReadyEvent match)
         {
-            Debug.LogError("[GameManager] Authentication failed");
-            stateMachine.ChangeState(AppState.Login);
-            await LoadSceneAsync("Login");
+            currentMatch = match;
         }
-
-        // Match lifecycle handlers
-        private void HandleMatchReady(MatchReadyData data)
+        
+        public MatchReadyEvent GetCurrentMatch()
         {
-            Debug.Log($"[GameManager] Match ready - ID: {data.matchId}, Opponent: {data.opponent.username}");
-            
-            currentMatchId = data.matchId;
-            opponentUsername = data.opponent.username;
-            opponentRating = data.opponent.rating;
-            isMatchActive = true;
-            
-            stateMachine.ChangeState(AppState.InGame);
-            LoadSceneAsync("Game");
+            return currentMatch;
         }
-
-        private void HandleMatchEnd(MatchEndData data)
+        
+        public void SetMatchResult(MatchEndEvent result)
         {
-            Debug.Log($"[GameManager] Match ended - Winner ID: {data.winnerId}");
-            
-            isMatchActive = false;
-            
-            stateMachine.ChangeState(AppState.Result);
-            LoadSceneAsync("Result");
+            matchResult = result;
         }
-
-        // Scene management
-        private async Task LoadSceneAsync(string sceneName)
+        
+        public MatchEndEvent GetMatchResult()
         {
-            try
-            {
-                AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
-                operation.allowSceneActivation = false;
-
-                while (operation.progress < 0.9f)
-                {
-                    await Task.Delay(10);
-                }
-
-                operation.allowSceneActivation = true;
-                
-                while (!operation.isDone)
-                {
-                    await Task.Delay(10);
-                }
-
-                Debug.Log($"[GameManager] Scene loaded: {sceneName}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"[GameManager] Failed to load scene {sceneName}: {e.Message}");
-            }
-        }
-
-        // Public API for scene transitions
-        public void LoadLobby()
-        {
-            stateMachine.ChangeState(AppState.Lobby);
-            SceneManager.LoadScene("Lobby");
-        }
-
-        public void LoadLogin()
-        {
-            stateMachine.ChangeState(AppState.Login);
-            SceneManager.LoadScene("Login");
-        }
-
-        private void OnDestroy()
-        {
-            if (socketClient != null)
-            {
-                socketClient.OnMatchReady -= HandleMatchReady;
-                socketClient.OnMatchEnd -= HandleMatchEnd;
-            }
+            return matchResult;
         }
     }
 }
