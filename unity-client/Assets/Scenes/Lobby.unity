@@ -8,7 +8,7 @@ OcclusionCullingSettings:
     smallestOccluder: 5
     smallestHole: 0.25
     backfaceThreshold: 100
-  m_SceneGUID: 00000000000000000000000000000000
+  m_SceneGUID: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6
   m_OcclusionCullingData: {fileID: 0}
 --- !u!104 &2
 RenderSettings:
@@ -398,7 +398,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 200001}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: lobbycontroller0000000000000000, type: 3}
+  m_Script: {fileID: 11500000, guid: e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   usernameText: {fileID: 300003}
