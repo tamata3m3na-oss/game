@@ -3,17 +3,17 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using ShipBattle.Core;
 using ShipBattle.Network;
+using TMPro;
 
 public class ResultController : MonoBehaviour
 {
-    [SerializeField] private Text resultText;
-    [SerializeField] private Text ratingText;
-    [SerializeField] private Button playAgainButton;
+    [SerializeField] private TMP_Text resultText;
+    [SerializeField] private TMP_Text ratingChangeText;
     [SerializeField] private Button lobbyButton;
 
     [Header("Statistics")]
-    [SerializeField] private Text playerStatsText;
-    [SerializeField] private Text enemyStatsText;
+    [SerializeField] private TMP_Text playerStatsText;
+    [SerializeField] private TMP_Text enemyStatsText;
     
     private void Awake()
     {
@@ -30,87 +30,55 @@ public class ResultController : MonoBehaviour
             return;
         }
         
-        // Initialize stats text
-        if (playerStatsText != null) playerStatsText.text = "Kills: -  Deaths: -  Damage: -";
-        if (enemyStatsText != null) enemyStatsText.text = "Kills: -  Deaths: -  Damage: -";
+        if (lobbyButton != null)
+        {
+            lobbyButton.onClick.AddListener(ReturnToLobby);
+        }
         
+        DisplayResults();
+    }
+    
+    private void DisplayResults()
+    {
         var result = GameManager.Instance.GetMatchResult();
-        
         if (result == null)
         {
-            Debug.LogWarning("[RESULT] No match result found. Testing scene directly?");
-            if (resultText != null) resultText.text = "Match Result";
-            if (ratingText != null) ratingText.text = "";
+            if (resultText != null) resultText.text = "No Match Data";
             return;
         }
-
-        Debug.Log($"[RESULT] Match result - Winner: {result.winnerId}, Rating change: {result.ratingChange}");
 
         int myId = AuthService.Instance.GetUserId();
         bool won = result.winnerId == myId.ToString();
         
-        Debug.Log($"[RESULT] My ID: {myId}, Won: {won}");
-        
         if (resultText != null)
         {
-            resultText.text = won ? "🎉 You Won! 🎉" : "😔 You Lost";
+            resultText.text = won ? "VICTORY" : "DEFEAT";
             resultText.color = won ? Color.green : Color.red;
-            Debug.Log($"[RESULT] Result text set: {resultText.text}");
-        }
-        else
-        {
-            Debug.LogError("[RESULT] Result text is not assigned!");
         }
         
-        int ratingChange = result.ratingChange;
-        if (ratingText != null)
+        if (ratingChangeText != null)
         {
-            ratingText.text = ratingChange >= 0 ? 
-                $"+{ratingChange} Rating" : 
-                $"{ratingChange} Rating";
-            ratingText.color = ratingChange >= 0 ? Color.green : Color.red;
-            Debug.Log($"[RESULT] Rating text set: {ratingText.text}");
+            ratingChangeText.text = result.ratingChange >= 0 ? 
+                $"+{result.ratingChange} Rank" : 
+                $"{result.ratingChange} Rank";
         }
-        else
-        {
-            Debug.LogError("[RESULT] Rating text is not assigned!");
-        }
+
+        // Mock stats for now as they are not in MatchEndEvent yet
+        if (playerStatsText != null) playerStatsText.text = "Kills: 0\nDamage: 0";
+        if (enemyStatsText != null) enemyStatsText.text = "Kills: 0\nDamage: 0";
         
-        if (playAgainButton != null)
-        {
-            playAgainButton.onClick.AddListener(() => 
-            {
-                Debug.Log("[RESULT] Play Again button clicked - Loading Lobby");
-                SceneManager.LoadScene("Lobby");
-            });
-            Debug.Log("[RESULT] Play Again button listener added");
-        }
-        else
-        {
-            Debug.LogError("[RESULT] Play Again button is not assigned!");
-        }
-        
-        if (lobbyButton != null)
-        {
-            lobbyButton.onClick.AddListener(() => 
-            {
-                Debug.Log("[RESULT] Lobby button clicked - Loading Lobby");
-                SceneManager.LoadScene("Lobby");
-            });
-            Debug.Log("[RESULT] Lobby button listener added");
-        }
-        else
-        {
-            Debug.LogError("[RESULT] Lobby button is not assigned!");
-        }
+        Debug.Log($"[RESULT] Result displayed: {resultText?.text}");
+    }
+
+    public void ReturnToLobby()
+    {
+        Debug.Log("[RESULT] Returning to lobby...");
+        SceneManager.LoadScene("Lobby");
     }
     
     private void OnDestroy()
     {
-        Debug.Log("[RESULT] ResultController OnDestroy - Removing listeners");
-        if (playAgainButton != null)
-            playAgainButton.onClick.RemoveAllListeners();
         if (lobbyButton != null)
-            lobbyButton.onClick.RemoveAllListeners();
+            lobbyButton.onClick.RemoveListener(ReturnToLobby);
     }
 }
