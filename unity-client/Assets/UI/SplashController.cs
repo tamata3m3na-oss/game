@@ -3,14 +3,25 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Threading.Tasks;
 using ShipBattle.Network;
+using TMPro;
 
 public class SplashController : MonoBehaviour
 {
     [SerializeField] private float splashDuration = 2f;
+
+    [Header("UI Elements")]
+    [SerializeField] private TMP_Text titleText;
+    [SerializeField] private GameObject loadingIndicator;
+    [SerializeField] private TMP_Text subtitleText;
     
     private void Awake()
     {
         Debug.Log("[SPLASH] SplashController Awake");
+        
+        // Set default values if assigned
+        if (titleText != null) titleText.text = "SHIP BATTLE";
+        if (subtitleText != null) subtitleText.text = "Loading...";
+        if (loadingIndicator != null) loadingIndicator.SetActive(true);
     }
     
     private void Start()

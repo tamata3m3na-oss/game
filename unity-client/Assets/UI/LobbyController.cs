@@ -11,6 +11,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private Text ratingText;
     [SerializeField] private Button joinQueueButton;
     [SerializeField] private Button leaveQueueButton;
+    [SerializeField] private Button leaveLobbyButton;
     [SerializeField] private Text statusText;
     
     private bool inQueue = false;
@@ -55,6 +56,11 @@ public class LobbyController : MonoBehaviour
         else
         {
             Debug.LogError("[LOBBY] Leave queue button is not assigned!");
+        }
+        
+        if (leaveLobbyButton != null)
+        {
+            leaveLobbyButton.onClick.AddListener(OnLeaveLobby);
         }
         
         // Load player info
@@ -157,6 +163,16 @@ public class LobbyController : MonoBehaviour
         Debug.Log("[LOBBY] Sending queue:leave event");
         SocketClient.Instance.SendEvent("queue:leave", new { });
         Debug.Log("[LOBBY] Left queue");
+    }
+
+    private void OnLeaveLobby()
+    {
+        Debug.Log("[LOBBY] Leave Lobby clicked");
+        if (SocketClient.Instance != null && SocketClient.Instance.IsConnected)
+        {
+            _ = SocketClient.Instance.DisconnectAsync();
+        }
+        SceneManager.LoadScene("Login");
     }
     
     private void OnMatchReady(MatchReadyEvent matchData)
