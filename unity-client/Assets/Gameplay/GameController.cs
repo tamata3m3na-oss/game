@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using ShipBattle.Network;
 using ShipBattle.Core;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 namespace ShipBattle.Gameplay
 {
@@ -12,13 +14,22 @@ namespace ShipBattle.Gameplay
         [SerializeField] private GameObject shipPrefab;
         [SerializeField] private GameObject bulletPrefab;
 
+        [Header("UI References")]
+        [SerializeField] private Slider playerHealthBar;
+        [SerializeField] private Slider opponentHealthBar;
+        [SerializeField] private TMP_Text timerText;
+        [SerializeField] private MatchTimer matchTimer;
+        [SerializeField] private InputSender inputSender;
+
+        [Header("Ship References")]
+        [SerializeField] private ShipView playerShipView;
+        [SerializeField] private ShipView opponentShipView;
+
         private SocketClient socketClient;
         private SnapshotHandler snapshotHandler;
 
         private Dictionary<string, ShipView> activeShips = new Dictionary<string, ShipView>();
         private Dictionary<string, BulletView> activeBullets = new Dictionary<string, BulletView>();
-
-        private bool isInitialized;
 
         private void Awake()
         {
@@ -44,34 +55,37 @@ namespace ShipBattle.Gameplay
                 return;
             }
 
-            Debug.Log("[GameController] Subscribing to SocketClient events");
+            // Start timer
+            if (matchTimer != null) matchTimer.StartTimer();
+
             // Subscribe to snapshots
             socketClient.OnStateSnapshot += OnSnapshotReceived;
             socketClient.OnMatchEnd += OnMatchEnd;
 
             // Enable input
-            if (InputSender.Instance != null)
+            if (inputSender != null)
             {
-                InputSender.Instance.EnableInput();
+                inputSender.EnableInput();
                 Debug.Log("[GameController] Input enabled");
             }
             else
             {
-                Debug.LogWarning("[GameController] InputSender instance not found");
+                // Try to find it if not assigned
+                inputSender = FindObjectOfType<InputSender>();
+                if (inputSender != null) inputSender.EnableInput();
             }
             
-            Debug.Log("[GameController] Game initialized, waiting for first snapshot...");
+            Debug.Log("[GameController] Game initialized");
+        }
+
+        private void Update()
+        {
+            // Update timer if needed, though usually handled by MatchTimer
         }
 
         private void OnSnapshotReceived(GameStateSnapshot snapshot)
         {
-            if (snapshot == null) 
-            {
-                Debug.LogWarning("[GameController] Received null snapshot");
-                return;
-            }
-
-            Debug.Log($"[GameController] Snapshot received: Ships={snapshot.ships?.Count ?? 0}, Bullets={snapshot.bullets?.Count ?? 0}");
+            if (snapshot == null) return;
 
             // Process snapshot through handler
             snapshotHandler.ProcessSnapshot(snapshot);
@@ -81,26 +95,51 @@ namespace ShipBattle.Gameplay
 
             // Update bullets
             UpdateBullets(snapshot);
+            
+            // Update UI
+            UpdateUI(snapshot);
+        }
+
+        private void UpdateUI(GameStateSnapshot snapshot)
+        {
+            if (snapshot.ships == null) return;
+
+            int myId = AuthService.Instance.GetUserId();
+
+            foreach (var shipData in snapshot.ships)
+            {
+                bool isPlayer = (shipData.id == myId.ToString());
+                if (isPlayer)
+                {
+                    if (playerHealthBar != null) playerHealthBar.value = shipData.health / 100f;
+                }
+                else
+                {
+                    if (opponentHealthBar != null) opponentHealthBar.value = shipData.health / 100f;
+                }
+            }
+            
+            // Timer update (if snapshot has time)
+            // if (timerText != null) timerText.text = snapshot.remainingTime.ToString("F0");
         }
 
         private void OnMatchEnd(MatchEndEvent result)
         {
-            Debug.Log($"[GameController] Match ended. Winner: {result.winnerId}, Rating change: {result.ratingChange}");
+            Debug.Log($"[GameController] Match ended. Winner: {result.winnerId}");
             
+            if (matchTimer != null) matchTimer.StopTimer();
+
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.SetMatchResult(result);
             }
             
-            Debug.Log("[GameController] Loading Result scene...");
             SceneManager.LoadScene("Result");
         }
 
         private void UpdateShips(GameStateSnapshot snapshot)
         {
             if (snapshot.ships == null) return;
-
-            Debug.Log($"[GameController] Updating {snapshot.ships.Count} ships");
 
             // Update existing ships
             foreach (ShipState shipData in snapshot.ships)
@@ -129,20 +168,14 @@ namespace ShipBattle.Gameplay
 
             foreach (var id in toRemove)
             {
-                if (activeShips.TryGetValue(id, out var view))
-                {
-                    Debug.Log($"[GameController] Destroying ship: {id}");
-                    Destroy(view.gameObject);
-                    activeShips.Remove(id);
-                }
+                Destroy(activeShips[id].gameObject);
+                activeShips.Remove(id);
             }
         }
 
         private void CreateShip(ShipState shipData)
         {
-            if (activeShips.ContainsKey(shipData.id)) return;
-
-            Debug.Log($"[GameController] Creating ship: {shipData.id}");
+            if (shipPrefab == null) return;
 
             GameObject shipObj = Instantiate(shipPrefab);
             shipObj.name = $"Ship_{shipData.id}";
@@ -150,35 +183,27 @@ namespace ShipBattle.Gameplay
             ShipView shipView = shipObj.GetComponent<ShipView>();
             if (shipView == null) shipView = shipObj.AddComponent<ShipView>();
 
-            // Determine if local player
             int myId = AuthService.Instance.GetUserId();
             bool isPlayer = (shipData.id == myId.ToString());
-            
-            Debug.Log($"[GameController] Ship {shipData.id} isPlayer: {isPlayer} (myId: {myId})");
             
             shipView.Initialize(shipData.id, isPlayer);
             shipView.UpdateFromSnapshot(shipData);
 
             activeShips[shipData.id] = shipView;
+
+            // Assign to references if they are the player or opponent
+            if (isPlayer) playerShipView = shipView;
+            else opponentShipView = shipView;
         }
 
         private void UpdateBullets(GameStateSnapshot snapshot)
         {
-            if (snapshot.bullets == null)
-            {
-                Debug.Log("[GameController] No bullets in snapshot, clearing all bullets");
-                foreach (var b in activeBullets.Values) Destroy(b.gameObject);
-                activeBullets.Clear();
-                return;
-            }
+            if (snapshot.bullets == null) return;
 
-            Debug.Log($"[GameController] Updating {snapshot.bullets.Count} bullets");
             HashSet<string> currentIds = new HashSet<string>();
-
             foreach (BulletState bulletData in snapshot.bullets)
             {
                 currentIds.Add(bulletData.id);
-
                 if (activeBullets.TryGetValue(bulletData.id, out BulletView bulletView))
                 {
                     bulletView.UpdateFromSnapshot(bulletData);
@@ -197,26 +222,19 @@ namespace ShipBattle.Gameplay
 
             foreach (var id in toRemove)
             {
-                if (activeBullets.TryGetValue(id, out var view))
-                {
-                    Debug.Log($"[GameController] Destroying bullet: {id}");
-                    Destroy(view.gameObject);
-                    activeBullets.Remove(id);
-                }
+                Destroy(activeBullets[id].gameObject);
+                activeBullets.Remove(id);
             }
         }
 
         private void CreateBullet(BulletState bulletData)
         {
-            Debug.Log($"[GameController] Creating bullet: {bulletData.id}");
+            if (bulletPrefab == null) return;
             
             GameObject bulletObj = Instantiate(bulletPrefab);
-            bulletObj.name = $"Bullet_{bulletData.id}";
-
             BulletView bulletView = bulletObj.GetComponent<BulletView>();
             if (bulletView == null) bulletView = bulletObj.AddComponent<BulletView>();
 
-            // Check owner
             int myId = AuthService.Instance.GetUserId();
             bool isPlayerBullet = (bulletData.ownerId == myId.ToString());
 
@@ -228,19 +246,12 @@ namespace ShipBattle.Gameplay
 
         private void OnDestroy()
         {
-            Debug.Log("[GameController] OnDestroy - Unsubscribing from events");
             if (socketClient != null)
             {
                 socketClient.OnStateSnapshot -= OnSnapshotReceived;
                 socketClient.OnMatchEnd -= OnMatchEnd;
             }
-            
-            // Disable input
-            if (InputSender.Instance != null)
-            {
-                InputSender.Instance.DisableInput();
-                Debug.Log("[GameController] Input disabled");
-            }
+            if (inputSender != null) inputSender.DisableInput();
         }
     }
 }

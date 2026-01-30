@@ -3,19 +3,20 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Threading.Tasks;
 using ShipBattle.Network;
+using TMPro;
 
 public class LoginController : MonoBehaviour
 {
-    [SerializeField] private InputField emailInput;
-    [SerializeField] private InputField passwordInput;
+    [SerializeField] private TMP_InputField usernameInput;
+    [SerializeField] private TMP_InputField passwordInput;
     [SerializeField] private Button loginButton;
     [SerializeField] private Button registerButton;
-    [SerializeField] private Text statusText;
+    [SerializeField] private TMP_Text errorMessageText;
 
     [Header("Labels")]
-    [SerializeField] private Text titleText;
-    [SerializeField] private Text usernameLabel;
-    [SerializeField] private Text passwordLabel;
+    [SerializeField] private TMP_Text titleText;
+    [SerializeField] private TMP_Text usernameLabel;
+    [SerializeField] private TMP_Text passwordLabel;
     
     private bool isProcessing = false;
     
@@ -25,28 +26,16 @@ public class LoginController : MonoBehaviour
         if (titleText != null) titleText.text = "Login";
         if (usernameLabel != null) usernameLabel.text = "Username";
         if (passwordLabel != null) passwordLabel.text = "Password";
-        if (statusText != null) statusText.gameObject.SetActive(false); // Hidden by default
+        if (errorMessageText != null) errorMessageText.gameObject.SetActive(false); // Hidden by default
     }
     
     private void Start()
     {
         Debug.Log("[LOGIN] LoginController Start - Setting up button listeners");
         
-        if (emailInput != null && emailInput.placeholder != null)
-        {
-            var placeholder = emailInput.placeholder as Text;
-            if (placeholder != null) placeholder.text = "Enter Username...";
-        }
-
-        if (passwordInput != null && passwordInput.placeholder != null)
-        {
-            var placeholder = passwordInput.placeholder as Text;
-            if (placeholder != null) placeholder.text = "Enter Password...";
-        }
-
         if (loginButton != null)
         {
-            loginButton.onClick.AddListener(OnLoginClicked);
+            loginButton.onClick.AddListener(Login);
             Debug.Log("[LOGIN] Login button listener added");
         }
         else
@@ -56,7 +45,7 @@ public class LoginController : MonoBehaviour
         
         if (registerButton != null)
         {
-            registerButton.onClick.AddListener(OnRegisterClicked);
+            registerButton.onClick.AddListener(Register);
             Debug.Log("[LOGIN] Register button listener added");
         }
         else
@@ -64,98 +53,94 @@ public class LoginController : MonoBehaviour
             Debug.LogError("[LOGIN] Register button is not assigned!");
         }
         
-        if (emailInput == null)
-            Debug.LogError("[LOGIN] Email input is not assigned!");
+        if (usernameInput == null)
+            Debug.LogError("[LOGIN] Username input is not assigned!");
         if (passwordInput == null)
             Debug.LogError("[LOGIN] Password input is not assigned!");
-        if (statusText == null)
-            Debug.LogError("[LOGIN] Status text is not assigned!");
+        if (errorMessageText == null)
+            Debug.LogError("[LOGIN] Error message text is not assigned!");
         
-        ShowStatus("Enter your email and password", Color.white);
+        ShowStatus("Enter your username and password", Color.white);
     }
     
     private void OnDestroy()
     {
         Debug.Log("[LOGIN] LoginController OnDestroy - Removing listeners");
         if (loginButton != null)
-            loginButton.onClick.RemoveListener(OnLoginClicked);
+            loginButton.onClick.RemoveListener(Login);
         if (registerButton != null)
-            registerButton.onClick.RemoveListener(OnRegisterClicked);
+            registerButton.onClick.RemoveListener(Register);
     }
     
-    private void OnLoginClicked()
+    public void Login()
     {
-        Debug.Log("[LOGIN] Login button clicked");
+        Debug.Log("[LOGIN] Login called");
         
         if (isProcessing) 
         {
-            Debug.Log("[LOGIN] Already processing, ignoring click");
+            Debug.Log("[LOGIN] Already processing, ignoring");
             return;
         }
         
-        string email = emailInput.text.Trim();
+        string username = usernameInput.text.Trim();
         string password = passwordInput.text.Trim();
         
-        Debug.Log($"[LOGIN] Email entered: {(string.IsNullOrEmpty(email) ? "EMPTY" : email)}");
-        Debug.Log($"[LOGIN] Password entered: {(string.IsNullOrEmpty(password) ? "EMPTY" : "***")}");
+        Debug.Log($"[LOGIN] Username entered: {username}");
         
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
-            ShowStatus("Please enter email and password", Color.red);
-            Debug.LogWarning("[LOGIN] Validation failed: Empty email or password");
+            ShowStatus("Please enter username and password", Color.red);
+            Debug.LogWarning("[LOGIN] Validation failed: Empty username or password");
             return;
         }
         
-        _ = TryLogin(email, password);
+        _ = TryLogin(username, password);
     }
     
-    private void OnRegisterClicked()
+    public void Register()
     {
-        Debug.Log("[LOGIN] Register button clicked");
+        Debug.Log("[LOGIN] Register called");
         
         if (isProcessing) 
         {
-            Debug.Log("[LOGIN] Already processing, ignoring click");
+            Debug.Log("[LOGIN] Already processing, ignoring");
             return;
         }
         
-        string email = emailInput.text.Trim();
+        string username = usernameInput.text.Trim();
         string password = passwordInput.text.Trim();
         
-        Debug.Log($"[LOGIN] Email entered: {(string.IsNullOrEmpty(email) ? "EMPTY" : email)}");
-        Debug.Log($"[LOGIN] Password entered: {(string.IsNullOrEmpty(password) ? "EMPTY" : "***")}");
+        Debug.Log($"[LOGIN] Username entered: {username}");
         
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
-            ShowStatus("Please enter email and password", Color.red);
-            Debug.LogWarning("[LOGIN] Validation failed: Empty email or password");
+            ShowStatus("Please enter username and password", Color.red);
+            Debug.LogWarning("[LOGIN] Validation failed: Empty username or password");
             return;
         }
         
-        _ = TryRegister(email, password);
+        _ = TryRegister(username, password);
     }
     
-    private async Task TryLogin(string email, string password)
+    private async Task TryLogin(string username, string password)
     {
-        Debug.Log($"[LOGIN] TryLogin started for: {email}");
+        Debug.Log($"[LOGIN] TryLogin started for: {username}");
         isProcessing = true;
-        loginButton.interactable = false;
-        registerButton.interactable = false;
+        SetUIInteractable(false);
         
         ShowStatus("Logging in...", Color.yellow);
         
         try
         {
-            var response = await AuthService.Instance.LoginAsync(email, password);
+            var response = await AuthService.Instance.LoginAsync(username, password);
             
             if (response)
             {
-                Debug.Log("[LOGIN] Login API call successful");
+                Debug.Log("[LOGIN] Login successful");
                 ShowStatus("Login successful! Connecting...", Color.green);
-                await Task.Delay(1000);
+                await Task.Delay(500);
                 
                 // Connect to WebSocket
-                Debug.Log("[LOGIN] Connecting to WebSocket...");
                 await SocketClient.Instance.ConnectAsync(AuthService.Instance.GetAccessToken());
                 
                 Debug.Log("[LOGIN] WebSocket connected, navigating to Lobby");
@@ -163,81 +148,73 @@ public class LoginController : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("[LOGIN] Login API returned false");
                 ShowStatus("Login failed. Check credentials.", Color.red);
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[LOGIN] Error during login: {ex.Message}");
-            Debug.LogError($"[LOGIN] Stack trace: {ex.StackTrace}");
+            Debug.LogError($"[LOGIN] Error: {ex.Message}");
             ShowStatus($"Error: {ex.Message}", Color.red);
         }
         finally
         {
             isProcessing = false;
-            loginButton.interactable = true;
-            registerButton.interactable = true;
-            Debug.Log("[LOGIN] TryLogin completed");
+            SetUIInteractable(true);
         }
     }
     
-    private async Task TryRegister(string email, string password)
+    private async Task TryRegister(string username, string password)
     {
-        Debug.Log($"[LOGIN] TryRegister started for: {email}");
+        Debug.Log($"[LOGIN] TryRegister started for: {username}");
         isProcessing = true;
-        loginButton.interactable = false;
-        registerButton.interactable = false;
+        SetUIInteractable(false);
         
         ShowStatus("Registering...", Color.yellow);
         
         try
         {
-            // Using email as username
-            var response = await AuthService.Instance.RegisterAsync(email, password);
+            var response = await AuthService.Instance.RegisterAsync(username, password);
             
             if (response)
             {
                 Debug.Log("[LOGIN] Registration successful");
                 ShowStatus("Registration successful! Logging in...", Color.green);
-                await Task.Delay(1000);
-                
-                // Auto login after registration
-                Debug.Log("[LOGIN] Auto-logging in after registration...");
-                await TryLogin(email, password);
+                await Task.Delay(500);
+                await TryLogin(username, password);
             }
             else
             {
-                Debug.LogWarning("[LOGIN] Registration API returned false");
-                ShowStatus("Registration failed. Email may exist.", Color.red);
+                ShowStatus("Registration failed. Username may exist.", Color.red);
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[LOGIN] Error during registration: {ex.Message}");
-            Debug.LogError($"[LOGIN] Stack trace: {ex.StackTrace}");
+            Debug.LogError($"[LOGIN] Error: {ex.Message}");
             ShowStatus($"Error: {ex.Message}", Color.red);
         }
         finally
         {
             isProcessing = false;
-            loginButton.interactable = true;
-            registerButton.interactable = true;
-            Debug.Log("[LOGIN] TryRegister completed");
+            SetUIInteractable(true);
         }
+    }
+    
+    private void SetUIInteractable(bool interactable)
+    {
+        if (loginButton != null) loginButton.interactable = interactable;
+        if (registerButton != null) registerButton.interactable = interactable;
+        if (usernameInput != null) usernameInput.interactable = interactable;
+        if (passwordInput != null) passwordInput.interactable = interactable;
     }
     
     private void ShowStatus(string message, Color color)
     {
-        if (statusText != null)
+        if (errorMessageText != null)
         {
-            statusText.text = message;
-            statusText.color = color;
+            errorMessageText.text = message;
+            errorMessageText.color = color;
+            errorMessageText.gameObject.SetActive(true);
             Debug.Log($"[LOGIN] Status: {message}");
-        }
-        else
-        {
-            Debug.LogWarning($"[LOGIN] Cannot show status (text component null): {message}");
         }
     }
 }

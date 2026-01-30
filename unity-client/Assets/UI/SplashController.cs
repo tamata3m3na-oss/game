@@ -11,7 +11,7 @@ public class SplashController : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private TMP_Text titleText;
-    [SerializeField] private GameObject loadingIndicator;
+    [SerializeField] private TMP_Text loadingIndicatorText;
     [SerializeField] private TMP_Text subtitleText;
     
     private void Awake()
@@ -21,7 +21,7 @@ public class SplashController : MonoBehaviour
         // Set default values if assigned
         if (titleText != null) titleText.text = "SHIP BATTLE";
         if (subtitleText != null) subtitleText.text = "Loading...";
-        if (loadingIndicator != null) loadingIndicator.SetActive(true);
+        if (loadingIndicatorText != null) loadingIndicatorText.text = "Initializing...";
     }
     
     private void Start()
