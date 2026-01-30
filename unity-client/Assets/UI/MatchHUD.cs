@@ -34,6 +34,11 @@ namespace ShipBattle.UI
         [SerializeField] private Color connectedColor = Color.green;
         [SerializeField] private Color disconnectedColor = Color.red;
 
+        [Header("Abilities UI")]
+        [SerializeField] private GameObject abilitiesPanel;
+        [SerializeField] private Image abilityIcon;
+        [SerializeField] private Image abilityCooldownOverlay;
+
         [Header("Touch Controls (Android)")]
         [SerializeField] private GameObject touchControlsPanel;
         [SerializeField] private Button fireButton;

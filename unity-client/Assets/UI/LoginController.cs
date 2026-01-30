@@ -11,18 +11,39 @@ public class LoginController : MonoBehaviour
     [SerializeField] private Button loginButton;
     [SerializeField] private Button registerButton;
     [SerializeField] private Text statusText;
+
+    [Header("Labels")]
+    [SerializeField] private Text titleText;
+    [SerializeField] private Text usernameLabel;
+    [SerializeField] private Text passwordLabel;
     
     private bool isProcessing = false;
     
     private void Awake()
     {
         Debug.Log("[LOGIN] LoginController Awake");
+        if (titleText != null) titleText.text = "Login";
+        if (usernameLabel != null) usernameLabel.text = "Username";
+        if (passwordLabel != null) passwordLabel.text = "Password";
+        if (statusText != null) statusText.gameObject.SetActive(false); // Hidden by default
     }
     
     private void Start()
     {
         Debug.Log("[LOGIN] LoginController Start - Setting up button listeners");
         
+        if (emailInput != null && emailInput.placeholder != null)
+        {
+            var placeholder = emailInput.placeholder as Text;
+            if (placeholder != null) placeholder.text = "Enter Username...";
+        }
+
+        if (passwordInput != null && passwordInput.placeholder != null)
+        {
+            var placeholder = passwordInput.placeholder as Text;
+            if (placeholder != null) placeholder.text = "Enter Password...";
+        }
+
         if (loginButton != null)
         {
             loginButton.onClick.AddListener(OnLoginClicked);

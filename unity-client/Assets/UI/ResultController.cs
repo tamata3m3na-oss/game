@@ -10,6 +10,10 @@ public class ResultController : MonoBehaviour
     [SerializeField] private Text ratingText;
     [SerializeField] private Button playAgainButton;
     [SerializeField] private Button lobbyButton;
+
+    [Header("Statistics")]
+    [SerializeField] private Text playerStatsText;
+    [SerializeField] private Text enemyStatsText;
     
     private void Awake()
     {
@@ -25,6 +29,10 @@ public class ResultController : MonoBehaviour
             Debug.LogError("[RESULT] GameManager instance is null!");
             return;
         }
+        
+        // Initialize stats text
+        if (playerStatsText != null) playerStatsText.text = "Kills: -  Deaths: -  Damage: -";
+        if (enemyStatsText != null) enemyStatsText.text = "Kills: -  Deaths: -  Damage: -";
         
         var result = GameManager.Instance.GetMatchResult();
         
